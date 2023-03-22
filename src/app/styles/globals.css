@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-.db {
-  color: red;
+body {
+  background-color: #000;
+  color: #fff;
 }

@@ -11,10 +11,13 @@
 # next.js
 /.next/
 /out/
+.env
 
 # production
 /build
-
+src/pages/posts-Dummy
+src/pages/createPost
+src/app/api/postsdummy
 # misc
 .DS_Store
 *.pem

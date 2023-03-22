@@ -1,3 +1,4 @@
+import { FetchConfig } from 'http-react';
 import './styles/globals.css';
 
 export const metadata = {
@@ -11,8 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
+    <FetchConfig baseUrl="/api">
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    </FetchConfig>
   );
 }
