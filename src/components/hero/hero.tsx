@@ -6,11 +6,6 @@ const Hero = () => {
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5 text-red-500">
         Hero Section
       </div>
-      {/* <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
-        <Link href={'/event/event'} className="text-red-500">
-          Event Page
-        </Link>
-      </div> */}
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
         <Link href={'/themes'} className="text-red-500">
           Themes Page
@@ -19,6 +14,30 @@ const Hero = () => {
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
         <Link href="/posts" className="text-red-500">
           Notes App
+        </Link>
+      </div>
+      <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
+        <Link
+          href={'/recommendations/recommendations'}
+          className="text-red-500"
+        >
+          Recommendations Page
+        </Link>
+      </div>
+      <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
+        <Link
+          href={'/recommendations/themerecommendations'}
+          className="text-red-500"
+        >
+          Theme Recommendations
+        </Link>
+      </div>
+      <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
+        <Link
+          href={'/recommendations/info'}
+          className="text-red-500"
+        >
+          Theme & Event INFO
         </Link>
       </div>
     </div>
