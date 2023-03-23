@@ -6,13 +6,13 @@ interface Recommendation {
 }
 
 const Recommendations = () => {
-  const [query, setQuery] = useState('');
+  const [query3, setQuery3] = useState('');
   const [recommendation, setRecommendation] = useState<Recommendation | null>(
     null
   );
 
   const fetchRecommendation = async () => {
-    const response = await fetch(`/api/recommendations?query=${query}`);
+    const response = await fetch(`/api/chatgpt3?query=${query3}`);
     const data = await response.json();
     console.log('data from element' + data);
     setRecommendation(data);
@@ -30,8 +30,8 @@ const Recommendations = () => {
           title="Query"
           type="text"
           className="text-green-500"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          value={query3}
+          onChange={(event) => setQuery3(event.target.value)}
         />
         <button type="submit">Get Recommendation</button>
       </form>

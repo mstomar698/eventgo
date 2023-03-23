@@ -12,9 +12,9 @@ const Recommendations = () => {
   );
 
   const fetchRecommendation = async () => {
-    const response = await fetch(`/api/recommendations?query=${query}`);
+    const response = await fetch(`/api/chatgpt2?query=${query}`);
     const data = await response.json();
-    console.log('data from element' + data);
+    console.log(query);
     setRecommendation(data);
   };
 
