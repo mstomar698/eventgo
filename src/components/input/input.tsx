@@ -10,7 +10,7 @@ interface InputProps {
 const Input: React.FC<InputProps> = (props: InputProps) => {
   const {
     value = '',
-    placeholder = '',
+    placeholder = 'some data',
     onChange = () => null,
     name = '',
   } = props;
@@ -21,7 +21,7 @@ const Input: React.FC<InputProps> = (props: InputProps) => {
   return (
     <input
       type="text"
-      className="input input-bordered w-full"
+      className="input input-bordered w-full text-green-500 px-2"
       value={value}
       placeholder={placeholder}
       name={name}
