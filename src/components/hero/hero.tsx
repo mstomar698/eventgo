@@ -40,6 +40,14 @@ const Hero = () => {
           Theme & Event INFO
         </Link>
       </div>
+      <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
+        <Link
+          href={'/planner'}
+          className="text-red-500"
+        >
+          Event Planner
+        </Link>
+      </div>
     </div>
   );
 };

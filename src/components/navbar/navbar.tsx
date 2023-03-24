@@ -13,7 +13,7 @@ const Navbar = ({ title }: any) => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   return (
-    <div className="text-3xl text-purple-500 text-center rounded-sm border-2 border-solid border-green-500  flex items-center justify-between px-2">
+    <div className="z-10 text-3xl text-purple-500 text-center rounded-sm border-2 border-solid border-green-500  flex items-center justify-between px-2">
       {/* main-navbar-heading */}
       <div className="flex items-center">
         <Link href="/">
