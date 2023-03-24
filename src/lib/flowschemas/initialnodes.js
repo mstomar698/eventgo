@@ -1,4 +1,4 @@
-const initialNodes = [
+export const initialNodes = [
   {
     id: '1',
     type: 'input',
@@ -72,4 +72,4 @@ const initialNodes = [
     position: { x: 400, y: 450 },
   },
 ];
-export default initialNodes;
+// export default initialNodes;

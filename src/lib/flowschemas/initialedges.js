@@ -1,4 +1,4 @@
-const initialEdges = [
+export const initialEdges = [
   {
     id: 'e1-2',
     source: '1',
@@ -42,4 +42,4 @@ const initialEdges = [
   },
 ];
 
-export default initialEdges;
+// export default initialEdges;

@@ -13,8 +13,8 @@ import { IoIosArrowDropup } from 'react-icons/io';
 import { BsCheck, BsX } from 'react-icons/bs';
 import classnames from 'classnames';
 import html2canvas from 'html2canvas';
-import initialNodes from './initialnodes';
-import initialEdges from './initialedges';
+import { initialNodes } from '../../lib/flowschemas/initialnodes';
+import { initialEdges } from '../../lib/flowschemas/initialedges';
 
 const Flowchart = () => {
   const containerRef: any = useRef(null);
