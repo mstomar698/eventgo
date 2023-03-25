@@ -115,7 +115,7 @@ const Navbar = ({ title }: any) => {
                 </button>
               </Link> */}
               {/* <Link href="/auth/signin"> */}
-              <button
+              {/* <button
                 title="signin"
                 type="submit"
                 onClick={() => signIn()}
@@ -126,7 +126,7 @@ const Navbar = ({ title }: any) => {
                   className="inline-block text-green-500"
                   size={25}
                 />
-              </button>
+              </button> */}
               {/* </Link> */}
               {/* navabr-user-controls */}
               {isLoggedIn ? (
@@ -159,7 +159,18 @@ const Navbar = ({ title }: any) => {
                   </Link>
                 </>
               ) : (
-                ''
+                <><button
+                title="signin"
+                type="submit"
+                onClick={() => signIn()}
+                className="border-2 rounded-lg p-2 border-solid border-red-500 flex flex-row items-center space-x-1"
+              >
+                <span className="text-lg mb-0.5">Signin</span>
+                <RiLoginBoxLine
+                  className="inline-block text-green-500"
+                  size={25}
+                />
+              </button></>
               )}
             </div>
           </div>
