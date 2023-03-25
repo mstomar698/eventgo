@@ -1,10 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 
-interface Recommendation {
-  data: string;
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -13,7 +9,8 @@ export default async function handler(
   console.log(query);
   const apiUrl = 'https://api.openai.com/v1/completions';
   const prompt = `What is ${query} describe in great detail?\n\n`;
-  const maxTokens = 600;
+  console.log('from apipage the query asked is ' + prompt);
+  const maxTokens = 60;
   const n = 1;
   const model = 'text-babbage-001'; // NOTE: use davinci-002 later//and curie-001 text-babbage-001
   const apiKey = process.env.OPENAI_API_KEY;
@@ -33,9 +30,6 @@ export default async function handler(
   });
 
   const data: any = await response.json();
-  const recommendation: Recommendation = data.choices[0].text.trim();
-  //   console.log(data);
-  console.log(recommendation);
-  res.status(200).json({ recommendation: recommendation });
-  return recommendation;
+  const info: any = data.choices[0].text.trim();
+  res.status(200).json({ info: info });
 }

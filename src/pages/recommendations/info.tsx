@@ -7,15 +7,17 @@ interface Recommendation {
 
 const Recommendations = () => {
   const [query1, setQuery1] = useState('');
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(
-    null
-  );
+  const [info, setInfo] = useState<any | null>(null);
 
   const fetchRecommendation = async () => {
     const response = await fetch(`/api/chatgpt?query=${query1}`);
     const data = await response.json();
-    console.log('data from element' + data);
-    setRecommendation(data);
+    console.log('query from recommendation page is \n' + query1);
+    const dataString = JSON.stringify(data);
+    const infoData = JSON.parse(dataString);
+    console.log('whole response is in string format' + dataString);
+    setInfo(infoData);
+    console.log('query response is ' + infoData.info);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -35,9 +37,10 @@ const Recommendations = () => {
         />
         <button type="submit">Get Info</button>
       </form>
-      {recommendation && (
-        <div className="text-red-500">
-          <p>{'info for word'}</p>
+      {info && (
+        <div className="text-red-500 bg-green-400">
+          <h1>Recommendation Page</h1>
+          <p>{`string data from object ${info.info}`}</p>
         </div>
       )}
     </div>

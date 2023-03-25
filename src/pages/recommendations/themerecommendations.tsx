@@ -1,28 +1,25 @@
 import '../../app/styles/globals.css';
 import { useState } from 'react';
 
-interface Recommendation {
-  data: string;
-}
-
 const Recommendations = () => {
-  const [query3, setQuery3] = useState('');
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(
-    null
-  );
+  const [query, setQuery] = useState('');
+  const [recommendation, setRecommendation] = useState<any | null>(null);
 
   const fetchRecommendation = async () => {
-    const response = await fetch(`/api/chatgpt3?query=${query3}`);
+    const response = await fetch(`/api/chatgpt3?query=${query}`);
     const data = await response.json();
-    console.log('data from element' + data);
-    setRecommendation(data);
+    console.log('query from theme recommendation page is \n' + query);
+    const dataString = JSON.stringify(data);
+    const recommedationData = JSON.parse(dataString);
+    console.log('whole response is in string format' + dataString);
+    setRecommendation(recommedationData);
+    console.log('query response is ' + recommedationData.recommendation);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     fetchRecommendation();
   };
-
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -30,14 +27,15 @@ const Recommendations = () => {
           title="Query"
           type="text"
           className="text-green-500"
-          value={query3}
-          onChange={(event) => setQuery3(event.target.value)}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
         />
-        <button type="submit">Get Recommendation</button>
+        <button type="submit">Get Themes</button>
       </form>
       {recommendation && (
-        <div className="text-red-500">
-          <p>{'recommendation for themes'}</p>
+        <div className="text-red-500 bg-green-400">
+          <h1>Theme Recommendation Page</h1>
+          <p>{`string data from object ${recommendation.recommendation}`}</p>
         </div>
       )}
     </div>

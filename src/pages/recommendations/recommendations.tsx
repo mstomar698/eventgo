@@ -1,28 +1,25 @@
 import '../../app/styles/globals.css';
 import { useState } from 'react';
 
-interface Recommendation {
-  data: string;
-}
-
 const Recommendations = () => {
   const [query, setQuery] = useState('');
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(
-    null
-  );
+  const [recommendation, setRecommendation] = useState<any | null>(null);
 
   const fetchRecommendation = async () => {
     const response = await fetch(`/api/chatgpt2?query=${query}`);
     const data = await response.json();
-    console.log(query);
-    setRecommendation(data);
+    console.log('query from recommendation page is \n' + query);
+    const dataString = JSON.stringify(data);
+    const recommedationData = JSON.parse(dataString);
+    console.log('whole response is in string format' + dataString);
+    setRecommendation(recommedationData);
+    console.log('query response is ' + recommedationData.recommendation);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     fetchRecommendation();
   };
-
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -36,8 +33,9 @@ const Recommendations = () => {
         <button type="submit">Get Recommendation</button>
       </form>
       {recommendation && (
-        <div className="text-red-500">
-          <p>{'recommendation for events'}</p>
+        <div className="text-red-500 bg-green-400">
+          <h1>Recommendation Page</h1>
+          <p>{`string data from object ${recommendation.recommendation}`}</p>
         </div>
       )}
     </div>
