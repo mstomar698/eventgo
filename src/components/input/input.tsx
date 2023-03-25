@@ -21,10 +21,11 @@ const Input: React.FC<InputProps> = (props: InputProps) => {
   return (
     <input
       type="text"
-      className="input input-bordered w-full text-green-500 px-2"
+      className="input input-bordered w-full rounded-sm p-2"
       value={value}
       placeholder={placeholder}
       name={name}
+      required
       onChange={triggerOnChangeEvent}
     />
   );
