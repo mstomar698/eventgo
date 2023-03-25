@@ -1,15 +1,25 @@
+'use client';
 import '../../app/styles/globals.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Signup from '../auth/signup';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
 import { BiArrowToLeft } from 'react-icons/bi';
+import SignIn from '@/pages/auth/signin';
+import { useSession } from 'next-auth/react';
 
 const Recommendations = () => {
   const [query1, setQuery1] = useState('');
   const [info, setInfo] = useState<any | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (!session) {
+      setIsLoggedIn(false);
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [session]);
 
   const fetchRecommendation = async () => {
     const response = await fetch(`/api/chatgpt?query=${query1}`);
@@ -29,7 +39,7 @@ const Recommendations = () => {
 
   return (
     <>
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
           <Navbar title={'Event Info'} />
           <div className="h-full border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700">
@@ -78,11 +88,15 @@ const Recommendations = () => {
         </div>
       ) : (
         <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <Signup />
+          <SignIn />
         </div>
       )}
     </>
   );
 };
 
-export default Recommendations;
+const Page = () => {
+  return <Recommendations />;
+};
+
+export default Page;

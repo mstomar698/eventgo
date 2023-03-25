@@ -3,11 +3,12 @@ import Link from 'next/link';
 import useFetch, { revalidate } from 'http-react';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
-import Signup from '@/pages/auth/signup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BiTrashAlt, BiArrowToLeft, BiPlus } from 'react-icons/bi';
 import { IPost } from '@/lib/models';
 import CalendarPage from '@/pages/calender/calender';
+import SignIn from '@/pages/auth/signin';
+import { useSession } from 'next-auth/react';
 
 function confirmPostDelete(id: any) {
   const confirmation = confirm('Do you want to remove this post?');
@@ -45,7 +46,9 @@ function Post(props: any) {
         <BiTrashAlt name="trash" className="text-xl" />
       </button>
       <p className="mt-2 mb-1 text-sm">{props.title}</p>
-      <p className="my-0.5 overflow-hidden hover:overflow-y-scroll h-20 p-1 text-xs ">{props.content}</p>
+      <p className="my-0.5 overflow-hidden hover:overflow-y-scroll h-20 p-1 text-xs ">
+        {props.content}
+      </p>
     </div>
   );
 }
@@ -106,10 +109,18 @@ function Posts() {
 }
 
 const Notes = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (!session) {
+      setIsLoggedIn(false);
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [session]);
   return (
     <>
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <div className="h-full max-md:h-full max-sm:h-full w-full p-1 flex flex-col border-2 border-solid border-red-500">
           <Navbar title={'Notes'} />
           <div className="h-full flex p-0.5 max-sm:flex-col md:flex-col lg:flex-row max-md:flex-col border-2 border-solid border-orange-500 rounded-sm my-1">
@@ -120,7 +131,7 @@ const Notes = () => {
         </div>
       ) : (
         <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <Signup />
+          <SignIn />
         </div>
       )}
     </>

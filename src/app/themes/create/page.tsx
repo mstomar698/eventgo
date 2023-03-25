@@ -1,14 +1,15 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useObject } from 'react-kuh';
 import Link from 'next/link';
 import { BiArrowToLeft, BiSave } from 'react-icons/bi';
 import useFetch, { revalidate } from 'http-react';
 import Input from '@/components/input/input';
-import Signup from '@/pages/auth/signup';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
+import SignIn from '@/pages/auth/signin';
+import { useSession } from 'next-auth/react';
 
 function saveTheme() {
   revalidate('POST /themes');
@@ -95,10 +96,18 @@ function Create() {
 }
 
 const CreateThemes = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (!session) {
+      setIsLoggedIn(false);
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [session]);
   return (
     <>
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
           <Navbar title={'Create-Themes'} />
           <Create />
@@ -106,7 +115,7 @@ const CreateThemes = () => {
         </div>
       ) : (
         <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <Signup />
+          <SignIn />
         </div>
       )}
     </>

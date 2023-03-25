@@ -3,10 +3,11 @@ import Link from 'next/link';
 import useFetch, { revalidate } from 'http-react';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
-import Signup from '@/pages/auth/signup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BiTrashAlt, BiArrowToLeft, BiPlus } from 'react-icons/bi';
 import { ITheme } from '@/lib/models';
+import SignIn from '@/pages/auth/signin';
+import { useSession } from 'next-auth/react';
 
 function confirDeleteTheme(id: any) {
   const confirmation = confirm('Do you want to remove this Theme?');
@@ -117,10 +118,18 @@ function Themes() {
 }
 
 const Page = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (!session) {
+      setIsLoggedIn(false);
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [session]);
   return (
     <>
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <div className="h-screen max-sm:h-full max-md:h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
           <Navbar title={'Themes'} />
           <Themes />
@@ -128,7 +137,7 @@ const Page = () => {
         </div>
       ) : (
         <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <Signup />
+          <SignIn />
         </div>
       )}
     </>

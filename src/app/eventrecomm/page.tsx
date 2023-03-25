@@ -1,20 +1,30 @@
+'use client';
 import '../../app/styles/globals.css';
-import { useState } from 'react';
-import Signup from '../auth/signup';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Footer from '@/components/footer/footer';
 import { BiArrowToLeft } from 'react-icons/bi';
 import Navbar from '@/components/navbar/navbar';
+import SignIn from '@/pages/auth/signin';
+import { useSession } from 'next-auth/react';
 
 const Recommendations = () => {
   const [query, setQuery] = useState('');
   const [recommendation, setRecommendation] = useState<any | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (!session) {
+      setIsLoggedIn(false);
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [session]);
 
   const fetchRecommendation = async () => {
-    const response = await fetch(`/api/chatgpt3?query=${query}`);
+    const response = await fetch(`/api/chatgpt2?query=${query}`);
     const data = await response.json();
-    console.log('query from theme recommendation page is \n' + query);
+    console.log('query from recommendation page is \n' + query);
     const dataString = JSON.stringify(data);
     const recommedationData = JSON.parse(dataString);
     console.log('whole response is in string format' + dataString);
@@ -28,9 +38,9 @@ const Recommendations = () => {
   };
   return (
     <>
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Theme Recommendation'} />
+          <Navbar title={'Event Recommendation'} />
           <div className="h-full border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700">
             <form
               onSubmit={handleSubmit}
@@ -48,13 +58,13 @@ const Recommendations = () => {
                 type="submit"
                 className="border-2 border-solid border-red-500 p-1 text-xs flex items-center justify-center w-1/5 max-sm:w-full max-md:w-full font-medium transition-colors duration-150 bg-gray-700 rounded-sm hover:bg-black focus:outline-none focus:shadow-outline-gray"
               >
-                Get Themes
+                Get Events
               </button>
             </form>
             {recommendation && (
               <div className="mx-16 h-[350px] p-4">
                 <h1 className="text-start text-lg font-semibold">
-                  Recommended theme for ({query}) is:
+                  Recommendation for: {query}{' '}
                 </h1>
                 <div className="my-2 p-1 w-full h-64 border-2 border-solid border-red-500 overflow-y-auto font-small transition-colors duration-150 bg-gray-700 rounded-sm hover:bg-black focus:outline-none focus:shadow-outline-gray text-center">
                   {`string data from object ${recommendation.recommendation}`}
@@ -77,29 +87,14 @@ const Recommendations = () => {
         </div>
       ) : (
         <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <Signup />
+          <SignIn />
         </div>
       )}
     </>
-    // <div>
-    //   <form onSubmit={handleSubmit}>
-    //     <input
-    //       title="Query"
-    //       type="text"
-    //       className="text-green-500"
-    //       value={query}
-    //       onChange={(event) => setQuery(event.target.value)}
-    //     />
-    //     <button type="submit">Get Themes</button>
-    //   </form>
-    //   {recommendation && (
-    //     <div className="text-red-500 bg-green-400">
-    //       <h1>Theme Recommendation Page</h1>
-    //       <p>{`string data from object ${recommendation.recommendation}`}</p>
-    //     </div>
-    //   )}
-    // </div>
   );
 };
 
-export default Recommendations;
+const Page = () => {
+  return <Recommendations />;
+};
+export default Page;

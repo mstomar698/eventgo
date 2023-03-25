@@ -21,6 +21,8 @@ src/app/api/postsdummy
 # misc
 .DS_Store
 *.pem
+src/recommedations
+
 dummy.txt
 # debug
 npm-debug.log*

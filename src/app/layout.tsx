@@ -1,5 +1,6 @@
 import { FetchConfig } from 'http-react';
 import './styles/globals.css';
+import ProvidersWrapper from './providerswrapper';
 
 export const metadata = {
   title: 'eventgo',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <FetchConfig baseUrl="/api">
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          <ProvidersWrapper>{children}</ProvidersWrapper>
+        </body>
       </html>
     </FetchConfig>
   );

@@ -17,34 +17,22 @@ const Hero = () => {
         </Link>
       </div>
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
-        <Link
-          href={'/recommendations/recommendations'}
-          className="text-red-500"
-        >
+        <Link href={'/eventrecomm'} className="text-red-500">
           Recommendations Page
         </Link>
       </div>
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
-        <Link
-          href={'/recommendations/themerecommendations'}
-          className="text-red-500"
-        >
+        <Link href={'/themerecomm'} className="text-red-500">
           Theme Recommendations
         </Link>
       </div>
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
-        <Link
-          href={'/recommendations/info'}
-          className="text-red-500"
-        >
+        <Link href={'/info'} className="text-red-500">
           Theme & Event INFO
         </Link>
       </div>
       <div className="border-2 border-solid border-green-500 p-1 rounded-lg m-0.5">
-        <Link
-          href={'/planner'}
-          className="text-red-500"
-        >
+        <Link href={'/planner'} className="text-red-500">
           Event Planner
         </Link>
       </div>
