@@ -8,6 +8,7 @@ import ReactFlow, {
   EdgeChange,
   addEdge,
 } from 'reactflow';
+import Link from 'next/link';
 import 'reactflow/dist/style.css';
 import { IoIosArrowDropup } from 'react-icons/io';
 import { BsCheck, BsX } from 'react-icons/bs';
@@ -15,6 +16,7 @@ import classnames from 'classnames';
 import html2canvas from 'html2canvas';
 import { initialNodes } from '../../lib/flowschemas/initialnodes';
 import { initialEdges } from '../../lib/flowschemas/initialedges';
+import { BiArrowToLeft } from 'react-icons/bi';
 
 const Flowchart = () => {
   const containerRef: any = useRef(null);
@@ -206,6 +208,15 @@ const Flowchart = () => {
           >
             Add Details
           </button>
+          <Link
+            href="/"
+            className="border-2 border-solid max-sm:p-1 border-red-500 p-1 text-xs flex items-center justify-center w-full py-2  font-medium text-gray-800 transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
+          >
+            <button className="flex flex-row justify-between space-x-1">
+              <BiArrowToLeft name="arrow-left" className="text-xl" />
+              <span className="my-0.5">Home</span>
+            </button>
+          </Link>
         </div>
         <div className="relative p-0.5 ">
           <button
