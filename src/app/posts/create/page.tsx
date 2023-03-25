@@ -86,13 +86,6 @@ function Create() {
           <BiSave name="save" className="text-xl" />
           <span className="my-0.5">Save Note</span>
         </button>
-
-        {/* <div className="w-full text-center">
-          <button  className="btn gap-x-2">
-            <span>Save</span>
-            <BiPlus name="disc" className="text-xl" />
-          </button>
-        </div> */}
       </div>
     </div>
   );

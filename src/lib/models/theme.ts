@@ -13,7 +13,7 @@ const ThemeSchema: Schema = new Schema({
     unique: true,
   },
   date: {
-    type: String,
+    type: Date,
     required: true,
   },
   events: {
