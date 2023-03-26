@@ -61,7 +61,7 @@ const CalendarPage = () => {
   };
 
   return (
-    <div className="h-[440px] w-full rounded-sm text-green-500 bg-gray-500 text-center flex justify-center items-center">
+    <div className="h-full max-sm:h-[440px] max-md:h-[440px] w-full rounded-sm text-green-500 bg-gray-500 text-center flex justify-center items-center">
       <Calendar
         localizer={localizer}
         events={events}

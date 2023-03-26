@@ -60,14 +60,14 @@ function Posts() {
 
   if (loadingFirst)
     return (
-      <div className="h-[440px] w-full my-1  rounded-sm text-white bg-gray-700 text-center flex justify-center items-center">
+      <div className="h-full w-full my-1  rounded-sm text-white bg-gray-700 text-center flex justify-center items-center">
         <p className="text-2xl font-semibold py-4">Loading posts...</p>
       </div>
     );
 
   if (error)
     return (
-      <div className="h-[440px] w-full my-1  rounded-sm text-white bg-gray-700 text-center flex justify-center items-center">
+      <div className="h-full w-full my-1  rounded-sm text-white bg-gray-700 text-center flex justify-center items-center">
         <p className="text-2xl font-semibold py-4">Failed to Fetch posts...</p>
       </div>
     );
@@ -77,7 +77,7 @@ function Posts() {
   ));
 
   return (
-    <div className="h-[440px] lg:overflow-y-scroll max-sm:h-full max-md:h-full w-full rounded-sm text-white bg-gray-700">
+    <div className="h-full lg:overflow-y-scroll max-sm:h-full max-md:h-full w-full rounded-sm text-white bg-gray-700">
       <div className="relative p-1 max-sm:mt-2 space-x-2 flex flex-row w-full">
         <Link
           href="/"
@@ -121,7 +121,7 @@ const Notes = () => {
   return (
     <>
       {isLoggedIn ? (
-        <div className="h-full max-md:h-full max-sm:h-full w-full p-1 flex flex-col border-2 border-solid border-red-500">
+        <div className="h-screen max-md:h-full max-sm:h-full w-full p-1 flex flex-col border-2 border-solid border-red-500">
           <Navbar title={'Notes'} />
           <div className="h-full flex p-0.5 max-sm:flex-col md:flex-col lg:flex-row max-md:flex-col border-2 border-solid border-orange-500 rounded-sm my-1">
             <Posts />

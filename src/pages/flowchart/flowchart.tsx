@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import ReactFlow, {

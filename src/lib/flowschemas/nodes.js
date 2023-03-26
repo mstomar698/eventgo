@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Handle } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 
 export const TextUpdaterNode = () => {
   const onChange = useCallback((evt) => {
