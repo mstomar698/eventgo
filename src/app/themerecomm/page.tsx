@@ -67,7 +67,7 @@ const Recommendations = () => {
                   Recommended theme for ({query}) is:
                 </h1>
                 <div className="my-2 p-1 w-full h-64 border-2 border-solid border-red-500 overflow-y-auto font-small transition-colors duration-150 bg-gray-700 rounded-sm hover:bg-black focus:outline-none focus:shadow-outline-gray text-center">
-                  {`string data from object ${recommendation.recommendation}`}
+                  {` ${recommendation.recommendation}`}
                 </div>
               </div>
             )}
