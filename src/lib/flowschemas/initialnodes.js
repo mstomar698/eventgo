@@ -72,4 +72,116 @@ export const initialNodes = [
     position: { x: 400, y: 450 },
   },
 ];
-// export default initialNodes;
+
+export const initialNodesForDemoTheme = [
+  {
+    id: '1',
+    type: 'textUpdater',
+    position: { x: 400, y: 0 },
+    data: { value: 123 },
+  },
+  {
+    id: '2',
+    type: 'nodesad',
+    position: { x: 100, y: 200 },
+    data: { value: 123 },
+  },
+  {
+    id: '3',
+    type: 'nodesad',
+    position: { x: 300, y: 200 },
+    data: { value: 123 },
+  },
+  {
+    id: '4',
+    type: 'nodesad',
+    position: { x: 500, y: 200 },
+    data: { value: 123 },
+  },
+  {
+    id: '5',
+    type: 'input',
+    data: {
+      label: (
+        <>
+          Summer <strong>Starts!</strong>
+        </>
+      ),
+    },
+    position: { x: 100, y: 50 },
+  },
+  {
+    id: '6',
+    data: {
+      label: (
+        <>
+          Prepare <strong>Schedule</strong>
+        </>
+      ),
+    },
+    position: { x: 300, y: 80 },
+  },
+  {
+    id: '7',
+    data: {
+      label: (
+        <>
+          Have a <strong>Trip</strong>
+        </>
+      ),
+    },
+    position: { x: 500, y: 100 },
+    style: {
+      background: '#D6D5E6',
+      color: '#333',
+      border: '1px solid #222138',
+      width: 180,
+    },
+  },
+  {
+    id: '8',
+    position: { x: 700, y: 150 },
+    data: {
+      label: (
+        <>
+          Take Big <strong>Rest</strong>
+        </>
+      ),
+    },
+  },
+  {
+    id: '9',
+    data: {
+      label: (
+        <>
+          !! Complete <strong>HomeWork</strong>
+        </>
+      ),
+    },
+    position: { x: 700, y: 220 },
+  },
+  {
+    id: '10',
+    type: 'output',
+    data: {
+      label: (
+        <>
+          Summer <strong>Ends</strong>
+        </>
+      ),
+    },
+    position: { x: 700, y: 320 },
+  },
+  {
+    id: '11',
+    type: 'nodesad',
+    data: {
+      label: (
+        <>
+          Summer <strong>Ends</strong>
+        </>
+      ),
+    },
+    position: { x: 500, y: 320 },
+  },
+];

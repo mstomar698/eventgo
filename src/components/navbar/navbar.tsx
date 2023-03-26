@@ -159,18 +159,20 @@ const Navbar = ({ title }: any) => {
                   </Link>
                 </>
               ) : (
-                <><button
-                title="signin"
-                type="submit"
-                onClick={() => signIn()}
-                className="border-2 rounded-lg p-2 border-solid border-red-500 flex flex-row items-center space-x-1"
-              >
-                <span className="text-lg mb-0.5">Signin</span>
-                <RiLoginBoxLine
-                  className="inline-block text-green-500"
-                  size={25}
-                />
-              </button></>
+                <>
+                  <button
+                    title="signin"
+                    type="submit"
+                    onClick={() => signIn()}
+                    className="border-2 rounded-lg p-2 border-solid border-red-500 flex flex-row items-center space-x-1"
+                  >
+                    <span className="text-lg mb-0.5">Signin</span>
+                    <RiLoginBoxLine
+                      className="inline-block text-green-500"
+                      size={25}
+                    />
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -178,7 +180,7 @@ const Navbar = ({ title }: any) => {
         {/* prompt-comtrols */}
         {isPromtOpen && isLoggedIn && (
           <>
-            <div className="absolute max-sm:hidden top-9 right-4 w-[200px] bg-black rounded-lg border-solid border-4 border-red-500 p-4  h-[200px] items-center justify-center text-center flex">
+            <div className="absolute max-sm:hidden top-9 right-4 w-[200px] bg-black rounded-lg border-solid border-4 border-red-500 p-4  h-[200px] items-center justify-center text-center flex z-10">
               {isLoggedIn ? (
                 <div className="flex flex-col text-center items-center justify-center space-y-2">
                   {/* <Link href="/#userprofile"> */}

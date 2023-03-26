@@ -45,7 +45,7 @@ function Theme(props: any) {
         <BiTrashAlt name="trash" className="text-xl" />
       </button>
       <p className="my-1 text-sm w-full px-4 text-center">{props.title}</p>
-      <div className="my-0.5 p-1 h-4/5 grid grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 rounded-md items-center justify-center text-center hover:overflow-y-scroll max-sm:overflow-auto max-md:overflow-auto ">
+      <div className="my-0.5 p-1 h-4/5 grid grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 rounded-md items-center justify-center text-center hover:overflow-y-scroll max-sm:overflow-auto max-md:overflow-y-auto ">
         {props.events.map((event: any) => (
           <>
             <button
