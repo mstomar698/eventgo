@@ -7,6 +7,57 @@ body {
   color: #fff;
 }
 
+.hero_iamge {
+  background-image: url(./asd2.gif);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100%;
+  /* width: 100%; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.heroCard_image {
+  background-image: url(./not.jpeg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100%;
+  /* width: 100%; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.heroCard_image1 {
+  background-image: url(./hd.gif);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100%;
+  /* width: 100%; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.heroCard_image2 {
+  background-image: url(./them.gif);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100%;
+  /* width: 100%; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* responsive for large devices */
+/* @media (max-width: 1024px) {
+  .hero_iamge {
+    display: none;
+  }
+} */
+
 /* react-flow styling */
 /* .react-flow__node-custom {
   font-size: 10px;

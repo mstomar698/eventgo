@@ -1,6 +1,7 @@
 'use client';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
+import Signin from '@/pages/auth/signin';
 import Flowchart from '@/pages/flowchart/flowchart';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -26,9 +27,7 @@ const Planner = () => {
         </div>
       ) : (
         <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Planner-Not-Authenticated'} />
-          <Flowchart />
-          <Footer />
+          <Signin />
         </div>
       )}
     </>
