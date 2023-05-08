@@ -51,9 +51,3 @@ npm run build # or yarn build
 ## license
 
 > [MIT](https://www.mit.edu/~amini/LICENSE.md) License
-
-## demo
-
-- ![demo](./public/auth-home.png)
-
-- ![demo](./public/event-planer.png)
