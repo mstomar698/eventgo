@@ -1,4 +1,12 @@
+import { Footer, HomePage, MainSection, Navbar } from '@/components';
 
 export default function Home() {
-  return <div className="flex min-h-screen flex-col">Hello Page.tsx</div>;
+  return (
+    <div className="relative z-0 bg-primary overflow-hidden">
+      <Navbar />
+      <HomePage />
+      <MainSection />
+      <Footer />
+    </div>
+  );
 }

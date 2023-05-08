@@ -4,6 +4,7 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -13,6 +14,9 @@ module.exports = {
         tertiary: 'hsl(223, 18%, 39%)',
         active: 'hsl(204, 58%, 39%)',
       },
+    },
+    backgroundImage: {
+      'hero-pattern': "url('/back.png')",
     },
   },
   plugins: [],
