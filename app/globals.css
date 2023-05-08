@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: hsl(223, 18%, 39%);
+  background: hsl(223, 13%, 79%);
+}
+
+body {
+  color: hsl(223, 18%, 39%);
+  background: hsl(223, 13%, 79%);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(204, 58%, 39%);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(223, 13%, 79%);
+}
+
+@media only screen and (max-width: 380px) {
+  /*  */
+}
+@media only screen and (max-width: 768px) {
+  /*  */
+}
+@media only screen and (min-width: 768px) and (max-width: 840px) {
+  /*  */
+}
+@media only screen and (min-width: 840px) and (max-width: 1024px) {
+  /*  */
+}
+@media only screen and (min-width: 1024px) {
+  /*  */
+}
