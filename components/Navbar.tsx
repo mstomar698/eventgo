@@ -4,10 +4,18 @@ import Image from 'next/image';
 import { BsMenuUp } from 'react-icons/bs';
 import { FaWindowClose } from 'react-icons/fa';
 import { logo } from '@/assets';
+import { useUserInfo } from '@/lib/user';
 
 const Navbar = () => {
   const [toggle, setToggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const userInfo = useUserInfo();
+  if (!userInfo) {
+    if (typeof window !== 'undefined') {
+      console.log('No userInfo provide in user.ts');
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,8 +31,6 @@ const Navbar = () => {
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const userInfo = false;
 
   const handleSignOut = () => {
     console.log('Implement Sign Out');
@@ -87,7 +93,7 @@ const Navbar = () => {
                   alt="logo"
                   className="w-7 h-7 object-contain rounded-xl mr-1"
                 />
-                User Data
+                {userInfo.name}
               </button>
             </li>
           )}
@@ -142,7 +148,7 @@ const Navbar = () => {
                       className={`${styles.heroSubText} text-active hover:text-tertiary flex flex-row flex-wrap items-center`}
                       onClick={() => (window.location.href = `/profile`)}
                     >
-                      User Data
+                      {userInfo.name}
                       <Image
                         src={logo}
                         alt="logo"
