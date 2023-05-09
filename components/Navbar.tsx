@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { styles } from '@/app/styles';
-import Link from 'next/link';
 import Image from 'next/image';
 import { BsMenuUp } from 'react-icons/bs';
 import { FaWindowClose } from 'react-icons/fa';
@@ -25,6 +24,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const userInfo = false;
   return (
     <div
       className={`${
@@ -50,16 +50,39 @@ const Navbar = () => {
           </p>
         </div>
         <ul className="list-none hidden sm:flex flex-row gap-10 max-md:gap-6">
-          <li
-            className={`hover:text-active text-[18px] font-medium cursor-pointer`}
-          >
-            <a href={`#`}>btn1</a>
+          <li className={`hover:text-active font-medium cursor-pointer`}>
+            {userInfo ? (
+              <>
+                <button
+                  className={`${styles.heroSubText} shadow-md shadow-secondary px-2 py-0.5 rounded-md active:text-tertiary`}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className={`${styles.heroSubText} shadow-md shadow-secondary px-2 py-0.5 rounded-md active:text-tertiary`}
+                >
+                  Sign In
+                </button>
+              </>
+            )}
           </li>
-          <li
-            className={`hover:text-active text-[18px] font-medium cursor-pointer`}
-          >
-            <a href={`#`}>btn2</a>
-          </li>
+          {userInfo && (
+            <li className={`hover:text-active font-medium cursor-pointer`}>
+              <button
+                className={`${styles.heroSubText} shadow-md shadow-secondary px-2 py-0.5 rounded-md active:text-tertiary flex flex-row flex-wrap items-center`}
+              >
+                <Image
+                  src={logo}
+                  alt="logo"
+                  className="w-7 h-7 object-contain rounded-xl mr-1"
+                />
+                User Data
+              </button>
+            </li>
+          )}
         </ul>
         <div className="sm:hidden flex flex-1 justify-end items-center">
           {toggle ? (
@@ -83,16 +106,41 @@ const Navbar = () => {
             } p-6 bg-secondary/50 backdrop-blur-3xl border border-active absolute top-20 right-5 mx-4 my-2 min-w-[140px] z-10 rounded-xl`}
           >
             <ul className="list-none flex justify-end items-start flex-1 flex-col gap-2">
-              <li
-                className={`hover:text-active text-[18px] font-medium cursor-pointer`}
-              >
-                <a href={`#`}>btn1</a>
+              <li className={`font-medium`}>
+                {userInfo ? (
+                  <>
+                    <button
+                      className={`${styles.heroSubText} text-active hover:text-tertiary`}
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className={`${styles.heroSubText} text-active hover:text-tertiary`}
+                    >
+                      Sign In
+                    </button>
+                  </>
+                )}
               </li>
-              <li
-                className={`hover:text-active text-[18px] font-medium cursor-pointer`}
-              >
-                <a href={`#`}>btn1</a>
-              </li>
+              {userInfo && (
+                <>
+                  <li className={`font-medium`}>
+                    <button
+                      className={`${styles.heroSubText} text-active hover:text-tertiary flex flex-row flex-wrap items-center`}
+                    >
+                      User Data
+                      <Image
+                        src={logo}
+                        alt="logo"
+                        className="w-6 h-6 object-contain rounded-xl ml-1"
+                      />
+                    </button>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>

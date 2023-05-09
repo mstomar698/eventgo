@@ -24,21 +24,36 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(223, 13%, 79%);
+  background: transparent;
 }
 
 @media only screen and (max-width: 380px) {
-  /*  */
+  .pagecard {
+    height: 486px;
+    width: 360px;
+  }
 }
 @media only screen and (max-width: 768px) {
-  /*  */
+  .pagecard {
+    height: 150px;
+    width: 240px;
+  }
 }
 @media only screen and (min-width: 768px) and (max-width: 840px) {
-  /*  */
+  .pagecard {
+    height: 200px;
+    width: 300px;
+  }
 }
 @media only screen and (min-width: 840px) and (max-width: 1024px) {
-  /*  */
+  .pagecard {
+    height: 200px;
+    width: 300px;
+  }
 }
 @media only screen and (min-width: 1024px) {
-  /*  */
+  .pagecard {
+    height: 486px;
+    width: 360px;
+  }
 }

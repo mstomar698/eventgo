@@ -1,13 +1,9 @@
-import Link from 'next/link';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import ReactFlow, {
-  Controls,
-  Background,
   applyNodeChanges,
   applyEdgeChanges,
   NodeChange,
   EdgeChange,
-  addEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { heroNodes, heroEdges } from '@/lib/schemas/';
@@ -44,7 +40,7 @@ const HomePage = () => {
           fitView={true}
           className="pointer-events-none"
         >
-          <Background className='bg-hero-pattern  opacity-20'/>
+          <div className="absolute bg-hero-pattern w-full h-full opacity-20 bg-cover bg-no-repeat bg-center"></div>
         </ReactFlow>
       </div>
     </div>
