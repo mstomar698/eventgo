@@ -34,9 +34,8 @@ const heroEdges: any[] = [
     id: 'e4',
     source: 'n4',
     target: 'n8',
-    animated: true,
     style: {
-      stroke: 'hsl(204, 58%, 39%)',
+      stroke: 'hsl(204, 91.66666666666669%, 52.94117647058824%)',
     },
     arrowHeadType: 'arrowclosed',
   },
@@ -84,7 +83,7 @@ const heroNodes: any[] = [
         <>
           Just a visitor{' '}
           <strong>
-            <span className="text-red-500">👋</span>
+            <span className="text-red-500">Byee!👋</span>
           </strong>
         </>
       ),
@@ -98,7 +97,7 @@ const heroNodes: any[] = [
         <>
           You are an{' '}
           <strong>
-            <span className="text-green-500">event Planner</span>
+            <span className="text-green-500">event planner</span>
           </strong>
         </>
       ),
@@ -115,7 +114,15 @@ const heroNodes: any[] = [
     id: 'n4',
     position: { x: 200, y: 200 },
     data: {
-      label: 'Than you can',
+      label: (
+        <>
+          <div>
+            for event planners
+            <br />
+            <span className="text-green-500 font-semibold">we provide</span>
+          </div>
+        </>
+      ),
     },
   },
   // {
@@ -132,16 +139,16 @@ const heroNodes: any[] = [
     data: {
       label: (
         <>
-          Having trouble with event designing? <br />
+          AI generated <br />
           <strong>
-            <a className="text-blue-500" href="#">
-              let AI help you
+            <a className="text-blue-500" href="/recommend">
+              recommendations
             </a>
           </strong>
         </>
       ),
     },
-    position: { x: 70, y: 325 },
+    position: { x: 0, y: 335 },
   },
   {
     id: 'n7',
@@ -149,14 +156,17 @@ const heroNodes: any[] = [
     data: {
       label: (
         <>
-          Plan Your Whole event here and save and share it with help of{' '}
-          <a className="text-green-500" href="#">
-            React-flow and AI
+          <a className="text-orange-500" href="/schedule">
+            Scheduling
+          </a>{' '}
+          and <br />
+          <a className="text-green-500" href="/planner">
+            planning events
           </a>
         </>
       ),
     },
-    position: { x: 400, y: 320 },
+    position: { x: 400, y: 335 },
   },
   {
     id: 'n8',
@@ -164,15 +174,16 @@ const heroNodes: any[] = [
     data: {
       label: (
         <>
-          <div className="justify-center items-center flex text-[24px]">
-            <Link href={'#main'} className="text-active">
-              Start Now !
+          <div className="justify-center items-center  text-[20px]">
+            or just <br />
+            <Link href={'#main'} className="text-active active:text-secondary">
+              Dive In😁
             </Link>
           </div>
         </>
       ),
     },
-    position: { x: 230, y: 338 },
+    position: { x: 200, y: 325 },
   },
 ];
 

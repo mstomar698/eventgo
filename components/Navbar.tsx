@@ -25,6 +25,11 @@ const Navbar = () => {
   }, []);
 
   const userInfo = false;
+
+  const handleSignOut = () => {
+    console.log('Implement Sign Out');
+  };
+
   return (
     <div
       className={`${
@@ -55,6 +60,7 @@ const Navbar = () => {
               <>
                 <button
                   className={`${styles.heroSubText} shadow-md shadow-secondary px-2 py-0.5 rounded-md active:text-tertiary`}
+                  onClick={() => handleSignOut()}
                 >
                   Sign Out
                 </button>
@@ -63,6 +69,7 @@ const Navbar = () => {
               <>
                 <button
                   className={`${styles.heroSubText} shadow-md shadow-secondary px-2 py-0.5 rounded-md active:text-tertiary`}
+                  onClick={() => (window.location.href = `/auth`)}
                 >
                   Sign In
                 </button>
@@ -73,6 +80,7 @@ const Navbar = () => {
             <li className={`hover:text-active font-medium cursor-pointer`}>
               <button
                 className={`${styles.heroSubText} shadow-md shadow-secondary px-2 py-0.5 rounded-md active:text-tertiary flex flex-row flex-wrap items-center`}
+                onClick={() => (window.location.href = `/profile`)}
               >
                 <Image
                   src={logo}
@@ -111,6 +119,7 @@ const Navbar = () => {
                   <>
                     <button
                       className={`${styles.heroSubText} text-active hover:text-tertiary`}
+                      onClick={() => handleSignOut()}
                     >
                       Sign Out
                     </button>
@@ -119,6 +128,7 @@ const Navbar = () => {
                   <>
                     <button
                       className={`${styles.heroSubText} text-active hover:text-tertiary`}
+                      onClick={() => (window.location.href = `/auth`)}
                     >
                       Sign In
                     </button>
@@ -130,6 +140,7 @@ const Navbar = () => {
                   <li className={`font-medium`}>
                     <button
                       className={`${styles.heroSubText} text-active hover:text-tertiary flex flex-row flex-wrap items-center`}
+                      onClick={() => (window.location.href = `/profile`)}
                     >
                       User Data
                       <Image

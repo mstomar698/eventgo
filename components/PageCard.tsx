@@ -5,7 +5,10 @@ import { styles } from '@/app/styles';
 const PageCard = ({ name, description, image, pageRoute }: any) => {
   const backgroundImage = `url(${image})`;
   return (
-    <motion.div onClick={() => window.open(pageRoute, '_blank')} className={``}>
+    <motion.div
+      onClick={() => (window.location.href = `${pageRoute}`)}
+      className={``}
+    >
       <div
         className="pagecard justify-center items-center flex rounded-2xl hover:shadow-2xl hover:shadow-active p-0.5"
         style={{ backgroundImage }}
