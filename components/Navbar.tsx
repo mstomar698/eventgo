@@ -43,7 +43,6 @@ const Navbar = ({ userInfo }: any) => {
           deleteCookie('CLR');
         }
         window.location.href = '/';
-        console.log(response);
       } else {
         const data = await response.json();
         console.error(data.message);

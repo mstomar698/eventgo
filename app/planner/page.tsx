@@ -1,9 +1,10 @@
 'use client';
+import { cokkieProvider } from '@/lib/user';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const Page = () => {
-  const userInfo = '';
+  const userInfo = cokkieProvider();
 
   const router = useRouter();
 
@@ -14,7 +15,12 @@ const Page = () => {
     return null;
   }
 
-  return <div>Planner</div>;
+  return (
+    <>
+      Planner
+      <h1>{userInfo.name}</h1>
+    </>
+  );
 };
 
 export default Page;

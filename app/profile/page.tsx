@@ -1,9 +1,10 @@
 'use client';
+import { cokkieProvider } from '@/lib/user';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const Page = () => {
-  const userInfo = '';
+  const userInfo = cokkieProvider();
 
   const router = useRouter();
 

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(req: any, res: any) {
+export function middleware(req: NextRequest) {
   const userInfo = req.cookies.get('CLR')?.value;
 
   if (!userInfo) {
     console.log('Redirecting to /auth');
+    return NextResponse.next();
   }
 
   const path = req.url;
@@ -19,6 +20,13 @@ export function middleware(req: any, res: any) {
     return NextResponse.next();
   }
   if (path === '/profile' || path!.startsWith('/profile/')) {
+    return NextResponse.next();
+  }
+  if ((path === '/auth' || path.startsWith('/auth/')) && userInfo) {
+    return NextResponse.next();
+  }
+
+  if ((path === '/register' || path.startsWith('/register/')) && userInfo) {
     return NextResponse.next();
   }
 

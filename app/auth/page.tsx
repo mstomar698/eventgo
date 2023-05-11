@@ -1,11 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { setCookie } from 'cookies-next';
+import { cokkieProvider } from '@/lib/user';
 
 const Page = () => {
-  const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
@@ -32,6 +31,13 @@ const Page = () => {
       console.error(err);
     }
   };
+  useEffect(() => {
+    const checkCookie = cokkieProvider();
+    if (checkCookie) {
+      console.log(checkCookie);
+      window.location.href = '/';
+    }
+  }, [cokkieProvider]);
 
   return (
     <div className="h-screen p-6 md:p-32">
@@ -79,7 +85,7 @@ const Page = () => {
           </button>
           <div className="my-3">
             New customer?{' '}
-            <Link href={`/signup`}>
+            <Link href={`/register`}>
               <span className="text-blue-500 font-semibold">
                 Create your account
               </span>
