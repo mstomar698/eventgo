@@ -1,16 +1,13 @@
-import { NextApiRequest } from 'next';
-import { getUserInfo } from '@/lib/user';
-import { NextFetchEvent, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(req: NextApiRequest, ev: NextFetchEvent) {
-  const userInfo = await getUserInfo(req);
-  console.log(userInfo);
+export function middleware(request: NextRequest) {
+  const userInfo = request.cookies.get('userInfo');
+
   if (!userInfo) {
     console.log('Redirecting to /auth');
-    return NextResponse.redirect('/auth');
   }
-
-  const path = req.url;
+  console.log('mid \n' + userInfo);
+  const path = request.url;
   console.log('Request path:', path);
 
   if (path === '/schedule' || path!.startsWith('/schedule/')) {
@@ -27,5 +24,5 @@ export async function middleware(req: NextApiRequest, ev: NextFetchEvent) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect('/auth');
+  return NextResponse.next();
 }

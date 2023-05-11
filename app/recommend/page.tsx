@@ -1,11 +1,9 @@
 'use client';
-import { useUserInfo } from '@/lib/user';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const Page = () => {
-  const userInfo = useUserInfo();
-
+  const userInfo = '';
   const router = useRouter();
 
   if (!userInfo) {

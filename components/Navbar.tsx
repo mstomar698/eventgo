@@ -4,16 +4,14 @@ import Image from 'next/image';
 import { BsMenuUp } from 'react-icons/bs';
 import { FaWindowClose } from 'react-icons/fa';
 import { logo } from '@/assets';
-import { useUserInfo } from '@/lib/user';
 
-const Navbar = () => {
+const Navbar = ({ userInfo }: any) => {
   const [toggle, setToggle] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const userInfo = useUserInfo();
   if (!userInfo) {
     if (typeof window !== 'undefined') {
-      console.log('No userInfo provide in user.ts');
+      console.log('Unauthorized page');
     }
   }
 
@@ -32,8 +30,10 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSignOut = () => {
-    console.log('Implement Sign Out');
+  const handleSignOut = async () => {
+    await fetch('/api/signout', {
+      method: 'POST',
+    });
   };
 
   return (
