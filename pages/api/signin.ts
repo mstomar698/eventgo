@@ -1,5 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import Axios from 'axios';
+import { setCookie } from 'cookies-next';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 type SignInData = {
   email: string;
@@ -19,8 +20,8 @@ export default async function signInHandler(
         { email, password }
       );
       const userInfo: any = data;
-      console.log('setting userInfo' + userInfo)
-      res.status(200).json({ message: 'Sign-in successful' });
+      setCookie('userInfo', userInfo, {req, res, maxAge: 60* 60* 24 })
+      res.status(200).json(userInfo);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Sign-in failed' });

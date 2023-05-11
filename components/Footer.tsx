@@ -29,7 +29,7 @@ const Footer = () => {
                 </a>
               </li>
               <li className="mr-4">
-                <a href="" className="hover:text-active text-sm lg:text-base">
+                <a href="#" className="hover:text-active text-sm lg:text-base">
                   Terms of Service
                 </a>
               </li>

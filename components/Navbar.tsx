@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { styles } from '@/app/styles';
 import Image from 'next/image';
-import { BsMenuUp } from 'react-icons/bs';
-import { FaWindowClose } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
 import { logo } from '@/assets';
+import { styles } from '@/app/styles';
+import { BsMenuUp } from 'react-icons/bs';
+import { deleteCookie } from 'cookies-next';
+import { FaWindowClose } from 'react-icons/fa';
 
 const Navbar = ({ userInfo }: any) => {
   const [toggle, setToggle] = useState(false);
@@ -31,9 +32,25 @@ const Navbar = ({ userInfo }: any) => {
   }, []);
 
   const handleSignOut = async () => {
-    await fetch('/api/signout', {
-      method: 'POST',
-    });
+    try {
+      const response = await fetch('/api/signout', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.message === 'Cookie-deleted') {
+          deleteCookie('CLR');
+        }
+        window.location.href = '/';
+        console.log(response);
+      } else {
+        const data = await response.json();
+        console.error(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

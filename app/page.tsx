@@ -1,4 +1,5 @@
 import { Footer, HomePage, MainSection, Navbar } from '@/components';
+import { cookies } from 'next/headers';
 
 type UserInfo = {
   _id: string;
@@ -9,7 +10,17 @@ type UserInfo = {
 };
 
 export default function Home() {
-  const userInfo = '';
+  const cookieStore = cookies();
+  const allCookies = cookieStore.getAll();
+  const userInfoCookie: any = allCookies.find(
+    (cookie) => cookie.name === 'CLR'
+  );
+  if (userInfoCookie !== undefined) {
+    var userInfo = JSON.parse(userInfoCookie?.value);
+  } else {
+    var userInfo: any = null;
+  }
+
   return (
     <div className="relative z-0 bg-primary overflow-hidden">
       <Navbar userInfo={userInfo} />

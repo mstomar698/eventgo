@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  const userInfo = request.cookies.get('userInfo');
+export function middleware(req: any, res: any) {
+  const userInfo = req.cookies.get('CLR')?.value;
 
   if (!userInfo) {
     console.log('Redirecting to /auth');
   }
-  console.log('mid \n' + userInfo);
-  const path = request.url;
-  console.log('Request path:', path);
+
+  const path = req.url;
 
   if (path === '/schedule' || path!.startsWith('/schedule/')) {
-    console.log('asdasd');
     return NextResponse.next();
   }
   if (path === '/planner' || path!.startsWith('/planner/')) {

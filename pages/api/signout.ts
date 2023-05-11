@@ -1,3 +1,4 @@
+import { deleteCookie } from 'cookies-next';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default function signOutHandler(
@@ -6,7 +7,8 @@ export default function signOutHandler(
 ) {
   if (req.method === 'POST') {
     console.log('signout running')
-    res.status(200).json({ message: 'Sign-out successful' });
+    deleteCookie('userInfo', {req, res})
+    res.status(200).json({ message: 'Cookie-deleted' });
   } else {
     res.status(405).json({ message: 'Method Not Allowed' });
   }
