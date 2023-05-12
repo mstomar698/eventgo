@@ -1,11 +1,11 @@
 'use client';
-import { cokkieProvider } from '@/lib/user';
-import { useRouter } from 'next/navigation';
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { cokkieProvider } from '@/lib/user';
+import { Footer, Navbar, Notes } from '@/components';
 
 const Page = () => {
   const userInfo = cokkieProvider();
-
   const router = useRouter();
 
   if (!userInfo) {
@@ -14,8 +14,15 @@ const Page = () => {
     }
     return null;
   }
-
-  return <div>Schedule</div>;
+  return (
+    <>
+      <div className="relative z-0 bg-primary overflow-hidden">
+        <Navbar userInfo={userInfo} />
+        <Notes userInfo={userInfo} />
+        <Footer />
+      </div>
+    </>
+  );
 };
 
 export default Page;

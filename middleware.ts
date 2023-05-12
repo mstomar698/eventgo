@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(req: NextRequest) {
   const userInfo = req.cookies.get('CLR')?.value;
-
   if (!userInfo) {
     console.log('Redirecting to /auth');
     return NextResponse.next();

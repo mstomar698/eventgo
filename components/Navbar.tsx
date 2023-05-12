@@ -52,6 +52,11 @@ const Navbar = ({ userInfo }: any) => {
     }
   };
 
+  const handleLogoClick = () => {
+    window.scrollTo(0, 0);
+    window.location.href = '/';
+  };
+
   return (
     <div
       className={`${
@@ -64,7 +69,7 @@ const Navbar = ({ userInfo }: any) => {
         <div
           className="flex items-center gap-2"
           onClick={() => {
-            window.scrollTo(0, 0);
+            handleLogoClick();
           }}
         >
           <Image
