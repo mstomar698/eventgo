@@ -1,6 +1,7 @@
 import { IPost, Post } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
 import Validate from 'next-api-validation';
+import type { NextApiHandler } from 'next';
 
 connectToDB();
 
@@ -30,7 +31,7 @@ const postsHandler = Validate({
     try {
       const deletedPost = await Post.findByIdAndDelete(id);
       res.send(deletedPost);
-    } catch (err) {
+    } catch {
       res.status(500).send({
         error: 'Failed to remove post',
       });
@@ -38,4 +39,4 @@ const postsHandler = Validate({
   },
 });
 
-export default postsHandler;
+export default postsHandler as unknown as NextApiHandler;

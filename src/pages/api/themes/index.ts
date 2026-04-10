@@ -22,6 +22,7 @@
 import { ITheme, Theme } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
 import Validate from 'next-api-validation';
+import type { NextApiHandler } from 'next';
 
 connectToDB();
 
@@ -51,7 +52,7 @@ const themesHandler = Validate({
     try {
       const deletedTheme = await Theme.findByIdAndDelete(id);
       res.send(deletedTheme);
-    } catch (err) {
+    } catch {
       res.status(500).send({
         error: 'Failed to remove Theme',
       });
@@ -59,4 +60,4 @@ const themesHandler = Validate({
   },
 });
 
-export default themesHandler;
+export default themesHandler as unknown as NextApiHandler;

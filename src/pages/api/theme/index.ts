@@ -1,10 +1,7 @@
 import { Theme } from '@/lib/models';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { searchTerm } = req.body;
     console.log(`Search term received at /api/theme: ${searchTerm}`);

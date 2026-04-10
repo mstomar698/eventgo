@@ -1,5 +1,4 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useObject } from 'react-kuh';
 import Link from 'next/link';
@@ -8,7 +7,7 @@ import useFetch, { revalidate } from 'http-react';
 import Input from '@/components/input/input';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
-import SignIn from '@/pages/auth/signin';
+import SignInRequired from '@/features/auth/sign-in-required';
 import { useSession } from 'next-auth/react';
 
 function saveTheme() {
@@ -97,14 +96,7 @@ function Create() {
 
 const CreateThemes = () => {
   const { data: session } = useSession();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    if (!session) {
-      setIsLoggedIn(false);
-    } else {
-      setIsLoggedIn(true);
-    }
-  }, [session]);
+  const isLoggedIn = Boolean(session);
   return (
     <>
       {isLoggedIn ? (
@@ -114,9 +106,7 @@ const CreateThemes = () => {
           <Footer />
         </div>
       ) : (
-        <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <SignIn />
-        </div>
+        <SignInRequired title="Create themes requires sign in" />
       )}
     </>
   );

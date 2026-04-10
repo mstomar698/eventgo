@@ -1,53 +1,59 @@
-# eventgo
+# EventGo
 
-An visualized event planner to help planning a better event.
+EventGo is a Next.js event planning platform that combines notes, planner/flowchart tools, themed suggestions, and AI-assisted interactions.
 
-> Leave a ⭐ if you like this project.
+## Current code snapshot
 
-- [eventgo](#eventgo)
-  - [Features](#features)
-  - [Usage](#usage)
-  - [Contributing](#contributing)
-  - [License](#license)
-  - [Demo](#demo)
+- Functional app routes for planner, posts, events/themes, and recommendation pages.
+- Authentication with NextAuth and multiple API routes.
+- Flowchart/notes UI is feature-rich.
+- AI endpoints currently use legacy completion patterns and need modernization.
 
-## eventgo
+## Serviceability roadmap
 
-- [eventgo](https://eventgo.vercel.app/) is an event planning website which is made in taking consideration of what is basically required by planners to plan an event. It is a visualized event planner which helps in planning a better event by providing a better user experience with help of AI.
-- It is made using NextJS, TailwindCSS, next-auth, and MongoDB to provide more features and better user experience.
+1. **Architecture cleanup:** remove dual app/pages overlap where possible and standardize data contracts.
+2. **AI/API modernization:** migrate to current OpenAI API style, add request limits, and robust error handling.
+3. **Collaboration features:** shared event boards, comments, and team invitations.
+4. **Commercial readiness:** organization plans, template packs, and audit logs.
 
-## features
+## Client-ready enhancement scope
 
-- It uses ChatGPT-3.5 to provide better chat experience and recommendations of asked events, It is also accesible to enquire about any event from any part of website.
-- It uses NextAuth to provide authentication and authorization to users making it seamlesslly accessible to users with least of the efforts.
-- It uses MongoDB to store data of users and events making it more scalable and secure.
-- It uses TailwindCSS to provide better user experience and better UI/UX.
-- It Uses react-flow to provide easy to make sheet with prebuilt nodes and components to make the cartsheet or flowchart more iteractable and easy to use.
-- It do-not store any data of users and events on the server side making it more secure and scalable.
+- Event budget planner with vendor comparison workflow.
+- Task dependency and timeline automation.
+- Export packs (PDF brief + schedule + assets).
+- Integrations (calendar, email, Slack/Teams).
 
-## usage
+## Local setup
 
-- It is made to be used by event planners to plan an event and to provide better user experience to users.
-- For using locally you can follow through as:
-
-```powershell
-# clone the repo
-git clone https://github.com/mstomar698/eventgo.git
-# move to the directory
-cd eventgo
-# install dependencies
-npm install # or yarn install
-# run the app
-npm run dev # or yarn dev
-# to build
-npm run build # or yarn build
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+npm run build
 ```
 
-## contributing
+Required env for full API flow:
 
-- This is an open source project and contributions are always welcome.
-- for better understanding view docs [here](https://eventgo.vercel.app/docs).
+- `MONGODB_URI` (planner/posts/themes/events persistence)
+- `NEXTAUTH_SECRET`
+- One auth provider: `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` **or** `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
+- `OPENAI_API_KEY` (AI recommendation endpoints)
 
-## license
+## Engineering standards
 
-> [MIT](https://www.mit.edu/~amini/LICENSE.md) License
+- Next.js app-router is the primary UI structure (`src/app`), while `src/pages` is reserved for API routes.
+- Pre-commit quality gate is enabled via **husky + lint-staged**.
+- Pull requests run CI checks for lint, formatting, and build.
+
+Useful scripts:
+
+```bash
+npm run lint
+npm run lint:fix
+npm run format
+npm run format:check
+```
+
+## Detailed execution plan
+
+See [plan.md](./plan.md) for phased tasks.

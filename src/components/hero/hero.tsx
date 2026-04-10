@@ -1,9 +1,6 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import HeroFlow from './heroflow';
-import b from './asd2.gif';
-import { BiArrowToRight } from 'react-icons/bi';
 import { useState } from 'react';
 
 const Hero = () => {

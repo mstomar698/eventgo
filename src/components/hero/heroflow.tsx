@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -6,7 +6,6 @@ import ReactFlow, {
   applyEdgeChanges,
   NodeChange,
   EdgeChange,
-  addEdge,
 } from 'reactflow';
 import Link from 'next/link';
 import 'reactflow/dist/style.css';
@@ -37,7 +36,7 @@ const HeroFlow = () => {
         onEdgesChange={onEdgesChange}
       >
         <Background />
-        <Controls style={{  top: '4px', left: '0px' }} />
+        <Controls style={{ top: '4px', left: '0px' }} />
         <div className="absolute left-1 text-xl h-16 text-center p-2 bottom-1 rounded-sm bg-gray-700 hover:bg-black z-10 justify-between flex w-auto border-2 border-solid border-red-500 ">
           <Link href={'/planner'} className="text-white m-1">
             {'Plan Your Event'}

@@ -57,11 +57,7 @@ export const NodeWithText = ({ isConnectable }) => {
 
   return (
     <div className="text-updater-node">
-      <Handle
-        type="target"
-        position={Position.Top}
-        isConnectable={isConnectable}
-      />
+      <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
 
       <div className="border-2 border-solid border-green-500 rounded-sm text-red-500 flex flex-col text-center">
         <input

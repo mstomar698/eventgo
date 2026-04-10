@@ -48,5 +48,4 @@ const FlowSchema = new Schema<Flow>({
   nodes: { type: [FlowNodeSchema], required: true },
 });
 
-export const FlowModel =
-  mongoose.models.Flow || mongoose.model<Flow>('Flow', FlowSchema);
+export const FlowModel = mongoose.models.Flow || mongoose.model<Flow>('Flow', FlowSchema);

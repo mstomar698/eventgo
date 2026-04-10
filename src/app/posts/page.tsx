@@ -3,11 +3,10 @@ import Link from 'next/link';
 import useFetch, { revalidate } from 'http-react';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
-import { useEffect, useState } from 'react';
 import { BiTrashAlt, BiArrowToLeft, BiPlus } from 'react-icons/bi';
 import { IPost } from '@/lib/models';
-import CalendarPage from '@/pages/calender/calender';
-import SignIn from '@/pages/auth/signin';
+import CalendarPage from '@/features/planner/calendar';
+import SignInRequired from '@/features/auth/sign-in-required';
 import { useSession } from 'next-auth/react';
 
 function confirmPostDelete(id: any) {
@@ -72,9 +71,7 @@ function Posts() {
       </div>
     );
 
-  const mappedPosts = data.map((post) => (
-    <Post {...post} key={`post-${post._id}`} />
-  ));
+  const mappedPosts = data.map((post) => <Post {...post} key={`post-${post._id}`} />);
 
   return (
     <div className="h-full lg:overflow-y-scroll max-sm:h-full max-md:h-full w-full rounded-sm text-white bg-gray-700">
@@ -110,14 +107,7 @@ function Posts() {
 
 const Notes = () => {
   const { data: session } = useSession();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    if (!session) {
-      setIsLoggedIn(false);
-    } else {
-      setIsLoggedIn(true);
-    }
-  }, [session]);
+  const isLoggedIn = Boolean(session);
   return (
     <>
       {isLoggedIn ? (
@@ -130,9 +120,7 @@ const Notes = () => {
           <Footer />
         </div>
       ) : (
-        <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <SignIn />
-        </div>
+        <SignInRequired title="Notes access requires sign in" />
       )}
     </>
   );

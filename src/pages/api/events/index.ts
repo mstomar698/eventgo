@@ -8,10 +8,7 @@ interface Event {
   color?: string;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const eventData: Event = req.body;
     const db: any = await connectToDB();

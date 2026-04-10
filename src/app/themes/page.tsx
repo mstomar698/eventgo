@@ -3,10 +3,9 @@ import Link from 'next/link';
 import useFetch, { revalidate } from 'http-react';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
-import { useEffect, useState } from 'react';
 import { BiTrashAlt, BiArrowToLeft, BiPlus } from 'react-icons/bi';
 import { ITheme } from '@/lib/models';
-import SignIn from '@/pages/auth/signin';
+import SignInRequired from '@/features/auth/sign-in-required';
 import { useSession } from 'next-auth/react';
 
 function confirDeleteTheme(id: any) {
@@ -119,14 +118,7 @@ function Themes() {
 
 const Page = () => {
   const { data: session } = useSession();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    if (!session) {
-      setIsLoggedIn(false);
-    } else {
-      setIsLoggedIn(true);
-    }
-  }, [session]);
+  const isLoggedIn = Boolean(session);
   return (
     <>
       {isLoggedIn ? (
@@ -136,9 +128,7 @@ const Page = () => {
           <Footer />
         </div>
       ) : (
-        <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <SignIn />
-        </div>
+        <SignInRequired title="Theme library requires sign in" />
       )}
     </>
   );

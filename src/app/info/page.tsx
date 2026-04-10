@@ -1,25 +1,18 @@
 'use client';
 import '../../app/styles/globals.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
 import { BiArrowToLeft } from 'react-icons/bi';
-import SignIn from '@/pages/auth/signin';
+import SignInRequired from '@/features/auth/sign-in-required';
 import { useSession } from 'next-auth/react';
 
 const Recommendations = () => {
   const [query1, setQuery1] = useState('');
   const [info, setInfo] = useState<any | null>(null);
   const { data: session } = useSession();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    if (!session) {
-      setIsLoggedIn(false);
-    } else {
-      setIsLoggedIn(true);
-    }
-  }, [session]);
+  const isLoggedIn = Boolean(session);
 
   const fetchRecommendation = async () => {
     const response = await fetch(`/api/chatgpt?query=${query1}`);
@@ -87,9 +80,7 @@ const Recommendations = () => {
           <Footer />
         </div>
       ) : (
-        <div className="h-screen w-full max-sm:h-screen md:h-screen">
-          <SignIn />
-        </div>
+        <SignInRequired title="Event info requires sign in" />
       )}
     </>
   );

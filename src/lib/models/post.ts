@@ -18,5 +18,4 @@ const PostSchema: Schema = new Schema({
   },
 });
 
-export const Post = (mongoose.models.Post ||
-  model('Post', PostSchema)) as Model<IPost>;
+export const Post = (mongoose.models.Post || model('Post', PostSchema)) as Model<IPost>;

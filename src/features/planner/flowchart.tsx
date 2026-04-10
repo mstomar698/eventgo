@@ -18,14 +18,8 @@ import { BsCheck } from 'react-icons/bs';
 import { BiArrowToLeft } from 'react-icons/bi';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { RxCross1 } from 'react-icons/rx';
-import {
-  initialNodes,
-  initialNodesForDemoTheme,
-} from '../../lib/flowschemas/initialnodes';
-import {
-  initialEdges,
-  initialEdgesForDemoTheme,
-} from '../../lib/flowschemas/initialedges';
+import { initialNodesForDemoTheme } from '../../lib/flowschemas/initialnodes';
+import { initialEdgesForDemoTheme } from '../../lib/flowschemas/initialedges';
 import Nodes from '../../lib/flowschemas/nodes';
 
 const nodeTypes = {
@@ -62,64 +56,53 @@ const Flowchart = () => {
     const imageWidth = container.offsetWidth;
     const imageHeight = container.offsetHeight;
     selectOption('Colored Image');
-    html2canvas(container, { width: imageWidth, height: imageHeight }).then(
-      (canvas) => {
-        const dataURL = canvas.toDataURL('image/png');
-        const img = new Image();
-        img.src = dataURL;
+    html2canvas(container, { width: imageWidth, height: imageHeight }).then((canvas) => {
+      const dataURL = canvas.toDataURL('image/png');
+      const img = new Image();
+      img.src = dataURL;
 
-        const link = document.createElement('a');
-        link.download = 'flowColored.png';
-        link.href = dataURL;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      const link = document.createElement('a');
+      link.download = 'flowColored.png';
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-        navigator.clipboard
-          .writeText(dataURL)
-          .then(() => console.log('Image copied to clipboard'))
-          .catch((err) =>
-            console.error('Could not copy image to clipboard:', err)
-          );
-      }
-    );
+      navigator.clipboard
+        .writeText(dataURL)
+        .then(() => console.log('Image copied to clipboard'))
+        .catch((err) => console.error('Could not copy image to clipboard:', err));
+    });
   };
   const handleFlowClick = () => {
     const container = flowRef.current;
     const imageWidth = container.offsetWidth;
     const imageHeight = container.offsetHeight;
     selectOption('FlowChart Image');
-    html2canvas(container, { width: imageWidth, height: imageHeight }).then(
-      (canvas) => {
-        const dataURL = canvas.toDataURL('image/png');
-        const img = new Image();
-        img.src = dataURL;
+    html2canvas(container, { width: imageWidth, height: imageHeight }).then((canvas) => {
+      const dataURL = canvas.toDataURL('image/png');
+      const img = new Image();
+      img.src = dataURL;
 
-        const link = document.createElement('a');
-        link.download = 'flowChart.png';
-        link.href = dataURL;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      const link = document.createElement('a');
+      link.download = 'flowChart.png';
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-        navigator.clipboard
-          .writeText(dataURL)
-          .then(() => console.log('Image copied to clipboard'))
-          .catch((err) =>
-            console.error('Could not copy image to clipboard:', err)
-          );
-      }
-    );
+      navigator.clipboard
+        .writeText(dataURL)
+        .then(() => console.log('Image copied to clipboard'))
+        .catch((err) => console.error('Could not copy image to clipboard:', err));
+    });
   };
 
   // retrieve node changes from local state
   useEffect(() => {
-    const savedElements: any = JSON.stringify(
-      localStorage.getItem('flowElements')
-    );
+    const savedElements: any = JSON.stringify(localStorage.getItem('flowElements'));
     if (savedElements) {
-      let savedElements2 = JSON.parse(savedElements);
-      // console.log(savedElements2);
+      JSON.parse(savedElements);
       // setNodes(savedElements);
       // const nodeIds = savedElements2//.map((el: any) =>
       //parseInt(el.id.split('-')[1])
@@ -259,9 +242,7 @@ const Flowchart = () => {
           <Link href={'/docs'} className="ml-0.5 z-20 text-red-500">
             Docs
           </Link>
-          <span className="ml-0.5 border border-solid border-green-500">
-            {nodeCount}
-          </span>
+          <span className="ml-0.5 border border-solid border-green-500">{nodeCount}</span>
         </div>
       </ReactFlow>
       <div className="w-full space-x-8 flex flex-row justify-between items-center p-0.5">
