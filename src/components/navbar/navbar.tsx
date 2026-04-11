@@ -1,3 +1,4 @@
+// Navbar used across landing and workspace routes
 'use client';
 
 import Link from 'next/link';
