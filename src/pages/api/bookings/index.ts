@@ -8,7 +8,12 @@ import { BookingCreateSchema } from '@/lib/schemas';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.info('[api/bookings] handler invoked', req.method);
     const session = await getServerSession(req, res, authOptions);
+    console.info(
+      '[api/bookings] session present:',
+      Boolean(session && session.user?.email)
+    );
     if (!session || !session.user?.email) {
       // Return a friendly 200 with usage info for unauthenticated requests.
       // This keeps non-auth checks non-breaking for read-only probes while
