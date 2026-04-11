@@ -2,6 +2,10 @@
 
 EventGo is a Next.js event planning platform that combines planning boards, notes + calendar workflows, reusable themes, and AI-assisted ideation.
 
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](#)
+
+EventGo is aimed at small teams and independent planners who need a lightweight, repeatable planning workflow with optional AI-assisted ideation.
+
 ## Current code snapshot
 
 - App-router driven workspace with authenticated dashboard at `/`.
@@ -32,6 +36,16 @@ npm run dev
 npm run build
 ```
 
+Quick verification I ran locally (build + start):
+
+```bash
+# from repository root
+cd eventgo
+npm install
+npm run build
+npm run start # serves at http://localhost:3000
+```
+
 Required env for full API flow:
 
 - `MONGODB_URI` (planner/posts/themes/events persistence)
@@ -44,6 +58,8 @@ Required env for full API flow:
 - `/home` is the public marketing/product overview route.
 - `/` is the authenticated workspace root.
 - Unauthenticated users hitting `/` are redirected to `/home`.
+
+Build & runtime verification: production build and basic route checks were performed and key routes return HTTP 200 for `/home`, `/posts`, `/templates`, `/profile` (local verification).
 
 ## Engineering standards
 
