@@ -1,10 +1,13 @@
+// Root layout for EventGo app-router pages
+// Provides global providers, fetch config and base metadata
 import { FetchConfig } from 'http-react';
 import './styles/globals.css';
 import ProvidersWrapper from './providerswrapper';
 
 export const metadata = {
   title: 'EventGo',
-  description: 'Professional event planning workspace powered by AI-assisted workflows.',
+  description:
+    'EventGo — professional event planning workspace with structured planners, reusable templates, and AI-assisted ideation for small-to-medium events.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
