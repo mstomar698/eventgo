@@ -1,37 +1,56 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getEnvVar, getFirstEnvVar } from '@/lib/env';
 import { generateGeminiText } from '@/lib/gemini';
+import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { AIQuerySchema } from '@/lib/schemas';
+import { getRuleBasedThemeSuggestions, AI_PROMPTS } from '@/lib/suggestions';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
-
-  const query = req.query.query;
-  if (typeof query !== 'string' || !query.trim()) {
-    return res.status(400).json({ message: 'query is required' });
-  }
-
-  const apiKey = getFirstEnvVar('GEMINI_API_KEY', 'GOOGLE_GEMINI_API_KEY');
-  if (!apiKey) {
-    return res.status(500).json({
-      message: 'GEMINI_API_KEY is not configured',
+    sendError(res, 405, {
+      code: ERROR_CODES.METHOD_NOT_ALLOWED,
+      message: 'Method not allowed',
     });
+    return;
   }
 
   try {
-    const prompt = `Recommend event themes for "${query}". Return a concise shortlist where each theme includes vibe, decor direction, and one activity idea.`;
+    const { query } = AIQuerySchema.parse(req.query);
+
+    // Try rule-based suggestions first
+    const ruleBased = getRuleBasedThemeSuggestions({ query });
+    if (ruleBased) {
+      sendSuccess(res, { recommendation: ruleBased });
+      return;
+    }
+
+    // Fall back to AI
+    const apiKey = getFirstEnvVar('GEMINI_API_KEY', 'GOOGLE_GEMINI_API_KEY');
+    if (!apiKey) {
+      sendError(res, 500, {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'GEMINI_API_KEY is not configured',
+      });
+      return;
+    }
+
+    const prompt = AI_PROMPTS.themes(query);
     const recommendation = await generateGeminiText({
       apiKey,
       prompt,
       model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
       maxOutputTokens: 450,
     });
-    return res.status(200).json({ recommendation });
+    sendSuccess(res, { recommendation });
   } catch (error) {
-    return res.status(502).json({
-      message: error instanceof Error ? error.message : 'AI provider request failed',
-    });
+    if (error instanceof Error) {
+      sendError(res, 400, { code: ERROR_CODES.VALIDATION_ERROR, message: error.message });
+    } else {
+      sendError(res, 502, {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'AI provider request failed',
+      });
+    }
   }
 }

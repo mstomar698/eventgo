@@ -6,6 +6,7 @@ import SignInRequired from '@/features/auth/sign-in-required';
 import useFetch, { revalidate } from 'http-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { BiCalendar, BiPlus, BiTrashAlt } from 'react-icons/bi';
 
 interface PostWithId {
@@ -15,26 +16,25 @@ interface PostWithId {
   content: string;
 }
 
-function confirmPostDelete(id: unknown) {
+function confirmPostDelete(id: string, setDeleteId: (id: string) => void) {
   const confirmation = window.confirm('Do you want to remove this note?');
   if (confirmation) {
-    revalidate(id);
+    setDeleteId(id);
   }
 }
 
 function PostCard(props: PostWithId) {
-  const fetchId = {
-    post: props,
-  };
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useFetch('/posts', {
-    id: fetchId,
+    id: deleteId,
     method: 'DELETE',
     query: {
-      id: props._id,
+      id: deleteId,
     },
     onResolve() {
       revalidate('GET /posts');
+      setDeleteId(null);
     },
   });
 
@@ -46,7 +46,7 @@ function PostCard(props: PostWithId) {
           title="delete-post"
           type="button"
           className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
-          onClick={() => confirmPostDelete(fetchId)}
+          onClick={() => confirmPostDelete(props._id, setDeleteId)}
         >
           <BiTrashAlt size={16} />
         </button>

@@ -19,48 +19,65 @@
 // });
 
 // export default themesHandler;
-import { ITheme, Theme } from '@/lib/models';
+import { Theme } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
-import Validate from 'next-api-validation';
-import type { NextApiHandler } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
+import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { ThemeCreateSchema } from '@/lib/schemas';
+import { z } from 'zod';
 
-const themesHandler = Validate({
-  async get(req, res) {
-    try {
-      await connectToDB();
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    await connectToDB();
+
+    if (req.method === 'GET') {
       const themes = await Theme.find();
-      res.json(themes);
-    } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Failed to fetch themes',
-      });
-    }
-  },
-  async post(req, res) {
-    try {
-      await connectToDB();
-      const body: ITheme = req.body;
+      sendSuccess(res, themes);
+    } else if (req.method === 'POST') {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
+      }
+      const body = ThemeCreateSchema.parse(req.body);
       const newTheme = new Theme(body);
       const saved = await newTheme.save();
-      res.send(saved);
-    } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Failed to create theme',
-      });
-    }
-  },
-  async delete(req, res) {
-    const { id } = req.query;
-    try {
-      await connectToDB();
+      sendSuccess(res, saved);
+    } else if (req.method === 'DELETE') {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
+      }
+      const { id } = z.object({ id: z.string().min(1) }).parse(req.query);
       const deletedTheme = await Theme.findByIdAndDelete(id);
-      res.send(deletedTheme);
-    } catch {
-      res.status(500).send({
-        error: 'Failed to remove Theme',
+      if (!deletedTheme) {
+        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Theme not found' });
+      } else {
+        sendSuccess(res, deletedTheme);
+      }
+    } else {
+      sendError(res, 405, {
+        code: ERROR_CODES.METHOD_NOT_ALLOWED,
+        message: 'Method not allowed',
       });
     }
-  },
-});
-
-export default themesHandler as unknown as NextApiHandler;
+  } catch (error) {
+    if (error instanceof Error) {
+      sendError(res, 400, { code: ERROR_CODES.VALIDATION_ERROR, message: error.message });
+    } else {
+      sendError(res, 500, {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Failed to process themes request',
+      });
+    }
+  }
+}

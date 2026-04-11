@@ -29,13 +29,14 @@ const QueryWorkspace = ({
     setResponseText(null);
 
     const response = await fetch(`${endpoint}?query=${encodeURIComponent(query)}`);
-    const data = await response.json();
 
     if (!response.ok) {
       setIsLoading(false);
-      setError(data.message ?? 'Failed to fetch AI response.');
+      setError('Failed to fetch AI response.');
       return;
     }
+
+    const data = await response.json();
 
     const content = data[responseKey];
     if (typeof content !== 'string' || !content.trim()) {

@@ -11,6 +11,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
+import { useSession } from 'next-auth/react';
 import {
   BiPlus,
   BiText,
@@ -41,22 +42,33 @@ const Flowchart = () => {
   const [nodeCount, setNodeCount] = useState(nodes.length);
   const [showMoreNodes, setShowMoreNodes] = useState(false);
   const [showImageMenu, setShowImageMenu] = useState(false);
+  const { data: session } = useSession();
 
-  // Persist nodes to localStorage
+  // Load flow from server
   useEffect(() => {
-    const saved = localStorage.getItem('flowElements');
-    if (saved) {
-      try {
-        JSON.parse(saved);
-      } catch {
-        // ignore corrupt data
-      }
+    if (session) {
+      fetch('/api/flows')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data.nodes && data.data.edges) {
+            setNodes(data.data.nodes);
+            setEdges(data.data.edges);
+          }
+        })
+        .catch(console.error);
     }
-  }, []);
+  }, [session]);
 
+  // Save flow to server
   useEffect(() => {
-    localStorage.setItem('flowElements', JSON.stringify(nodes));
-  }, [nodes]);
+    if (session && nodes.length > 0) {
+      fetch('/api/flows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nodes, edges }),
+      }).catch(console.error);
+    }
+  }, [nodes, edges, session]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>

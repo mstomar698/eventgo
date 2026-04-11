@@ -8,7 +8,9 @@ const uri = process.env.MONGODB_URI;
 const getMaskedHost = (mongoUri: string): string => {
   try {
     const afterProtocol = mongoUri.split('://')[1] || mongoUri;
-    const hostPart = afterProtocol.includes('@') ? afterProtocol.split('@')[1] : afterProtocol;
+    const hostPart = afterProtocol.includes('@')
+      ? afterProtocol.split('@')[1]
+      : afterProtocol;
     const host = hostPart.split('/')[0];
     return host;
   } catch {
@@ -23,12 +25,17 @@ export const connectToDB = async () => {
   }
 
   try {
-    console.info(`[db] MONGODB_URI detected. Attempting connection to MongoDB host: ${getMaskedHost(uri)} (credentials hidden)`);
+    console.info(
+      `[db] MONGODB_URI detected. Attempting connection to MongoDB host: ${getMaskedHost(uri)} (credentials hidden)`
+    );
     await mongoose.connect(uri);
     console.info(`[db] MongoDB connected to host: ${getMaskedHost(uri)}`);
     return mongoose.connection;
   } catch (error) {
-    console.error('[db] MongoDB connection error:', error instanceof Error ? error.message : error);
+    console.error(
+      '[db] MongoDB connection error:',
+      error instanceof Error ? error.message : error
+    );
     if (
       error instanceof Error &&
       error.message.includes('Protocol and host list are required') &&

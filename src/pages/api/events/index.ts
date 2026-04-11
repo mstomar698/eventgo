@@ -1,44 +1,50 @@
 import { EventModel } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
 import { NextApiRequest, NextApiResponse } from 'next';
-
-interface Event {
-  title: string;
-  start: Date;
-  end: Date;
-  color?: string;
-}
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
+import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { EventCreateSchema } from '@/lib/schemas';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await connectToDB();
 
     if (req.method === 'POST') {
-      const eventData: Event = req.body;
-      if (!eventData?.title || !eventData?.start || !eventData?.end) {
-        return res.status(400).json({ message: 'title, start and end are required' });
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
       }
-
+      const eventData = EventCreateSchema.parse(req.body);
       const created = await EventModel.create({
         title: eventData.title,
-        start: new Date(eventData.start),
-        end: new Date(eventData.end),
+        start: eventData.start,
+        end: eventData.end,
         color: eventData.color,
       });
-      return res.status(201).json(created);
-    }
-
-    if (req.method === 'GET') {
+      sendSuccess(res, created);
+    } else if (req.method === 'GET') {
       const events = await EventModel.find().sort({ start: 1 });
-      return res.status(200).json(events);
+      sendSuccess(res, events);
+    } else {
+      sendError(res, 405, {
+        code: ERROR_CODES.METHOD_NOT_ALLOWED,
+        message: 'Method not allowed',
+      });
     }
-
-    return res.status(405).json({ message: 'Method not allowed' });
   } catch (error) {
-    return res.status(500).json({
-      message:
-        error instanceof Error ? error.message : 'Failed to process events request',
-    });
+    if (error instanceof Error) {
+      sendError(res, 400, { code: ERROR_CODES.VALIDATION_ERROR, message: error.message });
+    } else {
+      sendError(res, 500, {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Failed to process events request',
+      });
+    }
   }
 }
 // if (req.method === 'DELETE') {

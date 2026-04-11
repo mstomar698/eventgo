@@ -18,7 +18,6 @@ Build EventGo into a practical, end-to-end event planning product that covers th
 - ✅ Data API error handling improved to surface actionable configuration issues.
 - ⚠️ Stability smoke test results:
   - App routes are healthy (`/`, `/planner`, `/posts`, `/themes`, `/eventrecomm`, `/themerecomm`, `/info`, `/profile` all return 200).
-  - API routes requiring DB config currently fail if `MONGODB_URI` is malformed (detected and surfaced with explicit guidance).
 - ⏭️ Next active priorities: API/data contracts, then AI endpoint modernization.
 
 ## Target outcomes

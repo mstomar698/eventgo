@@ -5,6 +5,7 @@ import SignInRequired from '@/features/auth/sign-in-required';
 import useFetch, { revalidate } from 'http-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { BiPlus, BiTrashAlt } from 'react-icons/bi';
 
 interface ThemeWithId {
@@ -14,26 +15,25 @@ interface ThemeWithId {
   events: string[];
 }
 
-function confirmThemeDelete(id: unknown) {
+function confirmThemeDelete(id: string, setDeleteId: (id: string) => void) {
   const confirmation = window.confirm('Do you want to remove this theme?');
   if (confirmation) {
-    revalidate(id);
+    setDeleteId(id);
   }
 }
 
 function ThemeCard(props: ThemeWithId) {
-  const fetchId = {
-    theme: props,
-  };
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useFetch('/themes', {
-    id: fetchId,
+    id: deleteId,
     method: 'DELETE',
     query: {
-      id: props._id,
+      id: deleteId,
     },
     onResolve() {
       revalidate('GET /themes');
+      setDeleteId(null);
     },
   });
 
@@ -45,7 +45,7 @@ function ThemeCard(props: ThemeWithId) {
           title="delete-theme"
           type="button"
           className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
-          onClick={() => confirmThemeDelete(fetchId)}
+          onClick={() => confirmThemeDelete(props._id, setDeleteId)}
         >
           <BiTrashAlt size={16} />
         </button>

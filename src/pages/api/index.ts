@@ -1,5 +1,5 @@
+import { sendSuccess } from '@/lib/api-utils';
+
 export default function apiIndex(req: any, res: any) {
-  res.json({
-    message: 'hi',
-  });
+  sendSuccess(res, { message: 'hi' });
 }

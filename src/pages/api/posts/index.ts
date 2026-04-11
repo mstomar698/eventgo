@@ -1,45 +1,62 @@
-import { IPost, Post } from '@/lib/models';
+import { Post } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
-import Validate from 'next-api-validation';
-import type { NextApiHandler } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
+import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { PostCreateSchema } from '@/lib/schemas';
+import { z } from 'zod';
 
-const postsHandler = Validate({
-  async get(req, res) {
-    try {
-      await connectToDB();
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    await connectToDB();
+
+    if (req.method === 'GET') {
       const posts = await Post.find();
-      res.json(posts.reverse());
-    } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Failed to fetch posts',
-      });
-    }
-  },
-  async post(req, res) {
-    try {
-      await connectToDB();
-      const body: IPost = req.body;
+      sendSuccess(res, posts.reverse());
+    } else if (req.method === 'POST') {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
+      }
+      const body = PostCreateSchema.parse(req.body);
       const newPost = new Post(body);
       const saved = await newPost.save();
-      res.send(saved);
-    } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Failed to create post',
-      });
-    }
-  },
-  async delete(req, res) {
-    const { id } = req.query;
-    try {
-      await connectToDB();
+      sendSuccess(res, saved);
+    } else if (req.method === 'DELETE') {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
+      }
+      const { id } = z.object({ id: z.string().min(1) }).parse(req.query);
       const deletedPost = await Post.findByIdAndDelete(id);
-      res.send(deletedPost);
-    } catch {
-      res.status(500).send({
-        error: 'Failed to remove post',
+      if (!deletedPost) {
+        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Post not found' });
+      } else {
+        sendSuccess(res, deletedPost);
+      }
+    } else {
+      sendError(res, 405, {
+        code: ERROR_CODES.METHOD_NOT_ALLOWED,
+        message: 'Method not allowed',
       });
     }
-  },
-});
-
-export default postsHandler as unknown as NextApiHandler;
+  } catch (error) {
+    if (error instanceof Error) {
+      sendError(res, 400, { code: ERROR_CODES.VALIDATION_ERROR, message: error.message });
+    } else {
+      sendError(res, 500, {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: 'Failed to process posts request',
+      });
+    }
+  }
+}

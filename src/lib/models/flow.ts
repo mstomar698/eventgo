@@ -1,51 +1,30 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-interface FlowNodeData {
-  label: string;
+export interface IFlow extends Document {
+  userId: string;
+  nodes: any[];
+  edges: any[];
+  updatedAt: Date;
 }
 
-interface FlowNode {
-  id: string;
-  type?: string;
-  data: FlowNodeData;
-  position: {
-    x: number;
-    y: number;
-  };
-  style?: {
-    background?: string;
-    color?: string;
-    border?: string;
-    width?: number;
-  };
-}
-
-interface Flow {
-  nodes: FlowNode[];
-}
-
-const FlowNodeDataSchema = new Schema<FlowNodeData>({
-  label: { type: String, required: true },
-});
-
-const FlowNodeSchema = new Schema<FlowNode>({
-  id: { type: String, required: true },
-  type: { type: String },
-  data: { type: FlowNodeDataSchema, required: true },
-  position: {
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
+const FlowSchema: Schema = new Schema({
+  userId: {
+    type: String,
+    required: true,
   },
-  style: {
-    background: { type: String },
-    color: { type: String },
-    border: { type: String },
-    width: { type: Number },
+  nodes: {
+    type: [Schema.Types.Mixed],
+    required: true,
+  },
+  edges: {
+    type: [Schema.Types.Mixed],
+    required: true,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 
-const FlowSchema = new Schema<Flow>({
-  nodes: { type: [FlowNodeSchema], required: true },
-});
-
-export const FlowModel = mongoose.models.Flow || mongoose.model<Flow>('Flow', FlowSchema);
+export const FlowModel = (mongoose.models.Flow ||
+  mongoose.model<IFlow>('Flow', FlowSchema)) as Model<IFlow>;
