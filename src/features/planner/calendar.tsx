@@ -80,6 +80,11 @@ const CalendarPage = () => {
       return;
     }
 
+    if (!event._id) {
+      setEvents((current) => current.filter((item) => item !== event));
+      return;
+    }
+
     fetch(`/api/events?id=${event._id}`, {
       method: 'DELETE',
     })
@@ -99,7 +104,7 @@ const CalendarPage = () => {
       border: 'none',
       borderRadius: '6px',
       cursor: 'pointer',
-      color: '#ffffff',
+      color: '#5eead4',
     },
   });
 

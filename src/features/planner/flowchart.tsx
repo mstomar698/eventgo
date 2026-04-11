@@ -39,7 +39,21 @@ const Flowchart = () => {
   const flowRef = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useState<any[]>(initialNodesForDemoTheme);
   const [edges, setEdges] = useState(initialEdgesForDemoTheme);
-  const [nodeCount, setNodeCount] = useState(nodes.length);
+
+  const sanitizeNodes = (items: any[]) =>
+    items.map((node) => {
+      const rawLabel = node?.data?.label;
+      const label = typeof rawLabel === 'string' ? rawLabel : 'Node';
+
+      return {
+        ...node,
+        data: {
+          ...(node.data ?? {}),
+          label,
+        },
+      };
+    });
+  const [nodeCount, setNodeCount] = useState(initialNodesForDemoTheme.length);
   const [showMoreNodes, setShowMoreNodes] = useState(false);
   const [showImageMenu, setShowImageMenu] = useState(false);
   const { data: session } = useSession();
@@ -51,7 +65,8 @@ const Flowchart = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data.nodes && data.data.edges) {
-            setNodes(data.data.nodes);
+            const loadedNodes = Array.isArray(data.data.nodes) ? data.data.nodes : [];
+            setNodes(sanitizeNodes(loadedNodes));
             setEdges(data.data.edges);
           }
         })
@@ -59,20 +74,24 @@ const Flowchart = () => {
     }
   }, [session]);
 
+  useEffect(() => {
+    setNodeCount(nodes.length);
+  }, [nodes]);
+
   // Save flow to server
   useEffect(() => {
     if (session && nodes.length > 0) {
       fetch('/api/flows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nodes, edges }),
+        body: JSON.stringify({ nodes: sanitizeNodes(nodes), edges }),
       }).catch(console.error);
     }
   }, [nodes, edges, session]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
-      setNodes((nds: any): any => applyNodeChanges(changes, nds)),
+      setNodes((nds: any): any => sanitizeNodes(applyNodeChanges(changes, nds))),
     []
   );
   const onEdgesChange = useCallback(
@@ -91,10 +110,10 @@ const Flowchart = () => {
     const newNode = {
       id,
       ...(type ? { type } : {}),
-      data: { label: <>{`${label} ${id}`}</> },
+      data: { label: `${label} ${id}` },
       position: { x: Math.random() * 500, y: Math.random() * 500 },
     };
-    setNodes((prev) => [...prev, newNode]);
+    setNodes((prev) => sanitizeNodes([...prev, newNode]));
     setNodeCount((c) => c + 1);
   };
 

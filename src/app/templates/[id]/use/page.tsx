@@ -35,12 +35,14 @@ function TemplateWizard() {
   const id = params?.id as string;
 
   const {
-    data: template,
+    data: response,
     loadingFirst,
     error,
-  } = useFetch<Template>(`/templates/${id}`, {
-    default: undefined,
+  } = useFetch<{ data?: Template }>(`/templates/${id}`, {
+    default: { data: undefined },
   });
+
+  const template = response?.data;
 
   if (loadingFirst) {
     return (

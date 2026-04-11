@@ -3,12 +3,9 @@ export const initialNodes = [
     id: '1',
     type: 'input',
     data: {
-      label: (
-        <>
-          Welcome to <strong>React Flow!</strong>
-        </>
-      ),
+      label: 'Summer Ends',
     },
+
     position: { x: 250, y: 0 },
   },
   {
@@ -96,33 +93,21 @@ export const initialNodesForDemoTheme = [
     id: '5',
     type: 'input',
     data: {
-      label: (
-        <>
-          Summer <strong>Starts!</strong>
-        </>
-      ),
+      label: 'Summer Starts!',
     },
     position: { x: 100, y: 50 },
   },
   {
     id: '6',
     data: {
-      label: (
-        <>
-          Prepare <strong>Schedule</strong>
-        </>
-      ),
+      label: 'Prepare Schedule',
     },
     position: { x: 300, y: 80 },
   },
   {
     id: '7',
     data: {
-      label: (
-        <>
-          Have a <strong>Trip</strong>
-        </>
-      ),
+      label: 'Have a Trip',
     },
     position: { x: 500, y: 100 },
   },
@@ -130,21 +115,13 @@ export const initialNodesForDemoTheme = [
     id: '8',
     position: { x: 700, y: 150 },
     data: {
-      label: (
-        <>
-          Take Big <strong>Rest</strong>
-        </>
-      ),
+      label: 'Take Big Rest',
     },
   },
   {
     id: '9',
     data: {
-      label: (
-        <>
-          !! Complete <strong>HomeWork</strong>
-        </>
-      ),
+      label: 'Complete Homework',
     },
     position: { x: 700, y: 220 },
   },

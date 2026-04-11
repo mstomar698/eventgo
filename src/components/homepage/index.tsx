@@ -117,7 +117,7 @@ const HomePage = () => {
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xl font-semibold">AI planning studio</h2>
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-accent)]">
-            AI experimental mode (Gemini) — for ideation and research (dev only)
+            AI experimental mode — for ideation and research
           </p>
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -161,10 +161,6 @@ const HomePage = () => {
             </article>
           ))}
         </div>
-
-        <p className="mt-4 text-xs uppercase tracking-[0.12em] text-[var(--app-muted)]">
-          Planned next: {templateExamples.join(' • ')}
-        </p>
       </section>
     </AppShell>
   );
