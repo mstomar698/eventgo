@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: |
+          cd eventgo
+          npm ci
+      - name: Lint
+        run: |
+          cd eventgo
+          npm run lint
+      - name: Build
+        run: |
+          cd eventgo
+          npm run build
+      - name: Basic route checks
+        run: |
+          cd eventgo
+          npm run start &
+          # Give Next a moment to start
+          sleep 2
+          STATUS_CODES=("/home" "/planner" "/bookings" "/posts" "/templates" "/themes" "/eventrecomm" "/themerecomm" "/venuerecomm")
+          for path in "${STATUS_CODES[@]}"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000${path}")
+            if [[ "$code" != 2* && "$code" != 3* ]]; then
+              echo "Route $path returned $code"
+              exit 1
+            fi
+          done
+          kill %1 || true
