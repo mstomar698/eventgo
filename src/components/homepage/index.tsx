@@ -1,3 +1,5 @@
+// Homepage content component used on authenticated workspace root
+// Contains quick links to main workspace areas and AI studio
 'use client';
 
 import AppShell from '@/components/layout/app-shell';
@@ -96,7 +98,7 @@ const HomePage = () => {
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xl font-semibold">AI planning studio</h2>
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-accent)]">
-            Gemini-based dev mode
+            AI experimental mode (Gemini) — for ideation and research (dev only)
           </p>
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
