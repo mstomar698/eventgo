@@ -1,7 +1,6 @@
 'use client';
 
-import Footer from '@/components/footer/footer';
-import Navbar from '@/components/navbar/navbar';
+import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
 import { useUiSettings } from '@/features/settings/ui-settings-provider';
 import { useSession } from 'next-auth/react';
@@ -16,85 +15,73 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-      <Navbar title="Profile Settings" />
-      <div className="h-full border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700 overflow-y-auto">
-        <div className="max-w-3xl mx-auto p-6 space-y-6">
-          <section className="border border-green-600 rounded-lg p-4">
-            <h2 className="text-xl font-semibold">Theme</h2>
-            <p className="text-sm text-green-300 mb-3">
-              Choose a color mode for readability and comfort.
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setThemeMode('dark')}
-                className={`px-4 py-2 rounded border ${
-                  themeMode === 'dark' ? 'border-green-400 bg-black' : 'border-red-500'
-                }`}
-              >
-                Dark
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeMode('light')}
-                className={`px-4 py-2 rounded border ${
-                  themeMode === 'light'
-                    ? 'border-green-400 bg-white text-black'
-                    : 'border-red-500'
-                }`}
-              >
-                Light
-              </button>
-            </div>
-          </section>
+    <AppShell
+      title="Profile Settings"
+      subtitle="Customize your visual preferences for a comfortable planning workflow."
+    >
+      <div className="mx-auto max-w-3xl space-y-6">
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+          <h2 className="text-xl font-semibold">Theme</h2>
+          <p className="mb-4 mt-1 text-sm text-[var(--app-muted)]">
+            Choose light or dark mode based on your environment.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setThemeMode('dark')}
+              className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                themeMode === 'dark'
+                  ? 'border-[var(--app-accent)] bg-[var(--app-elevated)] text-[var(--app-text)]'
+                  : 'border-[var(--app-border)] text-[var(--app-muted)] hover:bg-[var(--app-elevated)]'
+              }`}
+            >
+              Dark
+            </button>
+            <button
+              type="button"
+              onClick={() => setThemeMode('light')}
+              className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                themeMode === 'light'
+                  ? 'border-[var(--app-accent)] bg-[var(--app-elevated)] text-[var(--app-text)]'
+                  : 'border-[var(--app-border)] text-[var(--app-muted)] hover:bg-[var(--app-elevated)]'
+              }`}
+            >
+              Light
+            </button>
+          </div>
+        </section>
 
-          <section className="border border-green-600 rounded-lg p-4">
-            <h2 className="text-xl font-semibold">Font size</h2>
-            <p className="text-sm text-green-300 mb-3">
-              Increase or decrease base text size.
-            </p>
-            <div className="flex flex-wrap gap-3">
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+          <h2 className="text-xl font-semibold">Font size</h2>
+          <p className="mb-4 mt-1 text-sm text-[var(--app-muted)]">
+            Scale base typography for readability.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {(['sm', 'md', 'lg'] as const).map((scale) => (
               <button
+                key={scale}
                 type="button"
-                onClick={() => setFontScale('sm')}
-                className={`px-4 py-2 rounded border ${
-                  fontScale === 'sm' ? 'border-green-400' : 'border-red-500'
+                onClick={() => setFontScale(scale)}
+                className={`rounded-lg border px-4 py-2 text-sm font-semibold capitalize transition ${
+                  fontScale === scale
+                    ? 'border-[var(--app-accent)] bg-[var(--app-elevated)] text-[var(--app-text)]'
+                    : 'border-[var(--app-border)] text-[var(--app-muted)] hover:bg-[var(--app-elevated)]'
                 }`}
               >
-                Small
+                {scale === 'sm' ? 'Small' : scale === 'md' ? 'Medium' : 'Large'}
               </button>
-              <button
-                type="button"
-                onClick={() => setFontScale('md')}
-                className={`px-4 py-2 rounded border ${
-                  fontScale === 'md' ? 'border-green-400' : 'border-red-500'
-                }`}
-              >
-                Medium
-              </button>
-              <button
-                type="button"
-                onClick={() => setFontScale('lg')}
-                className={`px-4 py-2 rounded border ${
-                  fontScale === 'lg' ? 'border-green-400' : 'border-red-500'
-                }`}
-              >
-                Large
-              </button>
-            </div>
-          </section>
+            ))}
+          </div>
+        </section>
 
-          <section className="border border-green-600 rounded-lg p-4">
-            <h2 className="text-xl font-semibold">Preview</h2>
-            <p className="mt-2">
-              This preview text reflects your current theme and font settings.
-            </p>
-          </section>
-        </div>
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+          <h2 className="text-xl font-semibold">Preview</h2>
+          <p className="mt-2 text-sm text-[var(--app-muted)]">
+            The current page reflects your selected theme and font scale settings.
+          </p>
+        </section>
       </div>
-      <Footer />
-    </div>
+    </AppShell>
   );
 };
 

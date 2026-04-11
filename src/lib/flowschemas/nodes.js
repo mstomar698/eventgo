@@ -8,13 +8,15 @@ export const TextUpdaterNode = () => {
 
   return (
     <div className="text-updater-node">
-      <div className="border-2 border-solid border-green-500 rounded-sm text-red-500 flex flex-col text-center">
-        <label htmlFor="text">Theme</label>
+      <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
+        <label htmlFor="text" className="text-xs font-semibold text-[var(--app-muted)]">
+          Theme
+        </label>
         <input
           id="text"
           name="text"
           onChange={onChange}
-          className="nodrag px-1"
+          className="nodrag mt-1 rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-text)] outline-none focus:ring-1 focus:ring-[var(--app-accent)]"
           placeholder="Summer Vacation"
         />
       </div>
@@ -29,13 +31,15 @@ export const NodeWithSAD = ({ isConnectable }) => {
 
   return (
     <div className="text-updater-node">
-      <div className="border-2 border-solid border-green-500 rounded-sm text-red-500 flex flex-col text-center">
-        <label htmlFor="data">Details</label>
+      <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
+        <label htmlFor="data" className="text-xs font-semibold text-[var(--app-muted)]">
+          Details
+        </label>
         <textarea
           id="data"
           name="data"
           onChange={onChange}
-          className="nodrag px-1 h-auto"
+          className="nodrag mt-1 h-auto rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-text)] outline-none focus:ring-1 focus:ring-[var(--app-accent)]"
           placeholder="Some Data"
         />
       </div>
@@ -59,12 +63,12 @@ export const NodeWithText = ({ isConnectable }) => {
     <div className="text-updater-node">
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
 
-      <div className="border-2 border-solid border-green-500 rounded-sm text-red-500 flex flex-col text-center">
+      <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
         <input
           id="data"
           name="data"
           onChange={onChange}
-          className="nodrag px-1"
+          className="nodrag rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-text)] outline-none focus:ring-1 focus:ring-[var(--app-accent)]"
           placeholder="node name"
         />
       </div>
@@ -86,12 +90,12 @@ export const TextStrip = () => {
 
   return (
     <div className="text-updater-node">
-      <div className="border-2 border-solid border-green-500 rounded-sm text-red-500 flex flex-col text-center">
+      <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
         <input
           id="data"
           name="data"
           onChange={onChange}
-          className="nodrag px-1"
+          className="nodrag rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-text)] outline-none focus:ring-1 focus:ring-[var(--app-accent)]"
           placeholder="node name"
         />
       </div>

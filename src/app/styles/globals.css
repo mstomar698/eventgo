@@ -3,19 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --app-bg: #050816;
-  --app-text: #f8fafc;
+  --app-bg: #0b1220;
+  --app-surface: #111c33;
+  --app-elevated: #162445;
+  --app-text: #e2e8f0;
+  --app-muted: #94a3b8;
+  --app-border: #243657;
+  --app-accent: #5eead4;
+  --app-accent-strong: #14b8a6;
   --app-font-size: 16px;
 }
 
 :root[data-theme='light'] {
   --app-bg: #f8fafc;
+  --app-surface: #ffffff;
+  --app-elevated: #f1f5f9;
   --app-text: #0f172a;
+  --app-muted: #475569;
+  --app-border: #dbe5f1;
+  --app-accent: #0f766e;
+  --app-accent-strong: #0d9488;
 }
 
 :root[data-theme='dark'] {
-  --app-bg: #050816;
-  --app-text: #f8fafc;
+  --app-bg: #0b1220;
+  --app-surface: #111c33;
+  --app-elevated: #162445;
+  --app-text: #e2e8f0;
+  --app-muted: #94a3b8;
+  --app-border: #243657;
+  --app-accent: #5eead4;
+  --app-accent-strong: #14b8a6;
 }
 
 :root[data-font-scale='sm'] {
@@ -31,121 +49,191 @@
 }
 
 body {
+  min-height: 100vh;
   background-color: var(--app-bg);
   color: var(--app-text);
   font-size: var(--app-font-size);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
 }
 
-.hero_iamge {
-  background-image: url(./asd2.gif);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100%;
-  /* width: 100%; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.heroCard_image {
-  background-image: url(./not.jpeg);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100%;
-  /* width: 100%; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.heroCard_image1 {
-  background-image: url(./hd.gif);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100%;
-  /* width: 100%; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.heroCard_image2 {
-  background-image: url(./them.gif);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100%;
-  /* width: 100%; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-/* responsive for large devices */
-/* @media (max-width: 1024px) {
-  .hero_iamge {
-    display: none;
-  }
-} */
-
-/* react-flow styling */
-/* .react-flow__node-custom {
-  font-size: 10px;
-  width: 180px;
-  background: #f5f5f6;
-  color: #222;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 15%), 0 2px 4px -1px rgb(0 0 0 / 8%);
-  border-radius: 2px;
+* {
+  box-sizing: border-box;
 }
 
-.react-flow__node-custom .react-flow__handle {
-  top: 24px;
-  right: -15px;
-  width: 6px;
-  height: 10px;
-  border-radius: 2px;
-  background-color: #778899;
+/* --- react-big-calendar theme overrides --- */
+.rbc-calendar {
+  color: var(--app-text);
 }
 
-.react-flow__node.circle {
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.rbc-toolbar button {
+  color: var(--app-text);
+  border-color: var(--app-border);
+  background: var(--app-elevated);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  transition: background 0.15s;
+}
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button:focus {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border-color: var(--app-border);
+}
+
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button.rbc-active:hover {
+  background: var(--app-accent-strong);
+  color: #fff;
+  border-color: var(--app-accent-strong);
+}
+
+.rbc-toolbar .rbc-toolbar-label {
+  color: var(--app-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.rbc-header {
+  background: var(--app-elevated);
+  color: var(--app-muted);
+  border-color: var(--app-border) !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+  border-color: var(--app-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rbc-month-row,
+.rbc-day-bg,
+.rbc-time-content,
+.rbc-time-header,
+.rbc-time-header-content,
+.rbc-timeslot-group {
+  border-color: var(--app-border) !important;
+}
+
+.rbc-day-bg {
+  background: transparent;
+}
+
+.rbc-off-range-bg {
+  background: color-mix(in srgb, var(--app-bg) 60%, transparent);
+}
+
+.rbc-today {
+  background: color-mix(in srgb, var(--app-accent) 8%, transparent);
+}
+
+.rbc-date-cell {
+  color: var(--app-muted);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.rbc-date-cell.rbc-now {
+  color: var(--app-accent);
   font-weight: 700;
 }
 
-.react-flow__node.annotation {
-  border-radius: 0;
-  text-align: left;
-  background: white;
-  border: none;
-  line-height: 1.4;
-  width: 225px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 15%), 0 2px 4px -1px rgb(0 0 0 / 8%);
+.rbc-off-range {
+  color: color-mix(in srgb, var(--app-muted) 40%, transparent);
 }
 
-.react-flow__node.annotation .react-flow__handle {
+.rbc-event {
+  border: none !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem !important;
+}
+
+.rbc-show-more {
+  color: var(--app-accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.rbc-overlay {
+  background: var(--app-surface);
+  border-color: var(--app-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.rbc-overlay-header {
+  border-color: var(--app-border);
+  color: var(--app-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ReactFlow theme overrides */
+.react-flow__node-default,
+.react-flow__node-input,
+.react-flow__node-output {
+  background: var(--app-elevated) !important;
+  color: var(--app-text) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.react-flow__node.selected .react-flow__node-default,
+.react-flow__node-default.selected,
+.react-flow__node-input.selected,
+.react-flow__node-output.selected {
+  border-color: var(--app-accent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-accent) 30%, transparent) !important;
+}
+
+.react-flow__edge-path {
+  stroke: var(--app-muted) !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--app-accent) !important;
+}
+
+.react-flow__edge-text {
+  fill: var(--app-text) !important;
+}
+
+.react-flow__edge-textbg {
+  fill: var(--app-surface) !important;
+}
+
+.react-flow__handle {
+  background: var(--app-accent-strong) !important;
+  border: 2px solid var(--app-surface) !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.react-flow__minimap {
+  background: var(--app-surface) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 0.5rem !important;
+}
+
+.react-flow__attribution {
   display: none;
 }
-
-.custom-node__header {
-  padding: 8px 10px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.custom-node__body {
-  padding: 10px;
-}
-
-.custom-node__select {
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.custom-node__select select {
-  width: 100%;
-  margin-top: 5px;
-  font-size: 10px;
-} */

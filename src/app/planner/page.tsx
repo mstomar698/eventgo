@@ -1,6 +1,5 @@
 'use client';
-import Footer from '@/components/footer/footer';
-import Navbar from '@/components/navbar/navbar';
+import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
 import Flowchart from '@/features/planner/flowchart';
 import { useSession } from 'next-auth/react';
@@ -11,11 +10,14 @@ const Planner = () => {
   return (
     <>
       {isLoggedIn ? (
-        <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Planner'} />
-          <Flowchart />
-          <Footer />
-        </div>
+        <AppShell
+          title="Planner"
+          subtitle="Map event phases, dependencies, and execution flow in one visual board."
+        >
+          <div className="overflow-hidden rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2 shadow-lg">
+            <Flowchart />
+          </div>
+        </AppShell>
       ) : (
         <SignInRequired title="Planner access requires sign in" />
       )}

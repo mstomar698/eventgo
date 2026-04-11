@@ -1,3 +1,4 @@
+import { EventModel } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -9,18 +10,35 @@ interface Event {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const eventData: Event = req.body;
-    const db: any = await connectToDB();
-    const result: any = await db.collection('events').insertOne(eventData);
-    console.log(result);
-    res.status(201).json(result!.ops[0]);
-  } else if (req.method === 'GET') {
-    const db: any = await connectToDB();
-    const events = await db.collection('events').find().toArray();
-    res.json(events);
-  } else {
-    res.status(405).json({ message: 'Method not allowed' });
+  try {
+    await connectToDB();
+
+    if (req.method === 'POST') {
+      const eventData: Event = req.body;
+      if (!eventData?.title || !eventData?.start || !eventData?.end) {
+        return res.status(400).json({ message: 'title, start and end are required' });
+      }
+
+      const created = await EventModel.create({
+        title: eventData.title,
+        start: new Date(eventData.start),
+        end: new Date(eventData.end),
+        color: eventData.color,
+      });
+      return res.status(201).json(created);
+    }
+
+    if (req.method === 'GET') {
+      const events = await EventModel.find().sort({ start: 1 });
+      return res.status(200).json(events);
+    }
+
+    return res.status(405).json({ message: 'Method not allowed' });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error instanceof Error ? error.message : 'Failed to process events request',
+    });
   }
 }
 // if (req.method === 'DELETE') {

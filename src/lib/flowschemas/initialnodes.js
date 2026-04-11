@@ -32,12 +32,6 @@ export const initialNodes = [
       ),
     },
     position: { x: 400, y: 100 },
-    style: {
-      background: '#D6D5E6',
-      color: '#333',
-      border: '1px solid #222138',
-      width: 180,
-    },
   },
   {
     id: '4',
@@ -131,12 +125,6 @@ export const initialNodesForDemoTheme = [
       ),
     },
     position: { x: 500, y: 100 },
-    style: {
-      background: '#D6D5E6',
-      color: '#333',
-      border: '1px solid #222138',
-      width: 180,
-    },
   },
   {
     id: '8',

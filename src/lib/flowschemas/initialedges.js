@@ -35,10 +35,8 @@ export const initialEdges = [
     source: '5',
     target: '7',
     type: 'step',
-    style: { stroke: '#f6ab6c' },
     label: 'a step edge',
     animated: true,
-    labelStyle: { fill: '#f6ab6c', fontWeight: 700 },
   },
 ];
 

@@ -1,110 +1,113 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { useObject } from 'react-kuh';
 
-import Link from 'next/link';
-import { BiArrowToLeft, BiSave } from 'react-icons/bi';
-
-import useFetch, { revalidate } from 'http-react';
-import Input from '@/components/input/input';
-import Footer from '@/components/footer/footer';
-import Navbar from '@/components/navbar/navbar';
+import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { FormEvent, useState } from 'react';
 
-function savePost() {
-  revalidate('POST /posts');
-}
-
-function Create() {
-  const router = useRouter();
-
-  const [post, setPost] = useObject({
-    title: '',
-    content: '',
-  });
-
-  const newPost = {
-    ...post,
-    date: Date.now(),
-  };
-
-  useFetch('/posts', {
-    method: 'POST',
-    body: { ...newPost, _id: undefined },
-    onResolve() {
-      router.back();
-    },
-  });
-
-  return (
-    <div className="h-full border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700">
-      <div className="relative p-1 max-sm:mt-2 space-x-2 flex flex-row w-full">
-        <Link
-          href="/posts"
-          className="border-2 border-solid border-red-500 p-1 text-xs flex items-center justify-center w-full py-2 font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
-        >
-          <button className="flex flex-row space-x-4 justify-between">
-            <BiArrowToLeft name="plus" className="text-xl" />
-            <span className="my-0.5">Back</span>
-          </button>
-        </Link>
-      </div>
-      <div className="flex flex-wrap h-auto bg-gray-500 m-16 max-sm:m-10 items-center justify-center space-y-2 p-1 rounded-lg">
-        <div className="w-full text-black rounded-sm border-2 border-solid border-green-500 ">
-          <Input
-            value={post.title}
-            name="title"
-            onChange={(e) =>
-              setPost.write({
-                title: e.target.value,
-              })
-            }
-            placeholder="Title"
-          />
-        </div>
-        <div className="w-full p-0">
-          <textarea
-            placeholder="Content"
-            className="textarea textarea-bordered h-36 max-sm:h-64 max-md:h-64  overflow-y-scroll p-2 w-full text-black rounded-sm border-2 border-solid border-green-500 "
-            name="content"
-            required
-            onChange={(e) =>
-              setPost.write({
-                content: e.target.value,
-              })
-            }
-          />
-        </div>
-
-        <button
-          className="border-2 border-solid border-red-500 p-1 text-xs flex items-center w-full py-2 font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray flex-row space-x-4 justify-center"
-          onClick={savePost}
-        >
-          <BiSave name="save" className="text-xl" />
-          <span className="my-0.5">Save Note</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-const CreateNotes = () => {
+const CreateNotesPage = () => {
   const { data: session } = useSession();
   const isLoggedIn = Boolean(session);
+  const router = useRouter();
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!isLoggedIn) {
+    return <SignInRequired title="Create notes requires sign in" />;
+  }
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setIsSaving(true);
+
+    const response = await fetch('/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        content,
+        date: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      setIsSaving(false);
+      setError('Failed to save note. Please try again.');
+      return;
+    }
+
+    router.push('/posts');
+    router.refresh();
+  };
+
   return (
-    <>
-      {isLoggedIn ? (
-        <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Create-Notes'} />
-          <Create />
-          <Footer />
+    <AppShell
+      title="Create Note"
+      subtitle="Add planning notes, constraints, and reminders for your current event."
+    >
+      <form
+        onSubmit={onSubmit}
+        className="mx-auto w-full max-w-3xl rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 sm:p-8"
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="note-title" className="mb-1 block text-sm font-semibold">
+              Title
+            </label>
+            <input
+              id="note-title"
+              type="text"
+              required
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              className="w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm outline-none ring-[var(--app-accent)]/40 transition focus:ring-2"
+              placeholder="e.g. Guest arrival checklist"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="note-content" className="mb-1 block text-sm font-semibold">
+              Content
+            </label>
+            <textarea
+              id="note-content"
+              required
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              className="h-48 w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm outline-none ring-[var(--app-accent)]/40 transition focus:ring-2"
+              placeholder="Write all planning details here..."
+            />
+          </div>
+
+          {error ? <p className="text-sm text-red-300">{error}</p> : null}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="rounded-lg bg-[var(--app-accent-strong)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isSaving ? 'Saving...' : 'Save note'}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/posts')}
+              className="rounded-lg border border-[var(--app-border)] px-5 py-2.5 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      ) : (
-        <SignInRequired title="Create notes requires sign in" />
-      )}
-    </>
+      </form>
+    </AppShell>
   );
 };
 
-export default CreateNotes;
+export default CreateNotesPage;

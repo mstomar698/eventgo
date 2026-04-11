@@ -1,115 +1,140 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { useObject } from 'react-kuh';
-import Link from 'next/link';
-import { BiArrowToLeft, BiSave } from 'react-icons/bi';
-import useFetch, { revalidate } from 'http-react';
-import Input from '@/components/input/input';
-import Footer from '@/components/footer/footer';
-import Navbar from '@/components/navbar/navbar';
+
+import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { FormEvent, useMemo, useState } from 'react';
 
-function saveTheme() {
-  revalidate('POST /themes');
-}
+const parseEventTags = (input: string): string[] =>
+  input
+    .split(',')
+    .map((event) => event.trim())
+    .filter(Boolean);
 
-function Create() {
-  const router = useRouter();
-
-  const [theme, setTheme] = useObject({
-    title: '',
-    events: [],
-  });
-
-  // const newThemeDate = useMemo(() => Date.now(), []);
-
-  // const newTheme = {
-  //   ...theme,
-  //   date: newThemeDate,
-  // };
-  const newTheme = {
-    ...theme,
-    date: new Date().toISOString(),
-    events: theme.events.filter((event: any) => event.trim() !== ''),
-  };
-
-  useFetch('/themes', {
-    method: 'POST',
-    // body: { ...newTheme, _id: undefined },
-    body: { ...newTheme, _id: undefined, events: newTheme.events },
-    onResolve() {
-      router.back();
-    },
-  });
-
-  return (
-    <div className="h-full border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700">
-      <div className="relative p-1 max-sm:mt-2 space-x-2 flex flex-row w-full">
-        <Link
-          href="/themes"
-          className="border-2 border-solid border-red-500 p-1 text-xs flex items-center justify-center w-full py-2 font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
-        >
-          <button className="flex flex-row space-x-4 justify-between">
-            <BiArrowToLeft name="plus" className="text-xl" />
-            <span className="my-0.5">Back</span>
-          </button>
-        </Link>
-      </div>
-      <div className="flex flex-wrap h-auto bg-gray-500 m-16 items-center justify-center space-y-2 p-1 rounded-lg">
-        <div className="h-full w-full text-black rounded-sm border-2 border-solid border-green-500 ">
-          <Input
-            value={theme.title}
-            name="title"
-            onChange={(e) =>
-              setTheme.write({
-                title: e.target.value,
-              })
-            }
-            placeholder="Title"
-          />
-        </div>
-        <div className="h-full w-full text-black rounded-sm border-2 border-solid border-green-500 ">
-          <Input
-            value={theme.events.join(', ')}
-            name="events"
-            onChange={(e: any) =>
-              setTheme.write({
-                events: e.target.value.split(','),
-              })
-            }
-            placeholder="Events (comma-separated)"
-          />
-        </div>
-
-        <button
-          className="border-2 border-solid border-red-500 p-1 text-xs flex items-center w-full py-2 font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray flex-row space-x-4 justify-center"
-          onClick={saveTheme}
-        >
-          <BiSave name="save" className="text-xl" />
-          <span className="my-0.5">Save Theme</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-const CreateThemes = () => {
+const CreateThemePage = () => {
   const { data: session } = useSession();
   const isLoggedIn = Boolean(session);
+  const router = useRouter();
+
+  const [title, setTitle] = useState('');
+  const [eventsInput, setEventsInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const parsedEvents = useMemo(() => parseEventTags(eventsInput), [eventsInput]);
+
+  if (!isLoggedIn) {
+    return <SignInRequired title="Create themes requires sign in" />;
+  }
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+
+    if (parsedEvents.length === 0) {
+      setError('Add at least one event/activity tag.');
+      return;
+    }
+
+    setIsSaving(true);
+
+    const response = await fetch('/api/themes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        events: parsedEvents,
+        date: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      setIsSaving(false);
+      setError('Failed to save theme. Please try again.');
+      return;
+    }
+
+    router.push('/themes');
+    router.refresh();
+  };
+
   return (
-    <>
-      {isLoggedIn ? (
-        <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Create-Themes'} />
-          <Create />
-          <Footer />
+    <AppShell
+      title="Create Theme"
+      subtitle="Design reusable theme packs with activities that fit your event brief."
+    >
+      <form
+        onSubmit={onSubmit}
+        className="mx-auto w-full max-w-3xl rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 sm:p-8"
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="theme-title" className="mb-1 block text-sm font-semibold">
+              Theme title
+            </label>
+            <input
+              id="theme-title"
+              type="text"
+              required
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              className="w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm outline-none ring-[var(--app-accent)]/40 transition focus:ring-2"
+              placeholder="e.g. Tropical Sunset Celebration"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="theme-events" className="mb-1 block text-sm font-semibold">
+              Activity tags (comma separated)
+            </label>
+            <input
+              id="theme-events"
+              type="text"
+              required
+              value={eventsInput}
+              onChange={(event) => setEventsInput(event.target.value)}
+              className="w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm outline-none ring-[var(--app-accent)]/40 transition focus:ring-2"
+              placeholder="e.g. icebreaker, quiz, music, photo booth"
+            />
+            {parsedEvents.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {parsedEvents.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-[var(--app-border)] bg-[var(--app-elevated)] px-2 py-1 text-xs text-[var(--app-muted)]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          {error ? <p className="text-sm text-red-300">{error}</p> : null}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="rounded-lg bg-[var(--app-accent-strong)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isSaving ? 'Saving...' : 'Save theme'}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/themes')}
+              className="rounded-lg border border-[var(--app-border)] px-5 py-2.5 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      ) : (
-        <SignInRequired title="Create themes requires sign in" />
-      )}
-    </>
+      </form>
+    </AppShell>
   );
 };
 
-export default CreateThemes;
+export default CreateThemePage;

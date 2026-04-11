@@ -1,28 +1,34 @@
 'use client';
-import Link from 'next/link';
-import useFetch, { revalidate } from 'http-react';
-import Footer from '@/components/footer/footer';
-import Navbar from '@/components/navbar/navbar';
-import { BiTrashAlt, BiArrowToLeft, BiPlus } from 'react-icons/bi';
-import { IPost } from '@/lib/models';
+
+import AppShell from '@/components/layout/app-shell';
 import CalendarPage from '@/features/planner/calendar';
 import SignInRequired from '@/features/auth/sign-in-required';
+import useFetch, { revalidate } from 'http-react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { BiCalendar, BiPlus, BiTrashAlt } from 'react-icons/bi';
 
-function confirmPostDelete(id: any) {
-  const confirmation = confirm('Do you want to remove this post?');
+interface PostWithId {
+  _id: string;
+  title: string;
+  date: string;
+  content: string;
+}
+
+function confirmPostDelete(id: unknown) {
+  const confirmation = window.confirm('Do you want to remove this note?');
   if (confirmation) {
     revalidate(id);
   }
 }
 
-function Post(props: any) {
-  const fetchID = {
+function PostCard(props: PostWithId) {
+  const fetchId = {
     post: props,
   };
 
   useFetch('/posts', {
-    id: fetchID,
+    id: fetchId,
     method: 'DELETE',
     query: {
       id: props._id,
@@ -33,97 +39,94 @@ function Post(props: any) {
   });
 
   return (
-    <div
-      className="bg-gray-500 hover:bg-black card p-1 pt-2 relative break-words rounded-lg hover:border-red-500 hover:border-2 hover:border-solid card-bordered m-4"
-      key={`post-${props._id}`}
-    >
-      <button
-        title="delete-post"
-        className="btn btn-ghost font-semibold border-2 border-solid border-green-500 text-green-500 rounded-full absolute top-1 right-1 cursor-pointer"
-        onClick={() => confirmPostDelete(fetchID)}
-      >
-        <BiTrashAlt name="trash" className="text-xl" />
-      </button>
-      <p className="mt-2 mb-1 text-sm">{props.title}</p>
-      <p className="my-0.5 overflow-hidden hover:overflow-y-scroll h-20 p-1 text-xs ">
-        {props.content}
-      </p>
-    </div>
+    <article className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="line-clamp-2 text-sm font-semibold">{props.title}</h3>
+        <button
+          title="delete-post"
+          type="button"
+          className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
+          onClick={() => confirmPostDelete(fetchId)}
+        >
+          <BiTrashAlt size={16} />
+        </button>
+      </div>
+      <p className="mt-3 line-clamp-5 text-sm text-[var(--app-muted)]">{props.content}</p>
+    </article>
   );
 }
 
-function Posts() {
-  const { data, loadingFirst, error } = useFetch<IPost[]>('/posts', {
+function PostsList() {
+  const { data, loadingFirst, error } = useFetch<PostWithId[]>('/posts', {
     default: [],
   });
 
-  if (loadingFirst)
+  if (loadingFirst) {
     return (
-      <div className="h-full w-full my-1  rounded-sm text-white bg-gray-700 text-center flex justify-center items-center">
-        <p className="text-2xl font-semibold py-4">Loading posts...</p>
+      <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 text-sm text-[var(--app-muted)]">
+        Loading notes...
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
-      <div className="h-full w-full my-1  rounded-sm text-white bg-gray-700 text-center flex justify-center items-center">
-        <p className="text-2xl font-semibold py-4">Failed to Fetch posts...</p>
+      <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 text-sm text-red-300">
+        Failed to load notes.
       </div>
     );
-
-  const mappedPosts = data.map((post) => <Post {...post} key={`post-${post._id}`} />);
+  }
 
   return (
-    <div className="h-full lg:overflow-y-scroll max-sm:h-full max-md:h-full w-full rounded-sm text-white bg-gray-700">
-      <div className="relative p-1 max-sm:mt-2 space-x-2 flex flex-row w-full">
-        <Link
-          href="/"
-          className="border-2 border-solid max-sm:p-0 border-red-500 p-1 text-xs flex items-center justify-center w-full py-2 font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
-        >
-          <button className="flex flex-row space-x-4 justify-between">
-            <BiArrowToLeft name="plus" className="text-xl" />
-            <span className="my-0.5">Back</span>
-          </button>
-        </Link>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-[var(--app-muted)]">
+          {data.length} notes in this workspace
+        </p>
         <Link
           href="/posts/create"
-          className="border-2 border-solid max-sm:p-0 border-red-500 p-1 text-xs flex items-center justify-center w-full py-2  font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
         >
-          <button className="flex flex-row space-x-4 justify-between">
-            <BiPlus name="arrow-left" className="text-xl" />
-            <span className="my-0.5">Add post</span>
-            <span className="my-0.5">{data.length}</span>
-          </button>
+          <BiPlus size={18} />
+          Add note
         </Link>
       </div>
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 rounded-md">
-          {mappedPosts}
-        </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {data.map((post) => (
+          <PostCard {...post} key={`post-${post._id}`} />
+        ))}
       </div>
     </div>
   );
 }
 
-const Notes = () => {
+const NotesPage = () => {
   const { data: session } = useSession();
   const isLoggedIn = Boolean(session);
+
+  if (!isLoggedIn) {
+    return <SignInRequired title="Notes access requires sign in" />;
+  }
+
   return (
-    <>
-      {isLoggedIn ? (
-        <div className="h-screen max-md:h-full max-sm:h-full w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Notes'} />
-          <div className="h-full flex p-0.5 max-sm:flex-col md:flex-col lg:flex-row max-md:flex-col border-2 border-solid border-orange-500 rounded-sm my-1">
-            <Posts />
-            <CalendarPage />
+    <AppShell
+      title="Notes & Schedule"
+      subtitle="Capture decisions and maintain an event-aware calendar side by side."
+    >
+      <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
+          <PostsList />
+        </section>
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <BiCalendar className="text-[var(--app-accent)]" size={18} />
+            <h2 className="text-sm font-semibold">Event calendar</h2>
           </div>
-          <Footer />
-        </div>
-      ) : (
-        <SignInRequired title="Notes access requires sign in" />
-      )}
-    </>
+          <CalendarPage />
+        </section>
+      </div>
+    </AppShell>
   );
 };
 
-export default Notes;
+export default NotesPage;

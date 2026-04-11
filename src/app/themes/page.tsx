@@ -1,27 +1,33 @@
 'use client';
-import Link from 'next/link';
-import useFetch, { revalidate } from 'http-react';
-import Footer from '@/components/footer/footer';
-import Navbar from '@/components/navbar/navbar';
-import { BiTrashAlt, BiArrowToLeft, BiPlus } from 'react-icons/bi';
-import { ITheme } from '@/lib/models';
-import SignInRequired from '@/features/auth/sign-in-required';
-import { useSession } from 'next-auth/react';
 
-function confirDeleteTheme(id: any) {
-  const confirmation = confirm('Do you want to remove this Theme?');
+import AppShell from '@/components/layout/app-shell';
+import SignInRequired from '@/features/auth/sign-in-required';
+import useFetch, { revalidate } from 'http-react';
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { BiPlus, BiTrashAlt } from 'react-icons/bi';
+
+interface ThemeWithId {
+  _id: string;
+  title: string;
+  date: string;
+  events: string[];
+}
+
+function confirmThemeDelete(id: unknown) {
+  const confirmation = window.confirm('Do you want to remove this theme?');
   if (confirmation) {
     revalidate(id);
   }
 }
 
-function Theme(props: any) {
-  const fetchID = {
+function ThemeCard(props: ThemeWithId) {
+  const fetchId = {
     theme: props,
   };
 
   useFetch('/themes', {
-    id: fetchID,
+    id: fetchId,
     method: 'DELETE',
     query: {
       id: props._id,
@@ -30,108 +36,96 @@ function Theme(props: any) {
       revalidate('GET /themes');
     },
   });
-  console.log(props);
+
   return (
-    <div
-      className="bg-gray-500 hover:bg-black card p-2 relative break-words rounded-lg hover:border-red-500 hover:border-2 hover:border-solid card-bordered m-4 flex flex-wrap h-[180px] overflow-hidden"
-      key={`theme-${props._id}`}
-    >
-      <button
-        title="delete-theme"
-        className="btn btn-ghost font-semibold border-2 border-solid border-green-500 text-green-500 rounded-full absolute top-1 right-1 cursor-pointer"
-        onClick={() => confirDeleteTheme(fetchID)}
-      >
-        <BiTrashAlt name="trash" className="text-xl" />
-      </button>
-      <p className="my-1 text-sm w-full px-4 text-center">{props.title}</p>
-      <div className="my-0.5 p-1 h-4/5 grid grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 rounded-md items-center justify-center text-center hover:overflow-y-scroll max-sm:overflow-auto max-md:overflow-y-auto ">
-        {props.events.map((event: any) => (
-          <>
-            <button
-              key={event}
-              className="text-sm border-2 border-red-500 border-solid m-2 p-0.5 text-center rounded-lg hover:bg-gray-500"
-            >
-              {/* NOTE: update to searchbar route later */}
-              <Link href={`/${event}`}>{event}</Link>
-            </button>
-          </>
+    <article className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-sm font-semibold">{props.title}</h3>
+        <button
+          title="delete-theme"
+          type="button"
+          className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
+          onClick={() => confirmThemeDelete(fetchId)}
+        >
+          <BiTrashAlt size={16} />
+        </button>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {props.events.map((event) => (
+          <span
+            key={`${props._id}-${event}`}
+            className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-muted)]"
+          >
+            {event}
+          </span>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function ThemesList() {
+  const { data, loadingFirst, error } = useFetch<ThemeWithId[]>('/themes', {
+    default: [],
+  });
+
+  if (loadingFirst) {
+    return (
+      <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 text-sm text-[var(--app-muted)]">
+        Loading themes...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 text-sm text-red-300">
+        Failed to load themes.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-[var(--app-muted)]">
+          {data.length} themes in your library
+        </p>
+        <Link
+          href="/themes/create"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+        >
+          <BiPlus size={18} />
+          Add theme
+        </Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {data.map((theme) => (
+          <ThemeCard {...theme} key={`theme-${theme._id}`} />
         ))}
       </div>
     </div>
   );
 }
 
-function Themes() {
-  const { data, loadingFirst, error } = useFetch<ITheme[]>('/themes', {
-    default: [],
-  });
-
-  if (loadingFirst)
-    return (
-      <div className="border-2 border-solid border-orange-500 rounded-sm my-1 h-screen w-full text-white bg-gray-700 text-center flex justify-center items-center">
-        <p className="text-2xl font-semibold py-4">Loading Themes...</p>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="border-2 border-solid border-orange-500 rounded-sm my-1 h-screen  w-full text-white bg-gray-700 text-center flex justify-center items-center">
-        <p className="text-2xl font-semibold py-4">Failed to Fetch Themes...</p>
-      </div>
-    );
-
-  const mappedThemes = data.map((theme) => (
-    <Theme {...theme} key={`theme-${theme._id}`} />
-  ));
-
-  return (
-    <div className="h-full overflow-y-auto border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700 max-md:overflow-y-scroll">
-      <div className="relative p-1 max-sm:mt-2 space-x-2 flex flex-row w-full">
-        <Link
-          href="/"
-          className="border-2 border-solid max-sm:p-0 border-red-500 p-1 text-xs flex items-center justify-center w-full py-2 font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
-        >
-          <button className="flex flex-row space-x-4 justify-between">
-            <BiArrowToLeft name="arrow-left" className="text-xl" />
-            <span className="my-0.5">Back</span>
-          </button>
-        </Link>
-        <Link
-          href="/themes/create"
-          className="border-2 border-solid max-sm:p-0 border-red-500 p-1 text-xs flex items-center justify-center w-full py-2  font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black focus:outline-none focus:shadow-outline-gray"
-        >
-          <button className="flex flex-row space-x-4 justify-between">
-            <BiPlus name="add-theme" className="text-xl" />
-            <span className="my-0.5">Add Theme</span>
-            <span className="my-0.5">{data.length}</span>
-          </button>
-        </Link>
-      </div>
-      <div className="container mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 rounded-md">
-          {mappedThemes}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const Page = () => {
+const ThemesPage = () => {
   const { data: session } = useSession();
   const isLoggedIn = Boolean(session);
+
+  if (!isLoggedIn) {
+    return <SignInRequired title="Theme library requires sign in" />;
+  }
+
   return (
-    <>
-      {isLoggedIn ? (
-        <div className="h-screen max-sm:h-full max-md:h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-          <Navbar title={'Themes'} />
-          <Themes />
-          <Footer />
-        </div>
-      ) : (
-        <SignInRequired title="Theme library requires sign in" />
-      )}
-    </>
+    <AppShell
+      title="Themes"
+      subtitle="Create and reuse curated themes for birthdays, community events, and workshops."
+    >
+      <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
+        <ThemesList />
+      </section>
+    </AppShell>
   );
 };
 
-export default Page;
+export default ThemesPage;

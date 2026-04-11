@@ -1,163 +1,152 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import { GiHamburgerMenu } from 'react-icons/gi';
-import { RiLogoutBoxRLine, RiLoginBoxLine } from 'react-icons/ri';
-import { RxCross1 } from 'react-icons/rx';
-import { BiUser } from 'react-icons/bi';
+import { usePathname } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import { useState } from 'react';
+import { BiMenu, BiX } from 'react-icons/bi';
+import Image from 'next/image';
 
 interface NavbarProps {
-  title: string;
+  title?: string;
 }
 
+const appLinks = [
+  { href: '/', label: 'Workspace' },
+  { href: '/planner', label: 'Planner' },
+  { href: '/posts', label: 'Notes' },
+  { href: '/themes', label: 'Themes' },
+  { href: '/eventrecomm', label: 'AI Studio' },
+];
+
+const linkClasses = (active: boolean) =>
+  `rounded-lg px-3 py-2 text-sm font-medium transition ${
+    active
+      ? 'bg-[var(--app-elevated)] text-[var(--app-text)]'
+      : 'text-[var(--app-muted)] hover:bg-[var(--app-elevated)] hover:text-[var(--app-text)]'
+  }`;
+
 const Navbar = ({ title }: NavbarProps) => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPromptOpen, setIsPromptOpen] = useState(false);
+
   const isLoggedIn = Boolean(session);
-  const userName = session?.user?.name ?? 'User';
-  const userImage =
-    session?.user?.image ?? 'https://avatars.githubusercontent.com/u/25550150?v=4';
+  const rootHref = isLoggedIn ? '/' : '/home';
+  const userName = session?.user?.name ?? 'Event planner';
+  const userImage = session?.user?.image;
+
+  const ctaLabel = isLoggedIn ? 'Sign out' : 'Try for free';
+  const ctaAction = () =>
+    isLoggedIn
+      ? signOut({ callbackUrl: '/home' })
+      : signIn('google', {
+          callbackUrl: '/',
+        });
 
   return (
-    <div className="z-10 text-3xl text-purple-500 text-center rounded-sm border-2 border-solid border-green-500 flex items-center justify-between px-2">
-      <div className="flex items-center">
-        <Link href="/">
-          <p className="text-lg max-sm:text-sm max-sm:font-semibold font-bold mx-1">
-            {title}
-          </p>
-        </Link>
-      </div>
-
-      <div className="hidden md:flex flex-row justify-between items-center space-x-2 px-1 py-0.5 rounded-lg">
-        {isLoggedIn ? (
-          <>
-            <Link
-              href="/profile"
-              className="border-2 rounded-lg px-2 border-solid border-indigo-500 flex flex-row items-center space-x-1 text-sm"
-            >
-              <BiUser className="inline-block text-red-500" size={15} />
-              <span className="text-green-500">Profile</span>
-            </Link>
-            <button
-              title="user-avatar"
-              type="button"
-              onClick={() => setIsPromptOpen((current) => !current)}
-              className="rounded-full"
-            >
-              <Image
-                className="h-6 w-6 rounded-full border-solid border-red-500 border-2"
-                src={userImage}
-                alt="Avatar"
-                width={32}
-                height={32}
-              />
-            </button>
-          </>
-        ) : (
-          <button
-            title="signin"
-            type="button"
-            onClick={() => signIn()}
-            className="border-2 rounded-lg px-1 border-solid border-red-500 flex flex-row items-center space-x-0.5"
+    <header className="sticky top-0 z-40 border-b border-[var(--app-border)] bg-[color:var(--app-bg)]/95 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-4">
+          <Link
+            href={rootHref}
+            className="text-lg font-semibold tracking-tight text-[var(--app-text)]"
           >
-            <span className="text-sm mb-0.5">Signin</span>
-            <RiLoginBoxLine className="inline-block text-green-500" size={15} />
-          </button>
-        )}
-      </div>
+            EventGo
+          </Link>
+          {title ? (
+            <p className="hidden truncate text-sm text-[var(--app-muted)] sm:block">
+              / {title}
+            </p>
+          ) : null}
+        </div>
 
-      <div className="md:hidden text-red-500 items-center justify-center h-full text-center mt-1">
+        <nav className="hidden items-center gap-1 md:flex">
+          {isLoggedIn
+            ? appLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={linkClasses(pathname === link.href)}
+                >
+                  {link.label}
+                </Link>
+              ))
+            : null}
+        </nav>
+
+        <div className="hidden items-center gap-2 md:flex">
+          {isLoggedIn ? (
+            <Link href="/profile" className={linkClasses(pathname === '/profile')}>
+              Profile
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            onClick={ctaAction}
+            className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            {ctaLabel}
+          </button>
+          {status === 'authenticated' && userImage ? (
+            <Image
+              src={userImage}
+              alt={userName}
+              className="h-9 w-9 rounded-full border border-[var(--app-border)] object-cover"
+              width={36}
+              height={36}
+            />
+          ) : null}
+        </div>
+
         <button
           title="toggle-menu"
           type="button"
-          onClick={() => setIsMenuOpen((current) => !current)}
+          className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-text)] md:hidden"
+          onClick={() => setIsMenuOpen((open) => !open)}
         >
-          <GiHamburgerMenu size={25} />
+          {isMenuOpen ? <BiX size={24} /> : <BiMenu size={24} />}
         </button>
       </div>
 
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-0 left-0 w-full h-screen bg-black z-20">
-          <div className="flex flex-col justify-center h-full items-center text-center space-y-2">
-            <button title="close-menu" type="button" onClick={() => setIsMenuOpen(false)}>
-              <RxCross1 className="inline-block text-red-500 " size={30} />
-            </button>
-
-            <Link
-              href="/"
-              className="border-2 rounded-lg p-2 border-solid border-green-500 text-lg"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-
+      {isMenuOpen ? (
+        <div className="border-t border-[var(--app-border)] px-4 py-3 md:hidden">
+          <div className="flex flex-col gap-2">
+            {isLoggedIn
+              ? appLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={linkClasses(pathname === link.href)}
+                  >
+                    {link.label}
+                  </Link>
+                ))
+              : null}
             {isLoggedIn ? (
-              <>
-                <Link
-                  href="/profile"
-                  className="border-2 rounded-lg p-2 border-solid border-indigo-500 flex flex-row items-center space-x-1"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span className="text-lg text-green-500 trim w-20 overflow-hidden">
-                    {userName}
-                  </span>
-                  <BiUser className="inline-block text-red-500" size={20} />
-                </Link>
-                <button
-                  title="logout"
-                  type="button"
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="border-2 rounded-lg p-2 border-solid border-indigo-500 flex flex-row items-center space-x-1"
-                >
-                  <span className="text-lg text-green-500">Logout</span>
-                  <RiLogoutBoxRLine className="inline-block text-red-500" size={20} />
-                </button>
-              </>
-            ) : (
-              <button
-                title="signin"
-                type="button"
-                onClick={() => signIn()}
-                className="border-2 rounded-lg p-2 border-solid border-red-500 flex flex-row items-center space-x-1"
+              <Link
+                href="/profile"
+                onClick={() => setIsMenuOpen(false)}
+                className={linkClasses(pathname === '/profile')}
               >
-                <span className="text-lg mb-0.5">Signin</span>
-                <RiLoginBoxLine className="inline-block text-green-500" size={25} />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {isPromptOpen && isLoggedIn && (
-        <div className="absolute max-sm:hidden top-9 right-4 w-[220px] bg-black rounded-lg border-solid border-4 border-red-500 p-4 h-[180px] items-center justify-center text-center flex z-20">
-          <div className="flex flex-col text-center items-center justify-center space-y-2">
-            <Link
-              href="/profile"
-              className="border-2 rounded-lg p-2 border-solid border-indigo-500 flex flex-row items-center space-x-1"
-              onClick={() => setIsPromptOpen(false)}
-            >
-              <span className="text-lg text-green-500 trim w-20 overflow-hidden">
-                {userName}
-              </span>
-              <BiUser className="inline-block text-red-500" size={20} />
-            </Link>
+                Profile
+              </Link>
+            ) : null}
             <button
-              title="logout"
               type="button"
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="border-2 rounded-lg p-2 border-solid border-indigo-500 flex flex-row items-center space-x-1"
+              onClick={() => {
+                setIsMenuOpen(false);
+                ctaAction();
+              }}
+              className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-left text-sm font-semibold text-white"
             >
-              <span className="text-lg text-green-500">Logout</span>
-              <RiLogoutBoxRLine className="inline-block text-red-500" size={20} />
+              {ctaLabel}
             </button>
           </div>
         </div>
-      )}
-    </div>
+      ) : null}
+    </header>
   );
 };
 

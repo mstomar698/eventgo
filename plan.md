@@ -12,12 +12,13 @@ Build EventGo into a practical, end-to-end event planning product that covers th
 - ✅ Routing consolidation completed (App Router pages now import from `src/features`, `src/pages` is API-only).
 - ✅ Global profile settings added for theme + font scale toggles.
 - ✅ OSS quality baseline added (ESLint flat config, Prettier, Husky pre-commit, PR quality workflow, Dependabot).
+- ✅ UI/UX redesign applied with professional app shell, marketing `/home`, and authenticated workspace dashboard.
+- ✅ Auth flow updated to Google-only login for the current phase (`/home` public, `/` workspace redirect flow for unauthenticated users).
+- ✅ AI dev/testing path switched to Gemini-backed routes (`/api/chatgpt*` now use Gemini).
+- ✅ Data API error handling improved to surface actionable configuration issues.
 - ⚠️ Stability smoke test results:
   - App routes are healthy (`/`, `/planner`, `/posts`, `/themes`, `/eventrecomm`, `/themerecomm`, `/info`, `/profile` all return 200).
-  - API routes requiring config currently fail until env is set:
-    - `MONGODB_URI` missing blocks `/api/posts`, `/api/themes`, `/api/events`.
-    - Auth provider env (`GITHUB_*` or `GOOGLE_*`) missing blocks `/api/auth/session`.
-    - `OPENAI_API_KEY` missing returns explicit 500 on AI routes (expected guard behavior).
+  - API routes requiring DB config currently fail if `MONGODB_URI` is malformed (detected and surfaced with explicit guidance).
 - ⏭️ Next active priorities: API/data contracts, then AI endpoint modernization.
 
 ## Target outcomes

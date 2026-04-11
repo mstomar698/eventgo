@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 
 interface SignInRequiredProps {
@@ -9,21 +10,36 @@ interface SignInRequiredProps {
 
 const SignInRequired = ({
   title = 'Sign in required',
-  description = 'This section is available to authenticated users only.',
+  description = 'This workspace is available to authenticated users only.',
 }: SignInRequiredProps) => {
   return (
-    <div className="h-screen w-full p-1 flex flex-col border-2 border-solid border-red-500">
-      <div className="h-full border-2 border-solid border-orange-500 rounded-sm my-1 bg-gray-700">
-        <div className="h-full w-full text-center items-center justify-center flex flex-col p-16 max-sm:p-8 space-y-3">
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-green-500">{description}</p>
-          <button
-            type="button"
-            onClick={() => signIn()}
-            className="border-2 mt-6 h-20 border-solid border-red-500 px-8 text-xl flex items-center justify-center font-medium transition-colors duration-150 bg-gray-700 rounded-lg hover:bg-black hover:text-white focus:outline-none focus:shadow-outline-gray"
-          >
-            Sign In
-          </button>
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
+      <div className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-4 py-12 sm:px-6">
+        <div className="w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8 text-center shadow-lg">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-accent)]">
+            EventGo Access
+          </p>
+          <h1 className="mt-3 text-2xl font-semibold">{title}</h1>
+          <p className="mt-2 text-sm text-[var(--app-muted)]">{description}</p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={() =>
+                signIn('google', {
+                  callbackUrl: '/',
+                })
+              }
+              className="rounded-lg bg-[var(--app-accent-strong)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Continue with Google
+            </button>
+            <Link
+              href="/home"
+              className="rounded-lg border border-[var(--app-border)] px-5 py-2.5 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+            >
+              Back to product overview
+            </Link>
+          </div>
         </div>
       </div>
     </div>

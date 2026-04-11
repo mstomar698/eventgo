@@ -1,18 +1,18 @@
 # EventGo
 
-EventGo is a Next.js event planning platform that combines notes, planner/flowchart tools, themed suggestions, and AI-assisted interactions.
+EventGo is a Next.js event planning platform that combines planning boards, notes + calendar workflows, reusable themes, and AI-assisted ideation.
 
 ## Current code snapshot
 
-- Functional app routes for planner, posts, events/themes, and recommendation pages.
-- Authentication with NextAuth and multiple API routes.
-- Flowchart/notes UI is feature-rich.
-- AI endpoints currently use legacy completion patterns and need modernization.
+- App-router driven workspace with authenticated dashboard at `/`.
+- Public product landing route at `/home`.
+- Google-authenticated experience via NextAuth.
+- Gemini-backed AI endpoints for development/testing flows.
 
 ## Serviceability roadmap
 
-1. **Architecture cleanup:** remove dual app/pages overlap where possible and standardize data contracts.
-2. **AI/API modernization:** migrate to current OpenAI API style, add request limits, and robust error handling.
+1. **Architecture cleanup:** continue route/component consolidation and stabilize domain contracts.
+2. **AI/API modernization:** add model routing, request controls, and deterministic fallbacks around Gemini.
 3. **Collaboration features:** shared event boards, comments, and team invitations.
 4. **Commercial readiness:** organization plans, template packs, and audit logs.
 
@@ -36,8 +36,14 @@ Required env for full API flow:
 
 - `MONGODB_URI` (planner/posts/themes/events persistence)
 - `NEXTAUTH_SECRET`
-- One auth provider: `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` **or** `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
-- `OPENAI_API_KEY` (AI recommendation endpoints)
+- Google auth: `GOOGLE_ID` + `GOOGLE_SECRET` (or `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`)
+- `GEMINI_API_KEY` (AI recommendation endpoints)
+
+## Route behavior
+
+- `/home` is the public marketing/product overview route.
+- `/` is the authenticated workspace root.
+- Unauthenticated users hitting `/` are redirected to `/home`.
 
 ## Engineering standards
 

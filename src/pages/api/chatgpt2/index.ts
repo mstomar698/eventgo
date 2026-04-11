@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getEnvVar } from '@/lib/env';
-import { fetchLegacyCompletion } from '@/lib/openai';
+import { getEnvVar, getFirstEnvVar } from '@/lib/env';
+import { generateGeminiText } from '@/lib/gemini';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,17 +13,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'query is required' });
   }
 
-  const apiKey = getEnvVar('OPENAI_API_KEY');
+  const apiKey = getFirstEnvVar('GEMINI_API_KEY', 'GOOGLE_GEMINI_API_KEY');
   if (!apiKey) {
-    return res.status(500).json({ message: 'OPENAI_API_KEY is not configured' });
+    return res.status(500).json({
+      message: 'GEMINI_API_KEY is not configured',
+    });
   }
 
   try {
-    const prompt = `Recommend ideas about events to organize for ${query}\n\n`;
-    const recommendation = await fetchLegacyCompletion({
+    const prompt = `Suggest event ideas for "${query}". Provide a short list with format: title, why it works, and one practical execution tip for each idea.`;
+    const recommendation = await generateGeminiText({
       apiKey,
       prompt,
-      maxTokens: 60,
+      model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
+      maxOutputTokens: 500,
     });
     return res.status(200).json({ recommendation });
   } catch (error) {
