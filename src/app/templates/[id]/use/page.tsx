@@ -87,6 +87,8 @@ function TemplateWizard() {
                 Event Name
               </label>
               <input
+                name="eventName"
+                title="event Name"
                 type="text"
                 defaultValue={`${template.name} Event`}
                 className="mt-1 w-full rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm"
@@ -97,6 +99,8 @@ function TemplateWizard() {
                 Headcount
               </label>
               <input
+                name="headcount"
+                title="headcount"
                 type="number"
                 defaultValue={template.headcount}
                 className="mt-1 w-full rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm"
@@ -107,6 +111,8 @@ function TemplateWizard() {
                 Date
               </label>
               <input
+                name="date"
+                title="date"
                 type="date"
                 className="mt-1 w-full rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm"
               />
@@ -123,7 +129,12 @@ function TemplateWizard() {
           <div className="space-y-2">
             {template.checklist.map((item, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" className="rounded" />
+                <input
+                  name="checklist"
+                  title="check"
+                  type="checkbox"
+                  className="rounded"
+                />
                 <span>{item}</span>
               </div>
             ))}

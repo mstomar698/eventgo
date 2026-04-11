@@ -53,29 +53,6 @@ Required env for full API flow:
 - Google auth: `GOOGLE_ID` + `GOOGLE_SECRET` (or `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`)
 - `GEMINI_API_KEY` (AI recommendation endpoints)
 
-## Continuous integration
-
-This repository includes a GitHub Actions workflow at `.github/workflows/ci.yml` that runs on pushes and PRs to `main`.
-
-- Steps: install, lint, build, and basic route checks against a locally started Next.js server.
-- To run the same checks locally, from the `eventgo` directory run:
-
-```bash
-npm ci
-npm run lint
-npm run build
-# start the production server in background for the checks
-npm run start &
-sleep 2
-# then curl key routes to verify they return 2xx/3xx
-curl -I http://localhost:3000/home
-curl -I http://localhost:3000/templates
-curl -I http://localhost:3000/posts
-kill %1 || true
-```
-
-CI will fail if any monitored route returns a non-2xx/3xx status.
-
 ## Route behavior
 
 - `/home` is the public marketing/product overview route.

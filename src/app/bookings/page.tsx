@@ -50,10 +50,18 @@ function BookingCard({ booking }: { booking: Booking }) {
           )}
         </div>
         <div className="flex gap-1">
-          <button className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]">
+          <button
+            type="submit"
+            title="phone"
+            className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]"
+          >
             <BiPhone size={14} />
           </button>
-          <button className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]">
+          <button
+            type="submit"
+            title="email"
+            className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]"
+          >
             <BiEnvelope size={14} />
           </button>
         </div>

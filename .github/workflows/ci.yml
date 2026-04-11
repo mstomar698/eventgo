@@ -17,19 +17,15 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: |
-          cd eventgo
           npm ci
       - name: Lint
         run: |
-          cd eventgo
           npm run lint
       - name: Build
         run: |
-          cd eventgo
           npm run build
       - name: Basic route checks
         run: |
-          cd eventgo
           npm run start &
           # Give Next a moment to start
           sleep 2
