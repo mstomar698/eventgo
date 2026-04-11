@@ -48,6 +48,7 @@ const aiSections = [
   },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const templateExamples = [
   'Birthday at home (<20 attendees)',
   'Birthday at a cafe (<20 attendees)',

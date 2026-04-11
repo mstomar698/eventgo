@@ -5,12 +5,23 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { EventTemplateCreateSchema } from '@/lib/schemas';
+import { STARTER_TEMPLATES } from '@/lib/templates';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await connectToDB();
 
     if (req.method === 'GET') {
+      const existingCount = await EventTemplate.countDocuments({ isPublic: true });
+      if (existingCount === 0) {
+        await EventTemplate.insertMany(
+          STARTER_TEMPLATES.map((template) => ({
+            ...template,
+            isPublic: true,
+          }))
+        );
+      }
+
       const templates = await EventTemplate.find({ isPublic: true });
       sendSuccess(res, templates);
     } else if (req.method === 'POST') {

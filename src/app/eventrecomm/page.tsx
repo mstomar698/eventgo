@@ -21,6 +21,11 @@ const EventRecommendationsPage = () => {
         actionLabel="Generate event ideas"
         responseKey="recommendation"
         responseHeading="Recommendation output"
+        examples={[
+          'Team offsite for 15 people with 1-day agenda',
+          'Birthday event for 20 people with low budget',
+          'Community meetup for 18 attendees in a cafe',
+        ]}
       />
     </AppShell>
   );

@@ -8,6 +8,7 @@ interface QueryWorkspaceProps {
   actionLabel: string;
   responseKey: 'recommendation' | 'info';
   responseHeading: string;
+  examples?: string[];
 }
 
 const QueryWorkspace = ({
@@ -16,6 +17,7 @@ const QueryWorkspace = ({
   actionLabel,
   responseKey,
   responseHeading,
+  examples = [],
 }: QueryWorkspaceProps) => {
   const [query, setQuery] = useState('');
   const [responseText, setResponseText] = useState<string | null>(null);
@@ -38,7 +40,7 @@ const QueryWorkspace = ({
 
     const data = await response.json();
 
-    const content = data[responseKey];
+    const content = data?.data?.[responseKey] ?? data?.[responseKey];
     if (typeof content !== 'string' || !content.trim()) {
       setIsLoading(false);
       setError('AI response was empty.');
@@ -80,6 +82,26 @@ const QueryWorkspace = ({
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--app-text)]">
             {responseText}
           </p>
+        </div>
+      ) : null}
+
+      {!responseText && !isLoading && !error && examples.length > 0 ? (
+        <div className="mt-5 rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-accent)]">
+            Example prompts
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {examples.map((example) => (
+              <button
+                key={example}
+                type="button"
+                onClick={() => setQuery(example)}
+                className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-1 text-xs text-[var(--app-muted)] transition hover:text-[var(--app-text)]"
+              >
+                {example}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

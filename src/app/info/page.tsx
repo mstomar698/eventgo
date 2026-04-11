@@ -19,8 +19,13 @@ const EventInfoPage = () => {
         endpoint="/api/chatgpt"
         placeholder="e.g. What should we include in a wedding day-of runbook?"
         actionLabel="Get insights"
-        responseKey="info"
+        responseKey="recommendation"
         responseHeading="Research output"
+        examples={[
+          'How to structure a day-of runbook for 50 attendees?',
+          'What are common budget overrun risks for small events?',
+          'Checklist for venue coordination one week before event',
+        ]}
       />
     </AppShell>
   );

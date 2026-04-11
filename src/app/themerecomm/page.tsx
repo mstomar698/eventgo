@@ -21,6 +21,11 @@ const ThemeRecommendationsPage = () => {
         actionLabel="Generate theme ideas"
         responseKey="recommendation"
         responseHeading="Theme output"
+        examples={[
+          'Cozy indoor birthday for 12 people',
+          'Retro game-night theme for a teen party',
+          'Nature-themed community workshop setup',
+        ]}
       />
     </AppShell>
   );
