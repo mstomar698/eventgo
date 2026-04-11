@@ -14,10 +14,7 @@ const ThemeRecommendationsPage = () => {
   }
 
   return (
-    <AppShell
-      title="Theme Recommendations"
-      subtitle="Generate event themes with vibe, decor direction, and activity ideas."
-    >
+    <AppShell title="Theme Recommendations">
       <QueryWorkspace
         endpoint="/api/chatgpt3"
         placeholder="e.g. Birthday for 12 people, cozy indoor setting"

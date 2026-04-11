@@ -221,10 +221,7 @@ const UseTemplatePage = () => {
   }
 
   return (
-    <AppShell
-      title="Plan from Template"
-      subtitle="Customize this template to create your perfect event."
-    >
+    <AppShell title="Plan from Template">
       <TemplateWizard />
     </AppShell>
   );

@@ -71,9 +71,15 @@ function BookingCard({ booking }: { booking: Booking }) {
 }
 
 function BookingsList() {
-  const { data, loadingFirst, error } = useFetch<Booking[]>('/bookings', {
-    default: [],
+  const {
+    data: response,
+    loadingFirst,
+    error,
+  } = useFetch<{ data?: Booking[] }>('/bookings', {
+    default: { data: [] },
   });
+
+  const bookings = Array.isArray(response?.data) ? response.data : [];
 
   if (loadingFirst) {
     return (
@@ -95,7 +101,7 @@ function BookingsList() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[var(--app-muted)]">
-          {data.length} bookings in your pipeline
+          {bookings.length} bookings in your pipeline
         </p>
         <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
           <BiPlus size={18} />
@@ -103,7 +109,7 @@ function BookingsList() {
         </button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {data.map((booking) => (
+        {bookings.map((booking) => (
           <BookingCard key={booking._id} booking={booking} />
         ))}
       </div>
@@ -120,10 +126,7 @@ const BookingsPage = () => {
   }
 
   return (
-    <AppShell
-      title="Vendor Bookings"
-      subtitle="Track your vendor pipeline and manage booking statuses."
-    >
+    <AppShell title="Vendor Bookings">
       <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
         <BookingsList />
       </section>

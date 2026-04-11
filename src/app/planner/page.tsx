@@ -10,10 +10,7 @@ const Planner = () => {
   return (
     <>
       {isLoggedIn ? (
-        <AppShell
-          title="Planner"
-          subtitle="Map event phases, dependencies, and execution flow in one visual board."
-        >
+        <AppShell title="Planner">
           <div className="overflow-hidden rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-2 shadow-lg">
             <Flowchart />
           </div>

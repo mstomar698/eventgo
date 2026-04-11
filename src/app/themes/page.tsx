@@ -65,9 +65,15 @@ function ThemeCard(props: ThemeWithId) {
 }
 
 function ThemesList() {
-  const { data, loadingFirst, error } = useFetch<ThemeWithId[]>('/themes', {
-    default: [],
+  const {
+    data: response,
+    loadingFirst,
+    error,
+  } = useFetch<{ data?: ThemeWithId[] }>('/themes', {
+    default: { data: [] },
   });
+
+  const themes = Array.isArray(response?.data) ? response.data : [];
 
   if (loadingFirst) {
     return (
@@ -89,7 +95,7 @@ function ThemesList() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[var(--app-muted)]">
-          {data.length} themes in your library
+          {themes.length} themes in your library
         </p>
         <Link
           href="/themes/create"
@@ -100,7 +106,7 @@ function ThemesList() {
         </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {data.map((theme) => (
+        {themes.map((theme) => (
           <ThemeCard {...theme} key={`theme-${theme._id}`} />
         ))}
       </div>
@@ -117,10 +123,7 @@ const ThemesPage = () => {
   }
 
   return (
-    <AppShell
-      title="Themes"
-      subtitle="Create and reuse curated themes for birthdays, community events, and workshops."
-    >
+    <AppShell title="Themes">
       <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
         <ThemesList />
       </section>

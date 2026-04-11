@@ -5,10 +5,7 @@ import QueryWorkspace from '@/components/ai/query-workspace';
 
 const VenueRecommPage = () => {
   return (
-    <AppShell
-      title="Venue Recommendations"
-      subtitle="Find the perfect location for your event with venue suggestions and nearby area insights."
-    >
+    <AppShell title="Venue Recommendations">
       <QueryWorkspace
         endpoint="/venues"
         placeholder="Describe your event (e.g., 'birthday party for 20 people in downtown area')"

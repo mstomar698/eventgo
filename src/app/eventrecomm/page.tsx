@@ -14,10 +14,7 @@ const EventRecommendationsPage = () => {
   }
 
   return (
-    <AppShell
-      title="Event Recommendations"
-      subtitle="Use AI to generate practical event ideas based on audience, location, or occasion."
-    >
+    <AppShell title="Event Recommendations">
       <QueryWorkspace
         endpoint="/api/chatgpt2"
         placeholder="e.g. Team offsite for 15 people in Bangalore"

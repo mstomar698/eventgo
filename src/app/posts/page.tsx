@@ -57,9 +57,15 @@ function PostCard(props: PostWithId) {
 }
 
 function PostsList() {
-  const { data, loadingFirst, error } = useFetch<PostWithId[]>('/posts', {
-    default: [],
+  const {
+    data: response,
+    loadingFirst,
+    error,
+  } = useFetch<{ data?: PostWithId[] }>('/posts', {
+    default: { data: [] },
   });
+
+  const posts = Array.isArray(response?.data) ? response.data : [];
 
   if (loadingFirst) {
     return (
@@ -81,7 +87,7 @@ function PostsList() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[var(--app-muted)]">
-          {data.length} notes in this workspace
+          {posts.length} notes in this workspace
         </p>
         <Link
           href="/posts/create"
@@ -92,7 +98,7 @@ function PostsList() {
         </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {data.map((post) => (
+        {posts.map((post) => (
           <PostCard {...post} key={`post-${post._id}`} />
         ))}
       </div>
@@ -109,10 +115,7 @@ const NotesPage = () => {
   }
 
   return (
-    <AppShell
-      title="Notes & Schedule"
-      subtitle="Capture decisions and maintain an event-aware calendar side by side."
-    >
+    <AppShell title="Notes & Schedule">
       <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
         <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
           <PostsList />

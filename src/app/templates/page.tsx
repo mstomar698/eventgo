@@ -41,9 +41,15 @@ function TemplateCard(props: Template) {
 }
 
 function TemplatesList() {
-  const { data, loadingFirst, error } = useFetch<Template[]>('/templates', {
-    default: [],
+  const {
+    data: response,
+    loadingFirst,
+    error,
+  } = useFetch<{ data?: Template[] }>('/templates', {
+    default: { data: [] },
   });
+
+  const templates = Array.isArray(response?.data) ? response.data : [];
 
   if (loadingFirst) {
     return (
@@ -65,7 +71,7 @@ function TemplatesList() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[var(--app-muted)]">
-          {data.length} starter templates available
+          {templates.length} starter templates available
         </p>
         <Link
           href="/templates/create"
@@ -76,7 +82,7 @@ function TemplatesList() {
         </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {data.map((template) => (
+        {templates.map((template) => (
           <TemplateCard {...template} key={`template-${template._id}`} />
         ))}
       </div>
@@ -93,10 +99,7 @@ const TemplatesPage = () => {
   }
 
   return (
-    <AppShell
-      title="Event Templates"
-      subtitle="Start planning with proven templates for birthdays and community events."
-    >
+    <AppShell title="Event Templates">
       <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
         <TemplatesList />
       </section>

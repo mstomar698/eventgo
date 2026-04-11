@@ -16,10 +16,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <AppShell
-      title="Profile Settings"
-      subtitle="Customize your visual preferences for a comfortable planning workflow."
-    >
+    <AppShell title="Profile Settings">
       <div className="mx-auto max-w-3xl space-y-6">
         <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
           <h2 className="text-xl font-semibold">Theme</h2>
@@ -106,23 +103,6 @@ const ProfilePage = () => {
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
-          <h2 className="text-xl font-semibold">Preview</h2>
-          <p className="mt-2 text-sm text-[var(--app-muted)]">
-            Preview your current theme and typography settings before using them across
-            the workspace.
-          </p>
-          <div className="mt-4 rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
-            <h3 className="text-lg font-semibold">EventGo UI Preview</h3>
-            <p className="mt-1 text-sm text-[var(--app-muted)]">
-              This block mirrors your live theme, font size, and font family choices.
-            </p>
-            <div className="mt-3 inline-flex rounded-full bg-[var(--app-accent-strong)] px-3 py-1 text-xs font-semibold text-white">
-              Readable planning surface
             </div>
           </div>
         </section>

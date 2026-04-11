@@ -62,10 +62,7 @@ const CreateThemePage = () => {
   };
 
   return (
-    <AppShell
-      title="Create Theme"
-      subtitle="Design reusable theme packs with activities that fit your event brief."
-    >
+    <AppShell title="Create Theme">
       <form
         onSubmit={onSubmit}
         className="mx-auto w-full max-w-3xl rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 sm:p-8"

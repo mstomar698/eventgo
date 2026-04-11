@@ -14,10 +14,7 @@ const EventInfoPage = () => {
   }
 
   return (
-    <AppShell
-      title="Planning Research"
-      subtitle="Ask focused event questions and get concise planning-oriented answers."
-    >
+    <AppShell title="Planning Research">
       <QueryWorkspace
         endpoint="/api/chatgpt"
         placeholder="e.g. What should we include in a wedding day-of runbook?"
