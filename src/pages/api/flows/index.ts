@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const updatedFlow = await FlowModel.findOneAndUpdate(
         { userId },
         { nodes, edges, updatedAt: new Date() },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
       sendSuccess(res, { nodes: updatedFlow.nodes, edges: updatedFlow.edges });
     } else {

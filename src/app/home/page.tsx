@@ -24,15 +24,32 @@ const highlights = [
   },
 ];
 
+const landingMilestones = [
+  'Brief intake and requirement capture',
+  'Theme and concept exploration',
+  'Venue and nearby service planning',
+  'Timeline, tasks, and run-of-show controls',
+  'Notes, calendar, and booking coordination',
+  'Post-event summary and reuse support',
+];
+
+const launchTemplates = [
+  'Birthday at Home (<20 people)',
+  'Birthday at Cafe/Restaurant (<20 people)',
+  'Small Community Meetup (<20 people)',
+  'Neighborhood Workshop (<20 people)',
+];
+
 const HomeRoute = () => {
-  const { data: session } = useSession();
-  const isLoggedIn = Boolean(session);
+  const { status } = useSession();
+  const isLoggedIn = status === 'authenticated';
+  const isAuthLoading = status === 'loading';
 
   return (
-    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
+    <div className="flex min-h-screen flex-col bg-[var(--app-bg)] text-[var(--app-text)]">
       <Navbar title="Product Overview" />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface)] p-8 shadow-xl sm:p-12">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-accent)]">
             EventGo
@@ -57,14 +74,19 @@ const HomeRoute = () => {
             ) : (
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  if (isAuthLoading) {
+                    return;
+                  }
+
                   signIn('google', {
                     callbackUrl: '/',
-                  })
-                }
-                className="rounded-lg bg-[var(--app-accent-strong)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  });
+                }}
+                disabled={isAuthLoading}
+                className="rounded-lg bg-[var(--app-accent-strong)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Try for free with Google
+                {isAuthLoading ? 'Checking session...' : 'Try for free with Google'}
               </button>
             )}
             <a
@@ -112,6 +134,39 @@ const HomeRoute = () => {
               Production-readiness baseline with lint, format, and PR quality checks
             </p>
           </div>
+        </section>
+
+        <section className="mt-6 grid gap-6 lg:grid-cols-[1.25fr_1fr]">
+          <article className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+            <h2 className="text-xl font-semibold">How planning progresses in EventGo</h2>
+            <ul className="mt-4 space-y-2 text-sm text-[var(--app-muted)]">
+              {landingMilestones.map((milestone) => (
+                <li
+                  key={milestone}
+                  className="rounded-lg bg-[var(--app-elevated)] px-3 py-2"
+                >
+                  {milestone}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+            <h2 className="text-xl font-semibold">Ready starter templates</h2>
+            <p className="mt-2 text-sm text-[var(--app-muted)]">
+              Launch quickly with prebuilt plans designed for under-20 attendee events.
+            </p>
+            <ul className="mt-4 space-y-2 text-sm text-[var(--app-muted)]">
+              {launchTemplates.map((template) => (
+                <li
+                  key={template}
+                  className="rounded-lg bg-[var(--app-elevated)] px-3 py-2"
+                >
+                  {template}
+                </li>
+              ))}
+            </ul>
+          </article>
         </section>
       </main>
 

@@ -32,18 +32,31 @@ const Navbar = ({ title }: NavbarProps) => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const isLoggedIn = Boolean(session);
-  const rootHref = isLoggedIn ? '/' : '/home';
+  const isLoggedIn = status === 'authenticated';
+  const isAuthLoading = status === 'loading';
+  const rootHref = isAuthLoading ? '/home' : isLoggedIn ? '/' : '/home';
   const userName = session?.user?.name ?? 'Event planner';
   const userImage = session?.user?.image;
 
-  const ctaLabel = isLoggedIn ? 'Sign out' : 'Try for free';
-  const ctaAction = () =>
-    isLoggedIn
-      ? signOut({ callbackUrl: '/home' })
-      : signIn('google', {
-          callbackUrl: '/',
-        });
+  const ctaLabel = isAuthLoading
+    ? 'Loading...'
+    : isLoggedIn
+      ? 'Sign out'
+      : 'Try for free';
+  const ctaAction = () => {
+    if (isAuthLoading) {
+      return;
+    }
+
+    if (isLoggedIn) {
+      signOut({ callbackUrl: '/home' });
+      return;
+    }
+
+    signIn('google', {
+      callbackUrl: '/',
+    });
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--app-border)] bg-[color:var(--app-bg)]/95 backdrop-blur">
@@ -85,7 +98,8 @@ const Navbar = ({ title }: NavbarProps) => {
           <button
             type="button"
             onClick={ctaAction}
-            className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            disabled={isAuthLoading}
+            className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {ctaLabel}
           </button>
@@ -140,7 +154,8 @@ const Navbar = ({ title }: NavbarProps) => {
                 setIsMenuOpen(false);
                 ctaAction();
               }}
-              className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-left text-sm font-semibold text-white"
+              disabled={isAuthLoading}
+              className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-left text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {ctaLabel}
             </button>
