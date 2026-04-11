@@ -1,3 +1,4 @@
+// Public product landing page: copy, highlights and CTA
 'use client';
 
 import Footer from '@/components/footer/footer';
@@ -42,7 +43,8 @@ const HomeRoute = () => {
           <p className="mt-5 max-w-2xl text-sm leading-6 text-[var(--app-muted)] sm:text-base">
             EventGo helps teams and independent planners convert rough ideas into
             executable plans. Build structure, collect insights, and keep every milestone
-            organized in one system.
+            organized in one system. We prioritize reproducible templates, simple
+            collaboration primitives, and clear exportable run-of-show artifacts.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {isLoggedIn ? (
