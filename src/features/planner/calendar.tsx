@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 
@@ -12,32 +12,35 @@ interface Event {
   color?: string;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
 const localizer = momentLocalizer(moment);
 
 const CalendarPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/events')
       .then((response) => response.json())
-      .then((data) => {
-        if (!Array.isArray(data)) {
-          setEvents([]);
-          return;
-        }
-
+      .then((payload: ApiResponse<Event[]>) => {
+        const items = Array.isArray(payload?.data) ? payload.data : [];
         setEvents(
-          data.map((event: Event) => ({
+          items.map((event) => ({
             ...event,
             start: new Date(event.start),
             end: new Date(event.end),
           }))
         );
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.log(error))
+      .finally(() => setIsLoading(false));
   }, []);
 
-  const handleSelect = ({ start, end }: { start: Date; end: Date }) => {
+  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     const title = window.prompt('Enter event title');
     if (!title?.trim()) {
       return;
@@ -57,47 +60,78 @@ const CalendarPage = () => {
         }
         return response.json();
       })
-      .then((data) =>
+      .then((payload: ApiResponse<Event>) => {
+        const saved = payload.data;
         setEvents((current) => [
           ...current,
           {
-            ...data,
-            start: new Date(data.start),
-            end: new Date(data.end),
+            ...saved,
+            start: new Date(saved.start),
+            end: new Date(saved.end),
           },
-        ])
-      )
+        ]);
+      })
       .catch((error) => console.log(error));
   };
-  // const handleDelete = (event: Event) => {
-  //   fetch(`/api/events/${event._id}`, {
-  //     method: 'DELETE',
-  //   })
-  //     .then(() => setEvents(events.filter((e) => e._id !== event._id)))
-  //     .catch((error) => console.log(error));
-  // };
-  const eventPropGetter = (event: Event) => {
-    return {
-      style: {
-        backgroundColor: event.color ?? 'var(--app-accent-strong)',
-        border: 'none',
-        borderRadius: '6px',
-      },
-    };
+
+  const handleSelectEvent = (event: Event) => {
+    const shouldDelete = window.confirm(`Remove \"${event.title}\" from calendar?`);
+    if (!shouldDelete) {
+      return;
+    }
+
+    fetch(`/api/events?id=${event._id}`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to delete event');
+        }
+
+        setEvents((current) => current.filter((item) => item._id !== event._id));
+      })
+      .catch((error) => console.log(error));
   };
 
+  const eventPropGetter = (event: Event) => ({
+    style: {
+      backgroundColor: event.color ?? 'var(--app-accent-strong)',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      color: '#ffffff',
+    },
+  });
+
+  const helperText = useMemo(() => {
+    if (isLoading) {
+      return 'Loading calendar...';
+    }
+
+    if (events.length === 0) {
+      return 'Select a time slot to create your first event.';
+    }
+
+    return 'Select a slot to add or click an event to remove it.';
+  }, [events.length, isLoading]);
+
   return (
-    <div className="h-[420px] w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-3 text-sm">
-      <Calendar
-        localizer={localizer}
-        events={events}
-        eventPropGetter={eventPropGetter}
-        startAccessor="start"
-        endAccessor="end"
-        selectable
-        onSelectSlot={handleSelect}
-        className="h-full"
-      />
+    <div className="space-y-2">
+      <p className="text-xs text-[var(--app-muted)]">{helperText}</p>
+      <div className="h-[460px] w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-3 text-sm">
+        <Calendar
+          localizer={localizer}
+          events={events}
+          eventPropGetter={eventPropGetter}
+          startAccessor="start"
+          endAccessor="end"
+          selectable
+          popup
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={handleSelectSlot}
+          className="h-full"
+        />
+      </div>
     </div>
   );
 };

@@ -55,6 +55,25 @@ const templateExamples = [
   'Neighborhood workshop / book club (<20 attendees)',
 ];
 
+const readyTemplates = [
+  {
+    name: 'Birthday at Home',
+    useCases: 'Family celebration with simple logistics',
+  },
+  {
+    name: 'Birthday at Cafe/Restaurant',
+    useCases: 'Hosted celebration with venue support',
+  },
+  {
+    name: 'Small Community Meetup',
+    useCases: 'Recurring local gathering format',
+  },
+  {
+    name: 'Neighborhood Workshop',
+    useCases: 'Educational or hobby-based session',
+  },
+];
+
 const HomePage = () => {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.split(' ')[0] ?? 'Planner';
@@ -116,21 +135,36 @@ const HomePage = () => {
       </section>
 
       <section className="mt-6 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 sm:p-8">
-        <h2 className="text-xl font-semibold">Starter template direction</h2>
-        <p className="mt-2 text-sm text-[var(--app-muted)]">
-          These are the first template packs targeted in the roadmap for ready-to-run
-          planning.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Starter templates now available</h2>
+            <p className="mt-2 text-sm text-[var(--app-muted)]">
+              Launch plans faster with template packs already prepared for small events.
+            </p>
+          </div>
+          <Link
+            href="/templates"
+            className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+          >
+            Open full library
+          </Link>
+        </div>
+
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {templateExamples.map((template) => (
-            <div
-              key={template}
-              className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3 text-sm"
+          {readyTemplates.map((template) => (
+            <article
+              key={template.name}
+              className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
             >
-              {template}
-            </div>
+              <h3 className="text-sm font-semibold">{template.name}</h3>
+              <p className="mt-1 text-xs text-[var(--app-muted)]">{template.useCases}</p>
+            </article>
           ))}
         </div>
+
+        <p className="mt-4 text-xs uppercase tracking-[0.12em] text-[var(--app-muted)]">
+          Planned next: {templateExamples.join(' • ')}
+        </p>
       </section>
     </AppShell>
   );
