@@ -1,3 +1,5 @@
+// EventGo: authenticated workspace entry page (app route)
+// This component guards the workspace and redirects unauthenticated users
 'use client';
 
 import HomePage from '@/components/homepage';
