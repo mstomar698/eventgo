@@ -4,7 +4,7 @@
 
 import HomePage from '@/components/homepage';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, getSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
 export default function Home() {
@@ -12,9 +12,25 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.replace('/home');
+    let cancelled = false;
+
+    async function checkAndRedirect() {
+      // only act when session reports unauthenticated — but double-check
+      // with an explicit getSession call to avoid race conditions.
+      if (status === 'unauthenticated') {
+        const s = await getSession();
+        if (cancelled) return;
+        if (!s) {
+          router.replace('/home');
+        }
+      }
     }
+
+    checkAndRedirect();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, status]);
 
   if (status === 'loading' || status === 'unauthenticated' || !session) {

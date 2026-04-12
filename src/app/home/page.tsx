@@ -5,6 +5,7 @@ import Footer from '@/components/footer/footer';
 import Navbar from '@/components/navbar/navbar';
 import Link from 'next/link';
 import { signIn, useSession } from 'next-auth/react';
+import useFetch from 'http-react';
 
 const highlights = [
   {
@@ -33,17 +34,25 @@ const landingMilestones = [
   'Post-event summary and reuse support',
 ];
 
-const launchTemplates = [
-  'Birthday at Home (<20 people)',
-  'Birthday at Cafe/Restaurant (<20 people)',
-  'Small Community Meetup (<20 people)',
-  'Neighborhood Workshop (<20 people)',
-];
+interface Template {
+  _id: string;
+  name: string;
+  description?: string;
+  headcount?: number;
+}
+
+const launchTemplates: Template[] = [];
 
 const HomeRoute = () => {
   const { status } = useSession();
   const isLoggedIn = status === 'authenticated';
   const isAuthLoading = status === 'loading';
+
+  const { data: tplResp, loadingFirst } = useFetch<{ data?: Template[] }>('/templates', {
+    default: { data: [] },
+  });
+
+  const templates = Array.isArray(tplResp?.data) ? tplResp!.data : [];
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--app-bg)] text-[var(--app-text)]">
@@ -156,16 +165,44 @@ const HomeRoute = () => {
             <p className="mt-2 text-sm text-[var(--app-muted)]">
               Launch quickly with prebuilt plans designed for under-20 attendee events.
             </p>
-            <ul className="mt-4 space-y-2 text-sm text-[var(--app-muted)]">
-              {launchTemplates.map((template) => (
-                <li
-                  key={template}
-                  className="rounded-lg bg-[var(--app-elevated)] px-3 py-2"
-                >
-                  {template}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {loadingFirst ? (
+                <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4 text-sm text-[var(--app-muted)]">
+                  Loading templates...
+                </div>
+              ) : (
+                (templates.length ? templates.slice(0, 4) : launchTemplates).map(
+                  (template) => (
+                    <article
+                      key={template._id ?? template.name}
+                      className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
+                    >
+                      <h3 className="text-sm font-semibold">{template.name}</h3>
+                      <p className="mt-1 text-xs text-[var(--app-muted)]">
+                        {template.description}
+                      </p>
+                      <div className="mt-3">
+                        {template._id ? (
+                          <Link
+                            href={`/templates/${template._id}/use`}
+                            className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                          >
+                            Use template
+                          </Link>
+                        ) : (
+                          <Link
+                            href="/templates"
+                            className="inline-flex items-center gap-2 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+                          >
+                            View templates
+                          </Link>
+                        )}
+                      </div>
+                    </article>
+                  )
+                )
+              )}
+            </div>
           </article>
         </section>
       </main>

@@ -5,6 +5,7 @@
 import AppShell from '@/components/layout/app-shell';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import useFetch from 'http-react';
 
 const workspaceSections = [
   {
@@ -56,7 +57,13 @@ const templateExamples = [
   'Neighborhood workshop / book club (<20 attendees)',
 ];
 
-const readyTemplates = [
+interface ReadyTemplate {
+  _id?: string;
+  name: string;
+  useCases?: string;
+}
+
+const readyTemplatesFallback: ReadyTemplate[] = [
   {
     name: 'Birthday at Home',
     useCases: 'Family celebration with simple logistics',
@@ -78,6 +85,18 @@ const readyTemplates = [
 const HomePage = () => {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.split(' ')[0] ?? 'Planner';
+
+  const { data: tplResp, loadingFirst } = useFetch<{ data?: ReadyTemplate[] }>(
+    '/templates',
+    {
+      default: { data: [] },
+    }
+  );
+
+  const templates =
+    Array.isArray(tplResp?.data) && tplResp?.data.length
+      ? tplResp.data
+      : readyTemplatesFallback;
 
   return (
     <AppShell
@@ -152,13 +171,30 @@ const HomePage = () => {
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {readyTemplates.map((template) => (
+          {(loadingFirst ? readyTemplatesFallback : templates).map((template) => (
             <article
-              key={template.name}
+              key={template._id ?? template.name}
               className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
             >
               <h3 className="text-sm font-semibold">{template.name}</h3>
               <p className="mt-1 text-xs text-[var(--app-muted)]">{template.useCases}</p>
+              <div className="mt-3">
+                {template._id ? (
+                  <Link
+                    href={`/templates/${template._id}/use`}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                  >
+                    Use template
+                  </Link>
+                ) : (
+                  <Link
+                    href="/templates"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+                  >
+                    View templates
+                  </Link>
+                )}
+              </div>
             </article>
           ))}
         </div>
