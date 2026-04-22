@@ -22,10 +22,14 @@ const localizer = momentLocalizer(moment);
 const CalendarPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/events')
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) throw new Error('Failed to fetch events');
+        return response.json();
+      })
       .then((payload: ApiResponse<Event[]>) => {
         const items = Array.isArray(payload?.data) ? payload.data : [];
         setEvents(
@@ -35,8 +39,12 @@ const CalendarPage = () => {
             end: new Date(event.end),
           }))
         );
+        setError(null);
       })
-      .catch((error) => console.log(error))
+      .catch((err) => {
+        console.error('Calendar error:', err);
+        setError('Could not load calendar events');
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -71,7 +79,10 @@ const CalendarPage = () => {
           },
         ]);
       })
-      .catch((error) => console.log(error));
+      .catch((err) => {
+        console.error('Save event error:', err);
+        alert('Failed to save event. Please try again.');
+      });
   };
 
   const handleSelectEvent = (event: Event) => {
@@ -92,10 +103,12 @@ const CalendarPage = () => {
         if (!response.ok) {
           throw new Error('Failed to delete event');
         }
-
         setEvents((current) => current.filter((item) => item._id !== event._id));
       })
-      .catch((error) => console.log(error));
+      .catch((err) => {
+        console.error('Delete event error:', err);
+        alert('Failed to delete event. Please try again.');
+      });
   };
 
   const eventPropGetter = (event: Event) => ({
@@ -109,34 +122,43 @@ const CalendarPage = () => {
   });
 
   const helperText = useMemo(() => {
+    if (error) {
+      return `Error: ${error}`;
+    }
     if (isLoading) {
       return 'Loading calendar...';
     }
-
     if (events.length === 0) {
       return 'Select a time slot to create your first event.';
     }
-
     return 'Select a slot to add or click an event to remove it.';
-  }, [events.length, isLoading]);
+  }, [events.length, isLoading, error]);
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-[var(--app-muted)]">{helperText}</p>
-      <div className="h-[460px] w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-3 text-sm">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          eventPropGetter={eventPropGetter}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          popup
-          onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
-          className="h-full"
-        />
-      </div>
+      <p className={`text-xs ${error ? 'text-red-400' : 'text-[var(--app-muted)]'}`}>
+        {helperText}
+      </p>
+      {!error ? (
+        <div className="h-[460px] w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-3 text-sm">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            eventPropGetter={eventPropGetter}
+            startAccessor="start"
+            endAccessor="end"
+            selectable
+            popup
+            onSelectEvent={handleSelectEvent}
+            onSelectSlot={handleSelectSlot}
+            className="h-full"
+          />
+        </div>
+      ) : (
+        <div className="h-[460px] w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-3 flex items-center justify-center text-sm text-red-400">
+          Failed to load calendar. Please try refreshing the page.
+        </div>
+      )}
     </div>
   );
 };

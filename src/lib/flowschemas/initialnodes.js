@@ -67,86 +67,81 @@ export const initialNodes = [
 export const initialNodesForDemoTheme = [
   {
     id: '1',
-    type: 'textUpdater',
-    position: { x: 400, y: 0 },
-    data: { value: 123 },
+    type: 'input',
+    data: {
+      label: 'Event Concept',
+    },
+    position: { x: 100, y: 0 },
   },
   {
     id: '2',
-    type: 'nodesad',
-    position: { x: 100, y: 200 },
-    data: { value: 123 },
+    data: {
+      label: 'Set Date & Time',
+    },
+    position: { x: 100, y: 100 },
   },
   {
     id: '3',
-    type: 'nodesad',
-    position: { x: 300, y: 200 },
-    data: { value: 123 },
+    data: {
+      label: 'Choose Venue',
+    },
+    position: { x: 300, y: 100 },
   },
   {
     id: '4',
-    type: 'nodesad',
-    position: { x: 500, y: 200 },
-    data: { value: 123 },
-  },
-  {
-    id: '5',
-    type: 'input',
     data: {
-      label: 'Summer Starts!',
-    },
-    position: { x: 100, y: 50 },
-  },
-  {
-    id: '6',
-    data: {
-      label: 'Prepare Schedule',
-    },
-    position: { x: 300, y: 80 },
-  },
-  {
-    id: '7',
-    data: {
-      label: 'Have a Trip',
+      label: 'Create Guest List',
     },
     position: { x: 500, y: 100 },
   },
   {
-    id: '8',
-    position: { x: 700, y: 150 },
+    id: '5',
     data: {
-      label: 'Take Big Rest',
+      label: 'Plan Budget',
     },
+    position: { x: 100, y: 200 },
+  },
+  {
+    id: '6',
+    data: {
+      label: 'Book Vendors',
+    },
+    position: { x: 300, y: 200 },
+  },
+  {
+    id: '7',
+    data: {
+      label: 'Send Invitations',
+    },
+    position: { x: 500, y: 200 },
+  },
+  {
+    id: '8',
+    data: {
+      label: 'Plan Menu & Decor',
+    },
+    position: { x: 100, y: 300 },
   },
   {
     id: '9',
     data: {
-      label: 'Complete Homework',
+      label: 'Create Timeline',
     },
-    position: { x: 700, y: 220 },
+    position: { x: 300, y: 300 },
   },
   {
     id: '10',
-    type: 'output',
     data: {
-      label: (
-        <>
-          Summer <strong>Ends</strong>
-        </>
-      ),
+      label: 'Day-Of Checklist',
     },
-    position: { x: 700, y: 320 },
+    position: { x: 500, y: 300 },
   },
   {
     id: '11',
-    type: 'nodesad',
+    type: 'output',
     data: {
-      label: (
-        <>
-          Summer <strong>Ends</strong>
-        </>
-      ),
+      label: 'Event Ready!',
     },
-    position: { x: 500, y: 320 },
+    position: { x: 300, y: 400 },
   },
 ];

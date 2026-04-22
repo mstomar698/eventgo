@@ -25,6 +25,21 @@ const EventInfoPage = () => {
           'How to structure a day-of runbook for 50 attendees?',
           'What are common budget overrun risks for small events?',
           'Checklist for venue coordination one week before event',
+          'How to manage guest dietary restrictions effectively?',
+          'Best practices for outdoor event contingency planning',
+          'Tips for coordinating multiple vendors on event day',
+          'How to create an emergency contact list and protocol?',
+          'What should be included in a detailed timeline?',
+          'Best ways to gather and display event RSVPs?',
+          'How to negotiate better rates with event vendors?',
+          'Tips for keeping event costs under budget?',
+          'What insurance do I need for my event?',
+          'How to handle last-minute guest cancellations?',
+          'Best practices for seating arrangements and flow?',
+          'What technology tools help with event management?',
+          'How to create memorable experiences on a tight budget?',
+          'Tips for managing events in challenging weather?',
+          'How to capture quality event photos and videos?',
         ]}
       />
     </AppShell>

@@ -25,6 +25,18 @@ const ThemeRecommendationsPage = () => {
           'Cozy indoor birthday for 12 people',
           'Retro game-night theme for a teen party',
           'Nature-themed community workshop setup',
+          'Tropical island themed wedding reception',
+          'Vintage 1920s speakeasy for corporate event',
+          'Minimalist modern art gallery opening',
+          "Enchanted forest fairytale children's party",
+          'Industrial chic loft networking event',
+          'Mediterranean garden summer gathering',
+          'Elegant black-tie gala dinner',
+          'Outdoor carnival festival for family day',
+          'Boho-chic intimate wedding ceremony',
+          'Futuristic tech conference theme',
+          'Rustic barn country-style celebration',
+          'Around-the-world cultural fusion event',
         ]}
       />
     </AppShell>

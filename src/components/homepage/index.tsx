@@ -55,6 +55,14 @@ const templateExamples = [
   'Birthday at a cafe (<20 attendees)',
   'Small community meetup (<20 attendees)',
   'Neighborhood workshop / book club (<20 attendees)',
+  'Casual game night or movie viewing',
+  'Potluck dinner gathering',
+  'Outdoor picnic celebration',
+  'Coffee or brunch social',
+  'Virtual or hybrid online event',
+  'Small wedding or engagement party',
+  'Baby shower or bridal shower',
+  'Holiday or seasonal celebration',
 ];
 
 interface ReadyTemplate {
@@ -79,6 +87,30 @@ const readyTemplatesFallback: ReadyTemplate[] = [
   {
     name: 'Neighborhood Workshop',
     useCases: 'Educational or hobby-based session',
+  },
+  {
+    name: 'Casual Game Night',
+    useCases: 'Friends gathering for games and snacks',
+  },
+  {
+    name: 'Potluck Dinner',
+    useCases: 'Community gathering with shared dishes',
+  },
+  {
+    name: 'Garden Picnic',
+    useCases: 'Outdoor casual celebration',
+  },
+  {
+    name: 'Virtual/Hybrid Meetup',
+    useCases: 'Online gathering with tech setup',
+  },
+  {
+    name: 'Baby Shower',
+    useCases: 'Celebration for parents-to-be',
+  },
+  {
+    name: 'Wedding Engagement Party',
+    useCases: 'Intimate celebration for engaged couples',
   },
 ];
 

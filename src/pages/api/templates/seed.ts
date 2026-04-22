@@ -3,6 +3,7 @@ import { connectToDB } from '@/lib/mongodb';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { STARTER_TEMPLATES } from '@/lib/templates';
+import logger from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -28,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     sendSuccess(res, { message: `Seeded ${inserted.length} templates`, inserted });
   } catch (error) {
-    console.error('Seed templates error:', error);
+    logger.error({ err: error }, 'Seed templates error');
     sendError(res, 500, {
       code: ERROR_CODES.INTERNAL_ERROR,
       message: 'Failed to seed templates',

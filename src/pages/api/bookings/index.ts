@@ -5,14 +5,15 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { BookingCreateSchema } from '@/lib/schemas';
+import logger from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    console.info('[api/bookings] handler invoked', req.method);
+    logger.info({ method: req.method }, '[api/bookings] handler invoked');
     const session = await getServerSession(req, res, authOptions);
-    console.info(
-      '[api/bookings] session present:',
-      Boolean(session && session.user?.email)
+    logger.info(
+      { hasSession: Boolean(session && session.user?.email) },
+      '[api/bookings] session present'
     );
     if (!session || !session.user?.email) {
       // Return a friendly 200 with usage info for unauthenticated requests.

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import logger from './logger';
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
@@ -20,22 +21,20 @@ const getMaskedHost = (mongoUri: string): string => {
 
 export const connectToDB = async () => {
   if (mongoose.connection.readyState === 1) {
-    console.info(`[db] Already connected to MongoDB (${getMaskedHost(uri)})`);
+    logger.info({ host: getMaskedHost(uri) }, '[db] Already connected to MongoDB');
     return mongoose.connection;
   }
 
   try {
-    console.info(
-      `[db] MONGODB_URI detected. Attempting connection to MongoDB host: ${getMaskedHost(uri)} (credentials hidden)`
+    logger.info(
+      { host: getMaskedHost(uri) },
+      '[db] MONGODB_URI detected. Attempting connection to MongoDB (credentials hidden)'
     );
     await mongoose.connect(uri);
-    console.info(`[db] MongoDB connected to host: ${getMaskedHost(uri)}`);
+    logger.info({ host: getMaskedHost(uri) }, '[db] MongoDB connected');
     return mongoose.connection;
   } catch (error) {
-    console.error(
-      '[db] MongoDB connection error:',
-      error instanceof Error ? error.message : error
-    );
+    logger.error({ err: error }, '[db] MongoDB connection error');
     if (
       error instanceof Error &&
       error.message.includes('Protocol and host list are required') &&

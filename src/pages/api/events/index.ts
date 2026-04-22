@@ -68,9 +68,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
-// if (req.method === 'DELETE') {
-//   const eventId = req.query.id;
-//   const db = await connectToDB();
-//   const result = await db.collection('events').deleteOne({ _id: new ObjectId(eventId) });
-//   res.status(200).json({ message: 'Event deleted' });
-// }
