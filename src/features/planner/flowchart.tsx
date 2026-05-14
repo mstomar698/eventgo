@@ -25,6 +25,8 @@ import {
   BiStrikethrough,
   BiRefresh,
   BiPhotoAlbum,
+  BiExpand,
+  BiCollapse,
 } from 'react-icons/bi';
 import ConfirmModal from '@/components/ui/confirm-modal';
 import { initialNodesForDemoTheme } from '../../lib/flowschemas/initialnodes';
@@ -219,8 +221,10 @@ const buildTemplateNodes = (template: any): { nodes: any[]; edges: any[] } => {
 };
 
 const Flowchart = () => {
+  const boardRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const [nodes, setNodes] = useState<any[]>(initialNodesForDemoTheme);
@@ -379,9 +383,17 @@ const Flowchart = () => {
   };
 
   const captureImage = async (): Promise<string> => {
-    const el = containerRef.current;
+    // Target .react-flow so the edges SVG is included in the capture
+    const el =
+      (containerRef.current?.querySelector('.react-flow') as HTMLElement) ??
+      containerRef.current;
     if (!el) throw new Error('No element');
-    return toPng(el, { backgroundColor: bgColor(), pixelRatio: 2 });
+    return toPng(el, {
+      backgroundColor: bgColor(),
+      pixelRatio: 2,
+      // Inline CSS so SVG stroke/fill CSS variables resolve correctly
+      includeQueryParams: true,
+    });
   };
 
   const handleExportPng = async () => {
@@ -459,13 +471,31 @@ const Flowchart = () => {
     downloadBlob(lines.join('\n'), 'eventgo-plan.txt', 'text/plain');
   };
 
+  const toggleFullscreen = () => {
+    if (!boardRef.current) return;
+    if (!document.fullscreenElement) {
+      boardRef.current.requestFullscreen().catch(console.error);
+    } else {
+      document.exitFullscreen().catch(console.error);
+    }
+  };
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
   const proOptions = { hideAttribution: true };
 
   const toolbarBtnClass =
     'inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-xs font-medium text-[var(--app-text)] transition hover:bg-[var(--app-surface)] focus:outline-none';
 
   return (
-    <div className="flex h-[75vh] w-full flex-col overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)]">
+    <div
+      ref={boardRef}
+      className={`flex w-full flex-col overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] ${isFullscreen ? 'h-screen' : 'h-[75vh]'}`}
+    >
       {exportError && (
         <div className="bg-red-500/20 px-3 py-2 text-xs text-red-400 border-b border-red-500/30">
           {exportError}
@@ -594,6 +624,16 @@ const Flowchart = () => {
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Fullscreen */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          className={toolbarBtnClass}
+        >
+          {isFullscreen ? <BiCollapse size={14} /> : <BiExpand size={14} />}
+        </button>
 
         {/* Export dropdown */}
         <div className="relative">
