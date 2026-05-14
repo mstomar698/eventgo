@@ -16,6 +16,12 @@ export interface IEventTemplate extends Document {
     estimatedAmount: number;
     notes: string;
   }>;
+  colorPalette: string[];
+  mood: string[];
+  activities: string[];
+  decor: string[];
+  music: string[];
+  food: string[];
   vendorNeeds: string[];
   nearbyConsiderations: string[];
   communicationPlan: string[];
@@ -65,6 +71,12 @@ const EventTemplateSchema: Schema = new Schema({
     ],
     default: [],
   },
+  colorPalette: { type: [String], default: [] },
+  mood: { type: [String], default: [] },
+  activities: { type: [String], default: [] },
+  decor: { type: [String], default: [] },
+  music: { type: [String], default: [] },
+  food: { type: [String], default: [] },
   vendorNeeds: {
     type: [String],
     default: [],
