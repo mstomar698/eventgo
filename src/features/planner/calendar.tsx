@@ -244,7 +244,7 @@ const CalendarPage = () => {
           {Array.from({ length: firstDay }).map((_, i) => (
             <div
               key={`empty-${i}`}
-              className="aspect-square rounded-lg bg-[var(--app-surface)]/50"
+              className="h-10 rounded-lg bg-[var(--app-surface)]/50"
             />
           ))}
           {days.map((day) => {
@@ -256,32 +256,32 @@ const CalendarPage = () => {
               <button
                 key={day}
                 onClick={() => handleDateClick(date)}
-                className={`aspect-square rounded-lg border p-1 text-xs transition ${
+                className={`flex h-10 flex-col items-start rounded-lg border px-1 pb-0.5 pt-1 text-xs transition ${
                   isToday
                     ? 'border-[var(--app-accent)] bg-[var(--app-accent)]/10'
                     : 'border-[var(--app-border)] hover:bg-[var(--app-surface)]'
                 }`}
               >
-                <div className="font-semibold text-[var(--app-text)]">{day}</div>
-                <div className="mt-1 space-y-0.5">
-                  {items.slice(0, 2).map((item) => (
-                    <div
-                      key={item._id}
-                      className={`truncate rounded px-1 py-0.5 text-xs ${
-                        isEvent(item)
-                          ? 'bg-[var(--app-accent)]/30 text-[var(--app-accent)]'
-                          : 'bg-blue-500/30 text-blue-400'
-                      }`}
-                    >
-                      {item.title}
-                    </div>
-                  ))}
-                  {items.length > 2 && (
-                    <div className="text-xs text-[var(--app-muted)]">
-                      +{items.length - 2} more
-                    </div>
-                  )}
-                </div>
+                <span className="font-semibold leading-none text-[var(--app-text)]">
+                  {day}
+                </span>
+                {items.length > 0 && (
+                  <div className="mt-auto flex flex-wrap items-center gap-0.5">
+                    {items.slice(0, 3).map((item) => (
+                      <span
+                        key={item._id}
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          isEvent(item) ? 'bg-[var(--app-accent)]' : 'bg-blue-400'
+                        }`}
+                      />
+                    ))}
+                    {items.length > 3 && (
+                      <span className="text-[8px] leading-none text-[var(--app-muted)]">
+                        +{items.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}
