@@ -11,7 +11,7 @@ import ReactFlow, {
   addEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { useSession } from 'next-auth/react';
 import {
   BiPlus,
@@ -364,42 +364,99 @@ const Flowchart = () => {
     }
   };
 
-  const handleExportImage = async (
-    ref: React.RefObject<HTMLDivElement | null>,
-    filename: string
-  ) => {
-    const el = ref.current;
-    if (!el) return;
+  const bgColor = () =>
+    getComputedStyle(document.documentElement).getPropertyValue('--app-surface').trim() ||
+    '#111c33';
 
+  const downloadBlob = (content: string, filename: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const captureImage = async (): Promise<string> => {
+    const el = containerRef.current;
+    if (!el) throw new Error('No element');
+    return toPng(el, { backgroundColor: bgColor(), pixelRatio: 2 });
+  };
+
+  const handleExportPng = async () => {
     setExportError(null);
+    setShowImageMenu(false);
     try {
-      const bgColor =
-        getComputedStyle(document.documentElement)
-          .getPropertyValue('--app-surface')
-          .trim() || '#111c33';
-      const canvas = await html2canvas(el, {
-        width: el.offsetWidth,
-        height: el.offsetHeight,
-        scale: 2,
-        useCORS: true,
-        backgroundColor: bgColor,
-        foreignObjectRendering: true,
-        logging: false,
-      });
-
-      const dataURL = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = dataURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Export failed:', error);
-      setExportError('Failed to export image. Please try again.');
-    } finally {
-      setShowImageMenu(false);
+      const dataUrl = await captureImage();
+      const a = document.createElement('a');
+      a.download = 'eventgo-plan.png';
+      a.href = dataUrl;
+      a.click();
+    } catch {
+      setExportError('Image export failed. Please try again.');
     }
+  };
+
+  const handleExportPdf = async () => {
+    setExportError(null);
+    setShowImageMenu(false);
+    try {
+      const dataUrl = await captureImage();
+      const el = containerRef.current!;
+      const { jsPDF } = (await import('jspdf')).default
+        ? await import('jspdf')
+        : { jsPDF: (await import('jspdf')).jsPDF };
+      const pdf = new jsPDF({
+        orientation: el.offsetWidth > el.offsetHeight ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [el.offsetWidth, el.offsetHeight],
+      });
+      pdf.addImage(dataUrl, 'PNG', 0, 0, el.offsetWidth, el.offsetHeight);
+      pdf.save('eventgo-plan.pdf');
+    } catch {
+      setExportError('PDF export failed. Please try again.');
+    }
+  };
+
+  const handleExportJson = () => {
+    setShowImageMenu(false);
+    const data = JSON.stringify({ nodes: sanitizeNodes(nodes), edges }, null, 2);
+    downloadBlob(data, 'eventgo-plan.json', 'application/json');
+  };
+
+  const handleExportMd = () => {
+    setShowImageMenu(false);
+    const lines: string[] = ['# Event Plan\n'];
+    nodes.forEach((node) => {
+      const raw: string = node.data?.label || '';
+      const [title, ...rest] = raw
+        .split('\n')
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+      if (node.type === 'input') {
+        lines.push(`## ${title}\n`);
+        rest.forEach((l) => lines.push(`> ${l}\n`));
+      } else if (node.type === 'output') {
+        lines.push(`\n---\n\n## ✅ ${title}\n`);
+      } else {
+        lines.push(`### ${title}`);
+        rest.forEach((l) => lines.push(`- ${l}`));
+        lines.push('');
+      }
+    });
+    downloadBlob(lines.join('\n'), 'eventgo-plan.md', 'text/markdown');
+  };
+
+  const handleExportTxt = () => {
+    setShowImageMenu(false);
+    const sep = '─'.repeat(40);
+    const lines: string[] = ['EVENT PLAN', sep, ''];
+    nodes.forEach((node, idx) => {
+      const raw: string = node.data?.label || '';
+      lines.push(`[${idx + 1}] ${raw.replace(/\n/g, ' | ')}`);
+    });
+    downloadBlob(lines.join('\n'), 'eventgo-plan.txt', 'text/plain');
   };
 
   const proOptions = { hideAttribution: true };
@@ -538,7 +595,7 @@ const Flowchart = () => {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Export image dropdown */}
+        {/* Export dropdown */}
         <div className="relative">
           <button
             type="button"
@@ -551,20 +608,48 @@ const Flowchart = () => {
             <BiImage size={14} /> Export <BiChevronDown size={14} />
           </button>
           {showImageMenu && (
-            <div className="absolute bottom-full right-0 z-20 mb-2 w-44 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-xl">
+            <div className="absolute bottom-full right-0 z-20 mb-2 w-48 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-xl">
+              <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--app-muted)]">
+                Image
+              </p>
               <button
                 type="button"
-                onClick={() => handleExportImage(containerRef, 'flowColored.png')}
+                onClick={handleExportPng}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
               >
-                Full board image
+                🖼 PNG — board snapshot
               </button>
               <button
                 type="button"
-                onClick={() => handleExportImage(flowRef, 'flowChart.png')}
+                onClick={handleExportPdf}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
               >
-                Flowchart only
+                📄 PDF — printable document
+              </button>
+              <div className="my-1 border-t border-[var(--app-border)]" />
+              <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--app-muted)]">
+                Data
+              </p>
+              <button
+                type="button"
+                onClick={handleExportJson}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+              >
+                {'{ }'} JSON — raw board data
+              </button>
+              <button
+                type="button"
+                onClick={handleExportMd}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+              >
+                # Markdown — structured doc
+              </button>
+              <button
+                type="button"
+                onClick={handleExportTxt}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+              >
+                ≡ TXT — plain text summary
               </button>
             </div>
           )}
