@@ -7,7 +7,16 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { BiArrowToLeft, BiCheck, BiCalendar, BiDollar, BiUser } from 'react-icons/bi';
+import {
+  BiArrowToLeft,
+  BiCheck,
+  BiCalendar,
+  BiDollar,
+  BiUser,
+  BiPalette,
+  BiMusic,
+  BiRestaurant,
+} from 'react-icons/bi';
 
 interface Template {
   _id: string;
@@ -15,17 +24,15 @@ interface Template {
   category: string;
   description: string;
   headcount: number;
+  colorPalette?: string[];
+  mood?: string[];
+  activities?: string[];
+  decor?: string[];
+  music?: string[];
+  food?: string[];
   checklist: string[];
-  timeline: Array<{
-    phase: string;
-    daysBefore: number;
-    tasks: string[];
-  }>;
-  budgetCategories: Array<{
-    category: string;
-    estimatedAmount: number;
-    notes: string;
-  }>;
+  timeline: Array<{ phase: string; daysBefore: number; tasks: string[] }>;
+  budgetCategories: Array<{ category: string; estimatedAmount: number; notes: string }>;
   vendorNeeds: string[];
   nearbyConsiderations: string[];
   communicationPlan: string[];
@@ -140,7 +147,7 @@ function TemplateWizard() {
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
                 placeholder={`${template.name} Event`}
-                className="mt-1 w-full rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--app-accent)]"
+                className="mt-1 w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20"
               />
             </div>
             <div>
@@ -152,7 +159,7 @@ function TemplateWizard() {
                 value={headcount}
                 onChange={(e) => setHeadcount(e.target.value)}
                 placeholder={String(template.headcount)}
-                className="mt-1 w-full rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--app-accent)]"
+                className="mt-1 w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20"
               />
             </div>
             <div>
@@ -163,7 +170,7 @@ function TemplateWizard() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-1 w-full rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-3 py-2 text-sm outline-none focus:border-[var(--app-accent)]"
+                className="mt-1 w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20"
               />
             </div>
           </div>
@@ -239,6 +246,129 @@ function TemplateWizard() {
           </p>
         </section>
       </div>
+
+      {/* Color Palette */}
+      {template.colorPalette && template.colorPalette.length > 0 && (
+        <section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+            <BiPalette size={16} /> Color Palette
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {template.colorPalette.map((color) => (
+              <div key={color} className="flex items-center gap-2">
+                <span
+                  style={{ backgroundColor: color }}
+                  className="h-6 w-6 rounded-lg border border-[var(--app-border)]"
+                />
+                <span className="text-xs text-[var(--app-muted)]">{color}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Mood & Activities */}
+      {((template.mood?.length ?? 0) > 0 || (template.activities?.length ?? 0) > 0) && (
+        <section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
+          <h2 className="mb-3 text-sm font-semibold">Mood & Activities</h2>
+          <div className="space-y-3">
+            {template.mood && template.mood.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-[var(--app-muted)]">Mood</p>
+                <div className="flex flex-wrap gap-2">
+                  {template.mood.map((m) => (
+                    <span
+                      key={m}
+                      className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs italic text-[var(--app-muted)]"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {template.activities && template.activities.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-[var(--app-muted)]">
+                  Activities
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {template.activities.map((a) => (
+                    <span
+                      key={a}
+                      className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)]"
+                    >
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Details — Decor, Music, Food */}
+      {((template.decor?.length ?? 0) > 0 ||
+        (template.music?.length ?? 0) > 0 ||
+        (template.food?.length ?? 0) > 0) && (
+        <section className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
+          <h2 className="mb-3 text-sm font-semibold">Details</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {template.decor && template.decor.length > 0 && (
+              <div>
+                <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-[var(--app-muted)]">
+                  <BiPalette size={12} /> Decor
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {template.decor.map((d) => (
+                    <span
+                      key={d}
+                      className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)]"
+                    >
+                      {d}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {template.music && template.music.length > 0 && (
+              <div>
+                <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-[var(--app-muted)]">
+                  <BiMusic size={12} /> Music
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {template.music.map((m) => (
+                    <span
+                      key={m}
+                      className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)]"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {template.food && template.food.length > 0 && (
+              <div>
+                <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-[var(--app-muted)]">
+                  <BiRestaurant size={12} /> Food & Drinks
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {template.food.map((f) => (
+                    <span
+                      key={f}
+                      className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)]"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Action Buttons */}
       {saveError && (
