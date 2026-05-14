@@ -168,7 +168,13 @@ function ThemeCard({
         )}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link
+          href={`/themes/${theme._id}/view`}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)]"
+        >
+          View Details
+        </Link>
         <Link
           href={`/planner?theme=${theme._id}`}
           className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
