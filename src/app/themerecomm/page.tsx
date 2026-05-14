@@ -21,6 +21,7 @@ const ThemeRecommendationsPage = () => {
         actionLabel="Generate theme ideas"
         responseKey="recommendation"
         responseHeading="Theme output"
+        description="Discover unique event themes tailored to your occasion. Specify the event type, guest count, venue, and mood to get creative theme suggestions and design ideas."
         examples={[
           'Cozy indoor birthday for 12 people',
           'Retro game-night theme for a teen party',

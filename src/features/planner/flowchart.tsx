@@ -22,7 +22,9 @@ import {
   BiLogOut,
   BiNote,
   BiStrikethrough,
+  BiRefresh,
 } from 'react-icons/bi';
+import ConfirmModal from '@/components/ui/confirm-modal';
 import { initialNodesForDemoTheme } from '../../lib/flowschemas/initialnodes';
 import { initialEdgesForDemoTheme } from '../../lib/flowschemas/initialedges';
 import Nodes from '../../lib/flowschemas/nodes';
@@ -56,6 +58,9 @@ const Flowchart = () => {
   const [nodeCount, setNodeCount] = useState(initialNodesForDemoTheme.length);
   const [showMoreNodes, setShowMoreNodes] = useState(false);
   const [showImageMenu, setShowImageMenu] = useState(false);
+  const [showNewBoardConfirm, setShowNewBoardConfirm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const { data: session } = useSession();
 
   // Load flow from server
@@ -117,13 +122,37 @@ const Flowchart = () => {
     setNodeCount((c) => c + 1);
   };
 
-  const handleExportImage = (
+  const handleNewBoard = async () => {
+    setIsSubmitting(true);
+    try {
+      setNodes([]);
+      setEdges([]);
+      setShowNewBoardConfirm(false);
+    } catch (error) {
+      console.error('Error creating new board:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleExportImage = async (
     ref: React.RefObject<HTMLDivElement | null>,
     filename: string
   ) => {
     const el = ref.current;
     if (!el) return;
-    html2canvas(el, { width: el.offsetWidth, height: el.offsetHeight }).then((canvas) => {
+
+    setExportError(null);
+    try {
+      const canvas = await html2canvas(el, {
+        width: el.offsetWidth,
+        height: el.offsetHeight,
+        scale: 2,
+        useCORS: true,
+        backgroundColor: 'var(--app-surface)',
+        foreignObjectRendering: true,
+      });
+
       const dataURL = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = filename;
@@ -131,8 +160,12 @@ const Flowchart = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    });
-    setShowImageMenu(false);
+    } catch (error) {
+      console.error('Export failed:', error);
+      setExportError('Failed to export image. Please try again.');
+    } finally {
+      setShowImageMenu(false);
+    }
   };
 
   const proOptions = { hideAttribution: true };
@@ -142,6 +175,11 @@ const Flowchart = () => {
 
   return (
     <div className="flex h-[75vh] w-full flex-col overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)]">
+      {exportError && (
+        <div className="bg-red-500/20 px-3 py-2 text-xs text-red-400 border-b border-red-500/30">
+          {exportError}
+        </div>
+      )}
       {/* Flow canvas */}
       <div className="relative flex-1" ref={containerRef}>
         <ReactFlow
@@ -165,6 +203,17 @@ const Flowchart = () => {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-t border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2.5">
+        {/* New Board */}
+        <button
+          type="button"
+          onClick={() => setShowNewBoardConfirm(true)}
+          className={`${toolbarBtnClass} text-amber-500 hover:text-amber-600`}
+        >
+          <BiRefresh size={14} /> New Board
+        </button>
+
+        <div className="h-4 w-px bg-[var(--app-border)]" />
+
         {/* Primary node actions */}
         <button type="button" onClick={() => addNode()} className={toolbarBtnClass}>
           <BiPlus size={14} /> Event
@@ -277,6 +326,18 @@ const Flowchart = () => {
           )}
         </div>
       </div>
+
+      {/* New Board Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showNewBoardConfirm}
+        onClose={() => setShowNewBoardConfirm(false)}
+        onConfirm={handleNewBoard}
+        title="Create new board"
+        message="This will clear all nodes and edges. Are you sure you want to start a fresh board?"
+        confirmLabel="Create new"
+        danger
+        isLoading={isSubmitting}
+      />
     </div>
   );
 };

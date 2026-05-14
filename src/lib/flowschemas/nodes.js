@@ -1,13 +1,28 @@
 import { useCallback } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useReactFlow } from 'reactflow';
 
-export const TextUpdaterNode = () => {
+const NodeDeleteButton = ({ nodeId }) => {
+  const { setNodes } = useReactFlow();
+  return (
+    <button
+      onClick={() => setNodes((nds) => nds.filter((node) => node.id !== nodeId))}
+      className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 text-xs font-bold"
+      title="Delete node"
+      type="button"
+    >
+      ×
+    </button>
+  );
+};
+
+export const TextUpdaterNode = ({ id }) => {
   const onChange = useCallback((evt) => {
     console.log(evt.target.value);
   }, []);
 
   return (
-    <div className="text-updater-node">
+    <div className="text-updater-node relative">
+      <NodeDeleteButton nodeId={id} />
       <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
         <label htmlFor="text" className="text-xs font-semibold text-[var(--app-muted)]">
           Theme
@@ -24,13 +39,14 @@ export const TextUpdaterNode = () => {
   );
 };
 
-export const NodeWithSAD = ({ isConnectable }) => {
+export const NodeWithSAD = ({ id, isConnectable }) => {
   const onChange = useCallback((evt) => {
     console.log(evt.target.value);
   }, []);
 
   return (
-    <div className="text-updater-node">
+    <div className="text-updater-node relative">
+      <NodeDeleteButton nodeId={id} />
       <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
         <label htmlFor="data" className="text-xs font-semibold text-[var(--app-muted)]">
           Details
@@ -54,13 +70,14 @@ export const NodeWithSAD = ({ isConnectable }) => {
   );
 };
 
-export const NodeWithText = ({ isConnectable }) => {
+export const NodeWithText = ({ id, isConnectable }) => {
   const onChange = useCallback((evt) => {
     console.log(evt.target.value);
   }, []);
 
   return (
-    <div className="text-updater-node">
+    <div className="text-updater-node relative">
+      <NodeDeleteButton nodeId={id} />
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
 
       <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
@@ -83,13 +100,14 @@ export const NodeWithText = ({ isConnectable }) => {
   );
 };
 
-export const TextStrip = () => {
+export const TextStrip = ({ id }) => {
   const onChange = useCallback((evt) => {
     console.log(evt.target.value);
   }, []);
 
   return (
-    <div className="text-updater-node">
+    <div className="text-updater-node relative">
+      <NodeDeleteButton nodeId={id} />
       <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center">
         <input
           id="data"

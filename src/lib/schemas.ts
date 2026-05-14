@@ -14,8 +14,8 @@ import { z } from 'zod';
  */
 export const EventSchema = z.object({
   title: z.string().min(1).trim(),
-  start: z.date(),
-  end: z.date(),
+  start: z.coerce.date(),
+  end: z.coerce.date(),
   color: z.string().optional(),
 });
 

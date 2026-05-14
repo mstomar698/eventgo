@@ -12,6 +12,7 @@ const VenueRecommPage = () => {
         actionLabel="Find Venues"
         responseKey="recommendation"
         responseHeading="Venue Suggestions"
+        description="Find the perfect venue for your event. Tell us about your guest count, event type, location preferences, and budget to get personalized venue recommendations."
         examples={[
           'Birthday party for 20 people in downtown area',
           'Corporate team building event for 30 people',

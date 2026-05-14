@@ -22,7 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         );
       }
 
-      const templates = await EventTemplate.find({ isPublic: true });
+      const session = await getServerSession(req, res, authOptions);
+      const userEmail = session?.user?.email;
+
+      let query: any = { isPublic: true };
+      if (userEmail) {
+        query = { $or: [{ isPublic: true }, { createdBy: userEmail }] };
+      }
+
+      const templates = await EventTemplate.find(query);
       sendSuccess(res, templates);
     } else if (req.method === 'POST') {
       const session = await getServerSession(req, res, authOptions);

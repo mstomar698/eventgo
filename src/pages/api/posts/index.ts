@@ -14,6 +14,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       const posts = await Post.find();
       sendSuccess(res, posts.reverse());
+    } else if (req.method === 'PATCH') {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
+      }
+      const { id, ...updateData } = req.body;
+      if (!id) {
+        sendError(res, 400, {
+          code: ERROR_CODES.BAD_REQUEST,
+          message: 'Post ID is required',
+        });
+        return;
+      }
+      const body = PostCreateSchema.partial().parse(updateData);
+      const updated = await Post.findByIdAndUpdate(id, body, { new: true });
+      if (!updated) {
+        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Post not found' });
+        return;
+      }
+      sendSuccess(res, updated);
     } else if (req.method === 'POST') {
       const session = await getServerSession(req, res, authOptions);
       if (!session) {

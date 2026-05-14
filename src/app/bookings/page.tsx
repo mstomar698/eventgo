@@ -2,8 +2,10 @@
 
 import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
-import useFetch from 'http-react';
+import Modal from '@/components/ui/modal';
+import useFetch, { revalidate } from 'http-react';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { BiPlus, BiPhone, BiEnvelope, BiDollar, BiCalendar } from 'react-icons/bi';
 
 interface Booking {
@@ -13,6 +15,14 @@ interface Booking {
   quote?: number;
   notes: string;
   dueDate?: string;
+}
+
+interface BookingFormData {
+  vendorName: string;
+  status: string;
+  quote: string;
+  dueDate: string;
+  notes: string;
 }
 
 const statusColors = {
@@ -51,14 +61,14 @@ function BookingCard({ booking }: { booking: Booking }) {
         </div>
         <div className="flex gap-1">
           <button
-            type="submit"
+            type="button"
             title="phone"
             className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]"
           >
             <BiPhone size={14} />
           </button>
           <button
-            type="submit"
+            type="button"
             title="email"
             className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]"
           >
@@ -80,6 +90,57 @@ function BookingsList() {
   });
 
   const bookings = Array.isArray(response?.data) ? response.data : [];
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<BookingFormData>({
+    vendorName: '',
+    status: 'to_contact',
+    quote: '',
+    dueDate: '',
+    notes: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const payload = {
+        vendorName: formData.vendorName.trim(),
+        status: formData.status,
+        quote: formData.quote ? parseFloat(formData.quote) : undefined,
+        dueDate: formData.dueDate || undefined,
+        notes: formData.notes.trim(),
+      };
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        revalidate('GET /bookings');
+        setShowAddModal(false);
+        setFormData({
+          vendorName: '',
+          status: 'to_contact',
+          quote: '',
+          dueDate: '',
+          notes: '',
+        });
+      } else {
+        setSubmitError('Failed to create booking. Please try again.');
+      }
+    } catch (error) {
+      console.error('Submit failed:', error);
+      setSubmitError('Error creating booking. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loadingFirst) {
     return (
@@ -97,23 +158,131 @@ function BookingsList() {
     );
   }
 
+  const inputClass =
+    'w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20';
+  const labelClass = 'block text-sm font-medium text-[var(--app-text)]';
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-[var(--app-muted)]">
-          {bookings.length} bookings in your pipeline
-        </p>
-        <button className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-          <BiPlus size={18} />
-          Add Booking
-        </button>
+    <>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-[var(--app-muted)]">
+            {bookings.length} bookings in your pipeline
+          </p>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            <BiPlus size={18} />
+            Add Booking
+          </button>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {bookings.map((booking) => (
+            <BookingCard key={booking._id} booking={booking} />
+          ))}
+        </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {bookings.map((booking) => (
-          <BookingCard key={booking._id} booking={booking} />
-        ))}
-      </div>
-    </div>
+
+      {/* Add Booking Modal */}
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setSubmitError(null);
+        }}
+        title="Add Booking"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {submitError && (
+            <div className="rounded-lg bg-red-500/20 p-3 text-sm text-red-400">
+              {submitError}
+            </div>
+          )}
+          <div>
+            <label className={labelClass}>Vendor Name*</label>
+            <input
+              type="text"
+              required
+              value={formData.vendorName}
+              onChange={(e) => setFormData({ ...formData, vendorName: e.target.value })}
+              className={inputClass}
+              placeholder="Vendor name"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={labelClass}>Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className={inputClass}
+              >
+                <option value="to_contact">To Contact</option>
+                <option value="contacted">Contacted</option>
+                <option value="quoted">Quoted</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelClass}>Quote ($)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.quote}
+                onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
+                className={inputClass}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Due Date</label>
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Notes</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className={inputClass}
+              placeholder="Add any notes..."
+              rows={3}
+            />
+          </div>
+
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              disabled={isSubmitting}
+              className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)] disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !formData.vendorName.trim()}
+              className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-70"
+            >
+              {isSubmitting ? 'Adding...' : 'Add Booking'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </>
   );
 }
 

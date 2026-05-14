@@ -21,6 +21,7 @@ const EventInfoPage = () => {
         actionLabel="Get insights"
         responseKey="recommendation"
         responseHeading="Research output"
+        description="Research and learn best practices for event planning. Ask questions about timelines, budgets, vendor coordination, logistics, and more to get expert guidance."
         examples={[
           'How to structure a day-of runbook for 50 attendees?',
           'What are common budget overrun risks for small events?',

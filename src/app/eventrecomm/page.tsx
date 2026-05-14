@@ -21,6 +21,7 @@ const EventRecommendationsPage = () => {
         actionLabel="Generate event ideas"
         responseKey="recommendation"
         responseHeading="Recommendation output"
+        description="Get AI-powered event planning recommendations. Describe your event type, attendees, budget, and preferences to receive tailored ideas and suggestions."
         examples={[
           'Team offsite for 15 people with 1-day agenda',
           'Birthday event for 20 people with low budget',
