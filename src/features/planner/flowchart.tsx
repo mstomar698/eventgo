@@ -42,8 +42,6 @@ const nodeTypes = {
   imageNode: Nodes.ImageNode,
 };
 
-const GAP = 130;
-
 const makeEdge = (src: string, tgt: string) => ({
   id: `e${src}-${tgt}`,
   source: src,
@@ -52,51 +50,113 @@ const makeEdge = (src: string, tgt: string) => ({
   arrowHeadType: 'arrowclosed',
 });
 
+const W = 200; // node width
+const H = 100; // node height
+const COL_GAP = 240; // horizontal gap between columns
+const ROW_GAP = 140; // vertical gap between rows
+
+// Place nodes in a 2-column grid, with single-width nodes centred
+const gridLayout = (
+  items: Array<{ label: string; type?: string; color?: string; wide?: boolean }>
+) => {
+  const nodes: any[] = [];
+  const edges: any[] = [];
+  let row = 0;
+  let i = 0;
+
+  while (i < items.length) {
+    const item = items[i];
+    // Wide nodes (title / output) sit centred
+    if (item.wide || item.type === 'input' || item.type === 'output') {
+      const id = String(nodes.length + 1);
+      nodes.push({
+        id,
+        type: item.type,
+        data: { label: item.label },
+        position: { x: COL_GAP / 2, y: row * ROW_GAP },
+        style: item.color
+          ? { border: `2px solid ${item.color}`, borderRadius: '8px', width: W + COL_GAP }
+          : { width: W + COL_GAP },
+      });
+      i++;
+    } else {
+      // Pair two items side-by-side
+      const left = items[i];
+      const right = items[i + 1];
+      const leftId = String(nodes.length + 1);
+      nodes.push({
+        id: leftId,
+        data: { label: left.label },
+        position: { x: 0, y: row * ROW_GAP },
+        style: left.color
+          ? { border: `2px solid ${left.color}`, borderRadius: '8px', width: W }
+          : { width: W },
+      });
+      if (right && !right.wide && right.type !== 'input' && right.type !== 'output') {
+        const rightId = String(nodes.length + 1);
+        nodes.push({
+          id: rightId,
+          data: { label: right.label },
+          position: { x: COL_GAP, y: row * ROW_GAP },
+          style: right.color
+            ? { border: `2px solid ${right.color}`, borderRadius: '8px', width: W }
+            : { width: W },
+        });
+        i += 2;
+      } else {
+        i++;
+      }
+    }
+    row++;
+  }
+
+  // Connect sequentially (each node → the next)
+  for (let j = 0; j < nodes.length - 1; j++) {
+    edges.push(makeEdge(nodes[j].id, nodes[j + 1].id));
+  }
+
+  return { nodes, edges };
+};
+
 const buildThemeNodes = (theme: any): { nodes: any[]; edges: any[] } => {
   const palette: string[] = theme.colorPalette?.length
     ? theme.colorPalette
     : ['#14b8a6', '#8b5cf6', '#f97316', '#22c55e', '#f43f5e', '#06b6d4'];
 
-  const steps: Array<{ label: string; type?: string; color?: string }> = [];
   let ci = 0;
   const nextColor = () => palette[ci++ % palette.length];
 
-  // Node 1 — title + description (input, no custom border)
   const titleLabel = theme.description
     ? `${theme.title}\n${theme.description}`
     : theme.title;
-  steps.push({ label: titleLabel, type: 'input' });
 
-  // One node per field
-  if (theme.occasion) {
-    steps.push({ label: `Occasion\n${theme.occasion}`, color: nextColor() });
-  }
-  if (theme.mood?.length) {
-    steps.push({ label: `Mood\n${theme.mood.join(' · ')}`, color: nextColor() });
-  }
-  if (theme.events?.length) {
-    steps.push({ label: `Activities\n${theme.events.join(' · ')}`, color: nextColor() });
-  }
-  if (theme.decor?.length) {
-    steps.push({ label: `Decor\n${theme.decor.join(' · ')}`, color: nextColor() });
-  }
-  if (theme.music?.length) {
-    steps.push({ label: `Music\n${theme.music.join(' · ')}`, color: nextColor() });
-  }
-  if (theme.food?.length) {
-    steps.push({ label: `Food & Drinks\n${theme.food.join(' · ')}`, color: nextColor() });
-  }
+  const items: Array<{ label: string; type?: string; color?: string; wide?: boolean }> = [
+    { label: titleLabel, type: 'input' },
+  ];
+
+  if (theme.occasion)
+    items.push({ label: `Occasion\n${theme.occasion}`, color: nextColor() });
+  if (theme.mood?.length)
+    items.push({ label: `Mood\n${theme.mood.join(' · ')}`, color: nextColor() });
+  if (theme.events?.length)
+    items.push({ label: `Activities\n${theme.events.join(' · ')}`, color: nextColor() });
+  if (theme.decor?.length)
+    items.push({ label: `Decor\n${theme.decor.join(' · ')}`, color: nextColor() });
+  if (theme.music?.length)
+    items.push({ label: `Music\n${theme.music.join(' · ')}`, color: nextColor() });
+  if (theme.food?.length)
+    items.push({ label: `Food & Drinks\n${theme.food.join(' · ')}`, color: nextColor() });
   if (theme.budgetEstimate) {
     const bl = theme.budgetNotes
       ? `Budget: $${theme.budgetEstimate}\n${theme.budgetNotes}`
       : `Budget: $${theme.budgetEstimate}`;
-    steps.push({ label: bl, color: nextColor() });
+    items.push({ label: bl, color: nextColor(), wide: true });
   }
   if (theme.checklist?.length) {
-    const items =
+    const items2 =
       theme.checklist.slice(0, 4).join('\n') + (theme.checklist.length > 4 ? '\n…' : '');
-    steps.push({
-      label: `Checklist (${theme.checklist.length} items)\n${items}`,
+    items.push({
+      label: `Checklist (${theme.checklist.length} items)\n${items2}`,
       color: nextColor(),
     });
   }
@@ -104,42 +164,32 @@ const buildThemeNodes = (theme: any): { nodes: any[]; edges: any[] } => {
     const phases = theme.timeline
       .map((p: any) => `${p.phase} — ${p.daysBefore}d before`)
       .join('\n');
-    steps.push({ label: `Timeline\n${phases}`, color: nextColor() });
+    items.push({ label: `Timeline\n${phases}`, color: nextColor() });
   }
 
-  steps.push({ label: 'Event Ready!', type: 'output' });
+  items.push({ label: 'Event Ready!', type: 'output' });
 
-  const nodes = steps.map((s, i) => ({
-    id: String(i + 1),
-    type: s.type,
-    data: { label: s.label },
-    position: { x: 300, y: i * GAP },
-    ...(s.color
-      ? { style: { border: `2px solid ${s.color}`, borderRadius: '8px' } }
-      : {}),
-  }));
-
-  const edges = nodes.slice(0, -1).map((n, i) => makeEdge(n.id, String(i + 2)));
-  return { nodes, edges };
+  return gridLayout(items);
 };
 
 const buildTemplateNodes = (template: any): { nodes: any[]; edges: any[] } => {
-  const steps: Array<{ label: string; type?: string }> = [];
+  const items: Array<{ label: string; type?: string; color?: string; wide?: boolean }> =
+    [];
 
-  steps.push({
-    label: `${template.name}\n${template.category ? template.category + ' event' : ''}`,
+  items.push({
+    label: `${template.name}${template.category ? `\n${template.category} event` : ''}`,
     type: 'input',
   });
 
   (template.timeline ?? []).forEach((phase: any) => {
     const taskLines = (phase.tasks ?? []).slice(0, 3).join('\n');
-    steps.push({
-      label: `${phase.phase}${phase.daysBefore > 0 ? ` — ${phase.daysBefore} days before` : ' — Day of event'}\n${taskLines}`,
+    items.push({
+      label: `${phase.phase}${phase.daysBefore > 0 ? ` — ${phase.daysBefore}d before` : ' — Day of event'}\n${taskLines}`,
     });
   });
 
   if (template.checklist?.length) {
-    steps.push({
+    items.push({
       label: `Checklist (${template.checklist.length} items)\n${template.checklist.slice(0, 3).join('\n')}${template.checklist.length > 3 ? '\n…' : ''}`,
     });
   }
@@ -153,25 +203,19 @@ const buildTemplateNodes = (template: any): { nodes: any[]; edges: any[] } => {
       .slice(0, 3)
       .map((c: any) => `${c.category}: $${c.estimatedAmount}`)
       .join('\n');
-    steps.push({ label: `Budget — $${total} total\n${lines}` });
+    items.push({ label: `Budget — $${total} total\n${lines}`, wide: true });
   }
 
   if (template.vendorNeeds?.length) {
-    steps.push({ label: `Vendor Needs\n${template.vendorNeeds.join(' · ')}` });
+    items.push({
+      label: `Vendor Needs\n${template.vendorNeeds.join(' · ')}`,
+      wide: true,
+    });
   }
 
-  steps.push({ label: 'Event Ready!', type: 'output' });
+  items.push({ label: 'Event Ready!', type: 'output' });
 
-  const nodes = steps.map((s, i) => ({
-    id: String(i + 1),
-    type: s.type,
-    data: { label: s.label },
-    position: { x: 300, y: i * GAP },
-  }));
-
-  const edges = nodes.slice(0, -1).map((n, i) => makeEdge(n.id, String(i + 2)));
-
-  return { nodes, edges };
+  return gridLayout(items);
 };
 
 const Flowchart = () => {

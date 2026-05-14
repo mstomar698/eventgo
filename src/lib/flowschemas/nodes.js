@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { Handle, Position, useReactFlow } from 'reactflow';
+import { Handle, Position, useReactFlow, NodeResizer, useStore } from 'reactflow';
 
-const nodeWrap = 'relative min-w-[140px]';
+const nodeWrap = 'relative min-w-[140px] h-full';
 const nodeBox =
-  'rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col text-center';
+  'h-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-2 text-[var(--app-text)] flex flex-col';
 const inputCls =
-  'nodrag mt-1 rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-text)] outline-none focus:ring-1 focus:ring-[var(--app-accent)] w-full';
+  'nodrag mt-1 rounded border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-text)] outline-none focus:ring-1 focus:ring-[var(--app-accent)] w-full resize-none';
+
+// Read lock state from ReactFlow store — when nodesDraggable is false the board is locked
+const useLocked = () => useStore((s) => !s.nodesDraggable);
 
 const NodeDeleteButton = ({ nodeId }) => {
   const { setNodes } = useReactFlow();
+  const locked = useLocked();
+  if (locked) return null;
   return (
     <button
       onClick={() => setNodes((nds) => nds.filter((n) => n.id !== nodeId))}
@@ -21,6 +26,20 @@ const NodeDeleteButton = ({ nodeId }) => {
   );
 };
 
+const Resizer = () => (
+  <NodeResizer
+    minWidth={120}
+    minHeight={60}
+    lineStyle={{ border: '1.5px dashed var(--app-accent)', opacity: 0.6 }}
+    handleStyle={{
+      width: 8,
+      height: 8,
+      borderRadius: 2,
+      background: 'var(--app-accent)',
+    }}
+  />
+);
+
 const useUpdateLabel = (id) => {
   const { setNodes } = useReactFlow();
   return (value) =>
@@ -29,20 +48,24 @@ const useUpdateLabel = (id) => {
     );
 };
 
-// Editable overrides for ReactFlow's built-in default / input / output types
+// ── Editable overrides for ReactFlow's built-in default / input / output types ──
+
 export const EditableNode = ({ id, data, isConnectable }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
       <div className={nodeBox}>
         <textarea
-          className={`${inputCls} resize-none`}
-          rows={2}
+          className={inputCls}
+          style={{ flex: 1 }}
           placeholder="Node label"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
       <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
@@ -52,16 +75,19 @@ export const EditableNode = ({ id, data, isConnectable }) => {
 
 export const EditableInputNode = ({ id, data, isConnectable }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
-      <div className="rounded-lg border-2 border-[var(--app-accent)] bg-[var(--app-elevated)] p-2 flex flex-col text-center">
+      <div className="h-full rounded-lg border-2 border-[var(--app-accent)] bg-[var(--app-elevated)] p-2 flex flex-col">
         <textarea
-          className={`${inputCls} resize-none`}
-          rows={2}
+          className={inputCls}
+          style={{ flex: 1 }}
           placeholder="Start node label"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
       <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
@@ -71,17 +97,20 @@ export const EditableInputNode = ({ id, data, isConnectable }) => {
 
 export const EditableOutputNode = ({ id, data, isConnectable }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
-      <div className="rounded-lg border-2 border-[var(--app-accent-strong)] bg-[var(--app-elevated)] p-2 flex flex-col text-center">
+      <div className="h-full rounded-lg border-2 border-[var(--app-accent-strong)] bg-[var(--app-elevated)] p-2 flex flex-col">
         <textarea
-          className={`${inputCls} resize-none`}
-          rows={2}
+          className={inputCls}
+          style={{ flex: 1 }}
           placeholder="End node label"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
     </div>
@@ -90,8 +119,10 @@ export const EditableOutputNode = ({ id, data, isConnectable }) => {
 
 export const TextUpdaterNode = ({ id, data }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
       <div className={nodeBox}>
         <label className="text-xs font-semibold text-[var(--app-muted)]">Theme</label>
@@ -100,6 +131,7 @@ export const TextUpdaterNode = ({ id, data }) => {
           placeholder="e.g. Summer Vacation"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
     </div>
@@ -108,17 +140,20 @@ export const TextUpdaterNode = ({ id, data }) => {
 
 export const NodeWithSAD = ({ id, data, isConnectable }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
       <div className={nodeBox}>
         <label className="text-xs font-semibold text-[var(--app-muted)]">Details</label>
         <textarea
           className={`${inputCls} resize-none`}
-          rows={3}
+          style={{ flex: 1 }}
           placeholder="Add details…"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
       <Handle
@@ -133,8 +168,10 @@ export const NodeWithSAD = ({ id, data, isConnectable }) => {
 
 export const NodeWithText = ({ id, data, isConnectable }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
       <div className={nodeBox}>
@@ -143,6 +180,7 @@ export const NodeWithText = ({ id, data, isConnectable }) => {
           placeholder="Node label"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
       <Handle
@@ -157,15 +195,18 @@ export const NodeWithText = ({ id, data, isConnectable }) => {
 
 export const TextStrip = ({ id, data }) => {
   const updateLabel = useUpdateLabel(id);
+  const locked = useLocked();
   return (
     <div className={nodeWrap}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
-      <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-accent)]/10 px-3 py-1.5">
+      <div className="h-full rounded-lg border border-[var(--app-border)] bg-[var(--app-accent)]/10 px-3 py-1.5 flex items-center">
         <input
           className="nodrag bg-transparent text-xs font-semibold text-[var(--app-accent)] outline-none w-full text-center"
           placeholder="Label"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
       </div>
     </div>
@@ -174,6 +215,7 @@ export const TextStrip = ({ id, data }) => {
 
 export const ImageNode = ({ id, data, isConnectable }) => {
   const { setNodes } = useReactFlow();
+  const locked = useLocked();
   const [error, setError] = useState('');
 
   const updateLabel = (value) =>
@@ -201,6 +243,7 @@ export const ImageNode = ({ id, data, isConnectable }) => {
 
   return (
     <div className={`${nodeWrap} max-w-[220px]`}>
+      <Resizer />
       <NodeDeleteButton nodeId={id} />
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
       <div className={nodeBox}>
@@ -211,15 +254,19 @@ export const ImageNode = ({ id, data, isConnectable }) => {
             className="nodrag max-h-36 w-full rounded object-cover"
           />
         ) : (
-          <label className="nodrag flex cursor-pointer flex-col items-center gap-1 rounded border-2 border-dashed border-[var(--app-border)] p-3 text-xs text-[var(--app-muted)] hover:border-[var(--app-accent)]">
+          <label
+            className={`nodrag flex cursor-pointer flex-col items-center gap-1 rounded border-2 border-dashed border-[var(--app-border)] p-3 text-xs text-[var(--app-muted)] ${locked ? 'opacity-50 cursor-default' : 'hover:border-[var(--app-accent)]'}`}
+          >
             <span>📷 Upload image</span>
             <span className="text-[10px]">Max 250 KB</span>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFile}
-            />
+            {!locked && (
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFile}
+              />
+            )}
           </label>
         )}
         {error && <p className="mt-1 text-[10px] text-red-400">{error}</p>}
@@ -228,8 +275,9 @@ export const ImageNode = ({ id, data, isConnectable }) => {
           placeholder="Caption (optional)"
           value={data.label || ''}
           onChange={(e) => updateLabel(e.target.value)}
+          disabled={locked}
         />
-        {data.imageUrl && (
+        {data.imageUrl && !locked && (
           <button
             type="button"
             className="nodrag mt-1 text-[10px] text-[var(--app-muted)] hover:text-red-400"
