@@ -8,6 +8,10 @@ export const metadata = {
   title: 'EventGo',
   description:
     'EventGo — professional event planning workspace with structured planners, reusable templates, and AI-assisted ideation for small-to-medium events.',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
