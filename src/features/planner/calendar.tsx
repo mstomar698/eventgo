@@ -80,12 +80,13 @@ const CalendarPage = () => {
   const getFirstDayOfMonth = (date: Date) =>
     new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
+  const toLocalDateStr = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
   const getItemsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const dayEvents = events.filter(
-      (e) => new Date(e.start).toISOString().split('T')[0] === dateStr
-    );
-    const dayPosts = posts.filter((p) => p.date.split('T')[0] === dateStr);
+    const dateStr = toLocalDateStr(date);
+    const dayEvents = events.filter((e) => toLocalDateStr(new Date(e.start)) === dateStr);
+    const dayPosts = posts.filter((p) => toLocalDateStr(new Date(p.date)) === dateStr);
     return [...dayEvents, ...dayPosts];
   };
 
