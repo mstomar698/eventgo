@@ -12,13 +12,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDB();
 
     if (req.method === 'GET') {
+      // Re-seed if no public templates exist OR if existing ones are missing new fields
+      const outdated = await EventTemplate.countDocuments({
+        isPublic: true,
+        colorPalette: { $exists: false },
+      });
+      if (outdated > 0) {
+        await EventTemplate.deleteMany({ isPublic: true });
+      }
       const existingCount = await EventTemplate.countDocuments({ isPublic: true });
       if (existingCount === 0) {
         await EventTemplate.insertMany(
-          STARTER_TEMPLATES.map((template) => ({
-            ...template,
-            isPublic: true,
-          }))
+          STARTER_TEMPLATES.map((template) => ({ ...template, isPublic: true }))
         );
       }
 
