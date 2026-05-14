@@ -29,6 +29,65 @@ const useUpdateLabel = (id) => {
     );
 };
 
+// Editable overrides for ReactFlow's built-in default / input / output types
+export const EditableNode = ({ id, data, isConnectable }) => {
+  const updateLabel = useUpdateLabel(id);
+  return (
+    <div className={nodeWrap}>
+      <NodeDeleteButton nodeId={id} />
+      <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
+      <div className={nodeBox}>
+        <textarea
+          className={`${inputCls} resize-none`}
+          rows={2}
+          placeholder="Node label"
+          value={data.label || ''}
+          onChange={(e) => updateLabel(e.target.value)}
+        />
+      </div>
+      <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
+    </div>
+  );
+};
+
+export const EditableInputNode = ({ id, data, isConnectable }) => {
+  const updateLabel = useUpdateLabel(id);
+  return (
+    <div className={nodeWrap}>
+      <NodeDeleteButton nodeId={id} />
+      <div className="rounded-lg border-2 border-[var(--app-accent)] bg-[var(--app-elevated)] p-2 flex flex-col text-center">
+        <textarea
+          className={`${inputCls} resize-none`}
+          rows={2}
+          placeholder="Start node label"
+          value={data.label || ''}
+          onChange={(e) => updateLabel(e.target.value)}
+        />
+      </div>
+      <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
+    </div>
+  );
+};
+
+export const EditableOutputNode = ({ id, data, isConnectable }) => {
+  const updateLabel = useUpdateLabel(id);
+  return (
+    <div className={nodeWrap}>
+      <NodeDeleteButton nodeId={id} />
+      <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
+      <div className="rounded-lg border-2 border-[var(--app-accent-strong)] bg-[var(--app-elevated)] p-2 flex flex-col text-center">
+        <textarea
+          className={`${inputCls} resize-none`}
+          rows={2}
+          placeholder="End node label"
+          value={data.label || ''}
+          onChange={(e) => updateLabel(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+};
+
 export const TextUpdaterNode = ({ id, data }) => {
   const updateLabel = useUpdateLabel(id);
   return (
@@ -191,5 +250,14 @@ export const ImageNode = ({ id, data, isConnectable }) => {
   );
 };
 
-const Nodes = { TextStrip, NodeWithText, NodeWithSAD, TextUpdaterNode, ImageNode };
+const Nodes = {
+  EditableNode,
+  EditableInputNode,
+  EditableOutputNode,
+  TextStrip,
+  NodeWithText,
+  NodeWithSAD,
+  TextUpdaterNode,
+  ImageNode,
+};
 export default Nodes;

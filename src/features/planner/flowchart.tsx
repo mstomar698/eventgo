@@ -32,6 +32,9 @@ import { initialEdgesForDemoTheme } from '../../lib/flowschemas/initialedges';
 import Nodes from '../../lib/flowschemas/nodes';
 
 const nodeTypes = {
+  default: Nodes.EditableNode,
+  input: Nodes.EditableInputNode,
+  output: Nodes.EditableOutputNode,
   textUpdater: Nodes.TextUpdaterNode,
   nodesad: Nodes.NodeWithSAD,
   nodetext: Nodes.NodeWithText,
