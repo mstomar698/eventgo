@@ -567,7 +567,7 @@ const Flowchart = () => {
   return (
     <div
       ref={boardRef}
-      className={`flex w-full flex-col overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] ${isFullscreen ? 'h-screen' : 'h-[75vh]'}`}
+      className={`flex w-full flex-col overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] ${isFullscreen ? 'h-screen' : 'h-[60vh] sm:h-[75vh]'}`}
     >
       {exportError && (
         <div className="bg-red-500/20 px-3 py-2 text-xs text-red-400 border-b border-red-500/30">
@@ -595,8 +595,11 @@ const Flowchart = () => {
         </ReactFlow>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-t border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2.5">
+      {/* Toolbar — scrollable on mobile so buttons never wrap off-screen */}
+      <div
+        className="flex items-center gap-2 overflow-x-auto border-t border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2.5 scrollbar-none"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         {/* New Board */}
         <button
           type="button"
