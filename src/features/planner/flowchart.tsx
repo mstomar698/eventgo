@@ -37,93 +37,136 @@ const nodeTypes = {
   textstrip: Nodes.TextStrip,
 };
 
-const buildThemeNodes = (theme: any) => {
-  const cols = [100, 300, 500];
-  const nodes: any[] = [
-    {
-      id: '1',
-      type: 'input',
-      data: { label: `Theme: ${theme.title}` },
-      position: { x: 300, y: 0 },
-    },
-  ];
-  let row = 1;
-  const push = (label: string, col = 1) => {
-    nodes.push({
-      id: String(nodes.length + 1),
-      data: { label },
-      position: { x: cols[col], y: row * 100 },
-    });
-  };
+const GAP = 130;
+
+const makeEdge = (src: string, tgt: string) => ({
+  id: `e${src}-${tgt}`,
+  source: src,
+  target: tgt,
+  type: 'smoothstep',
+  arrowHeadType: 'arrowclosed',
+});
+
+const buildThemeNodes = (theme: any): { nodes: any[]; edges: any[] } => {
+  const palette: string[] = theme.colorPalette?.length
+    ? theme.colorPalette
+    : ['#14b8a6', '#8b5cf6', '#f97316', '#22c55e', '#f43f5e', '#06b6d4'];
+
+  const steps: Array<{ label: string; type?: string; color?: string }> = [];
+  let ci = 0;
+  const nextColor = () => palette[ci++ % palette.length];
+
+  // Node 1 — title + description (input, no custom border)
+  const titleLabel = theme.description
+    ? `${theme.title}\n${theme.description}`
+    : theme.title;
+  steps.push({ label: titleLabel, type: 'input' });
+
+  // One node per field
   if (theme.occasion) {
-    push(`Occasion: ${theme.occasion}`, 1);
-    row++;
+    steps.push({ label: `Occasion\n${theme.occasion}`, color: nextColor() });
   }
   if (theme.mood?.length) {
-    push(`Mood: ${theme.mood.join(', ')}`, 0);
+    steps.push({ label: `Mood\n${theme.mood.join(' · ')}`, color: nextColor() });
   }
-  if (theme.colorPalette?.length) {
-    push(`Colors: ${theme.colorPalette.join(' ')}`, 2);
-    row++;
+  if (theme.events?.length) {
+    steps.push({ label: `Activities\n${theme.events.join(' · ')}`, color: nextColor() });
   }
-  (theme.events ?? []).forEach((a: string, i: number) => push(a, i % 3));
-  if (theme.events?.length) row++;
   if (theme.decor?.length) {
-    push(`Decor: ${theme.decor.join(', ')}`, 0);
+    steps.push({ label: `Decor\n${theme.decor.join(' · ')}`, color: nextColor() });
   }
   if (theme.music?.length) {
-    push(`Music: ${theme.music.join(', ')}`, 1);
+    steps.push({ label: `Music\n${theme.music.join(' · ')}`, color: nextColor() });
   }
   if (theme.food?.length) {
-    push(`Food: ${theme.food.join(', ')}`, 2);
-    row++;
+    steps.push({ label: `Food & Drinks\n${theme.food.join(' · ')}`, color: nextColor() });
   }
   if (theme.budgetEstimate) {
-    push(`Budget: $${theme.budgetEstimate}`, 1);
-    row++;
+    const bl = theme.budgetNotes
+      ? `Budget: $${theme.budgetEstimate}\n${theme.budgetNotes}`
+      : `Budget: $${theme.budgetEstimate}`;
+    steps.push({ label: bl, color: nextColor() });
   }
-  nodes.push({
-    id: String(nodes.length + 1),
-    type: 'output',
-    data: { label: 'Event Ready!' },
-    position: { x: 300, y: row * 100 },
-  });
-  return nodes;
+  if (theme.checklist?.length) {
+    const items =
+      theme.checklist.slice(0, 4).join('\n') + (theme.checklist.length > 4 ? '\n…' : '');
+    steps.push({
+      label: `Checklist (${theme.checklist.length} items)\n${items}`,
+      color: nextColor(),
+    });
+  }
+  if (theme.timeline?.length) {
+    const phases = theme.timeline
+      .map((p: any) => `${p.phase} — ${p.daysBefore}d before`)
+      .join('\n');
+    steps.push({ label: `Timeline\n${phases}`, color: nextColor() });
+  }
+
+  steps.push({ label: 'Event Ready!', type: 'output' });
+
+  const nodes = steps.map((s, i) => ({
+    id: String(i + 1),
+    type: s.type,
+    data: { label: s.label },
+    position: { x: 300, y: i * GAP },
+    ...(s.color
+      ? { style: { border: `2px solid ${s.color}`, borderRadius: '8px' } }
+      : {}),
+  }));
+
+  const edges = nodes.slice(0, -1).map((n, i) => makeEdge(n.id, String(i + 2)));
+  return { nodes, edges };
 };
 
-const buildTemplateNodes = (template: any) => {
-  const nodes: any[] = [
-    {
-      id: '1',
-      type: 'input',
-      data: { label: template.name },
-      position: { x: 300, y: 0 },
-    },
-  ];
-  let row = 1;
-  (template.timeline ?? []).forEach((phase: any, i: number) => {
-    nodes.push({
-      id: String(nodes.length + 1),
-      data: { label: `${phase.phase} (${phase.daysBefore}d before)` },
-      position: { x: i * 220, y: row * 100 },
+const buildTemplateNodes = (template: any): { nodes: any[]; edges: any[] } => {
+  const steps: Array<{ label: string; type?: string }> = [];
+
+  steps.push({
+    label: `${template.name}\n${template.category ? template.category + ' event' : ''}`,
+    type: 'input',
+  });
+
+  (template.timeline ?? []).forEach((phase: any) => {
+    const taskLines = (phase.tasks ?? []).slice(0, 3).join('\n');
+    steps.push({
+      label: `${phase.phase}${phase.daysBefore > 0 ? ` — ${phase.daysBefore} days before` : ' — Day of event'}\n${taskLines}`,
     });
   });
-  if (template.timeline?.length) row++;
-  (template.budgetCategories ?? []).forEach((cat: any, i: number) => {
-    nodes.push({
-      id: String(nodes.length + 1),
-      data: { label: `${cat.category}: $${cat.estimatedAmount}` },
-      position: { x: i * 220, y: row * 100 },
+
+  if (template.checklist?.length) {
+    steps.push({
+      label: `Checklist (${template.checklist.length} items)\n${template.checklist.slice(0, 3).join('\n')}${template.checklist.length > 3 ? '\n…' : ''}`,
     });
-  });
-  if (template.budgetCategories?.length) row++;
-  nodes.push({
-    id: String(nodes.length + 1),
-    type: 'output',
-    data: { label: 'Event Ready!' },
-    position: { x: 300, y: row * 100 },
-  });
-  return nodes;
+  }
+
+  if (template.budgetCategories?.length) {
+    const total = template.budgetCategories.reduce(
+      (s: number, c: any) => s + c.estimatedAmount,
+      0
+    );
+    const lines = template.budgetCategories
+      .slice(0, 3)
+      .map((c: any) => `${c.category}: $${c.estimatedAmount}`)
+      .join('\n');
+    steps.push({ label: `Budget — $${total} total\n${lines}` });
+  }
+
+  if (template.vendorNeeds?.length) {
+    steps.push({ label: `Vendor Needs\n${template.vendorNeeds.join(' · ')}` });
+  }
+
+  steps.push({ label: 'Event Ready!', type: 'output' });
+
+  const nodes = steps.map((s, i) => ({
+    id: String(i + 1),
+    type: s.type,
+    data: { label: s.label },
+    position: { x: 300, y: i * GAP },
+  }));
+
+  const edges = nodes.slice(0, -1).map((n, i) => makeEdge(n.id, String(i + 2)));
+
+  return { nodes, edges };
 };
 
 const Flowchart = () => {
@@ -168,8 +211,9 @@ const Flowchart = () => {
         .then((d) => {
           const theme = d?.data ?? d;
           if (theme?.title) {
-            setNodes(sanitizeNodes(buildThemeNodes(theme)));
-            setEdges([]);
+            const { nodes: n, edges: e } = buildThemeNodes(theme);
+            setNodes(sanitizeNodes(n));
+            setEdges(e);
             router.replace('/planner');
           }
         })
@@ -183,8 +227,9 @@ const Flowchart = () => {
         .then((d) => {
           const template = d?.data ?? d;
           if (template?.name) {
-            setNodes(sanitizeNodes(buildTemplateNodes(template)));
-            setEdges([]);
+            const { nodes: n, edges: e } = buildTemplateNodes(template);
+            setNodes(sanitizeNodes(n));
+            setEdges(e);
             router.replace('/planner');
           }
         })

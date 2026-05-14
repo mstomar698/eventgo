@@ -23,6 +23,8 @@ interface ThemeWithId {
   food?: string[];
   budgetEstimate?: number;
   budgetNotes?: string;
+  checklist?: string[];
+  timeline?: Array<{ phase: string; daysBefore: number; tasks: string[] }>;
   events: string[];
 }
 
@@ -163,6 +165,16 @@ function ThemeCard({
             <span className="font-medium">Budget:</span> $
             {theme.budgetEstimate.toLocaleString()}
             {theme.budgetNotes ? ` — ${theme.budgetNotes}` : ''}
+          </p>
+        )}
+        {theme.checklist && theme.checklist.length > 0 && (
+          <p className="text-xs text-[var(--app-muted)]">
+            <span className="font-medium">Checklist:</span> {theme.checklist.length} items
+          </p>
+        )}
+        {theme.timeline && theme.timeline.length > 0 && (
+          <p className="text-xs text-[var(--app-muted)]">
+            <span className="font-medium">Timeline:</span> {theme.timeline.length} phases
           </p>
         )}
       </div>

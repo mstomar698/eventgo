@@ -12,6 +12,8 @@ export interface ITheme extends Document {
   food?: string[];
   budgetEstimate?: number;
   budgetNotes?: string;
+  checklist?: string[];
+  timeline?: Array<{ phase: string; daysBefore: number; tasks: string[] }>;
   events: string[];
 }
 
@@ -27,6 +29,11 @@ const ThemeSchema: Schema = new Schema({
   food: { type: [String], default: [] },
   budgetEstimate: { type: Number },
   budgetNotes: { type: String },
+  checklist: { type: [String], default: [] },
+  timeline: {
+    type: [{ phase: String, daysBefore: Number, tasks: [String] }],
+    default: [],
+  },
   events: { type: [String], required: true },
 });
 

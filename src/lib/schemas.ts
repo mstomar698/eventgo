@@ -45,6 +45,16 @@ export const ThemeSchema = z.object({
   food: z.array(z.string()).optional(),
   budgetEstimate: z.coerce.number().min(0).optional(),
   budgetNotes: z.string().optional(),
+  checklist: z.array(z.string()).optional(),
+  timeline: z
+    .array(
+      z.object({
+        phase: z.string(),
+        daysBefore: z.coerce.number(),
+        tasks: z.array(z.string()),
+      })
+    )
+    .optional(),
   events: z.array(z.string()),
 });
 

@@ -5,7 +5,7 @@ import SignInRequired from '@/features/auth/sign-in-required';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { FormEvent, useState } from 'react';
-import { BiPlus, BiX } from 'react-icons/bi';
+import { BiPlus, BiX, BiTrash } from 'react-icons/bi';
 
 const inputClass =
   'w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20';
@@ -22,6 +22,12 @@ const PRESET_COLORS = [
   '#14b8a6',
 ];
 
+interface TimelinePhase {
+  phase: string;
+  daysBefore: number;
+  tasks: string[];
+}
+
 function TagInput({
   label,
   placeholder,
@@ -36,13 +42,11 @@ function TagInput({
   onRemove: (i: number) => void;
 }) {
   const [input, setInput] = useState('');
-
   const commit = () => {
     const val = input.trim();
     if (val && !tags.includes(val)) onAdd(val);
     setInput('');
   };
-
   return (
     <div>
       <label className={labelClass}>{label}</label>
@@ -106,6 +110,10 @@ const CreateThemePage = () => {
   const [food, setFood] = useState<string[]>([]);
   const [budgetEstimate, setBudgetEstimate] = useState('');
   const [budgetNotes, setBudgetNotes] = useState('');
+  const [checklist, setChecklist] = useState<string[]>(['']);
+  const [timeline, setTimeline] = useState<TimelinePhase[]>([
+    { phase: '', daysBefore: 30, tasks: [''] },
+  ]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,20 +122,56 @@ const CreateThemePage = () => {
   const removeTag = (list: string[], set: (v: string[]) => void) => (i: number) =>
     set(list.filter((_, idx) => idx !== i));
 
-  const toggleColor = (color: string) => {
+  const toggleColor = (color: string) =>
     setColorPalette((prev) =>
       prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
     );
-  };
 
-  if (!session) {
-    return <SignInRequired title="Create themes requires sign in" />;
-  }
+  // Checklist helpers
+  const updateChecklistItem = (i: number, val: string) => {
+    const next = [...checklist];
+    next[i] = val;
+    setChecklist(next);
+  };
+  const addChecklistItem = () => setChecklist([...checklist, '']);
+  const removeChecklistItem = (i: number) =>
+    setChecklist(checklist.filter((_, idx) => idx !== i));
+
+  // Timeline helpers
+  const updatePhase = (pi: number, field: keyof TimelinePhase, val: string | number) => {
+    const next = timeline.map((p, i) => (i === pi ? { ...p, [field]: val } : p));
+    setTimeline(next);
+  };
+  const updateTask = (pi: number, ti: number, val: string) => {
+    const next = timeline.map((p, i) => {
+      if (i !== pi) return p;
+      const tasks = [...p.tasks];
+      tasks[ti] = val;
+      return { ...p, tasks };
+    });
+    setTimeline(next);
+  };
+  const addTask = (pi: number) => {
+    setTimeline(
+      timeline.map((p, i) => (i === pi ? { ...p, tasks: [...p.tasks, ''] } : p))
+    );
+  };
+  const removeTask = (pi: number, ti: number) => {
+    setTimeline(
+      timeline.map((p, i) =>
+        i === pi ? { ...p, tasks: p.tasks.filter((_, j) => j !== ti) } : p
+      )
+    );
+  };
+  const addPhase = () =>
+    setTimeline([...timeline, { phase: '', daysBefore: 7, tasks: [''] }]);
+  const removePhase = (pi: number) => setTimeline(timeline.filter((_, i) => i !== pi));
+
+  if (!session) return <SignInRequired title="Create themes requires sign in" />;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-
     if (activities.length === 0) {
       setError('Add at least one activity tag.');
       return;
@@ -135,7 +179,12 @@ const CreateThemePage = () => {
 
     setIsSaving(true);
     try {
-      const response = await fetch('/api/themes', {
+      const cleanChecklist = checklist.filter((s) => s.trim());
+      const cleanTimeline = timeline
+        .filter((p) => p.phase.trim())
+        .map((p) => ({ ...p, tasks: p.tasks.filter((t) => t.trim()) }));
+
+      const res = await fetch('/api/themes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,16 +199,17 @@ const CreateThemePage = () => {
           food,
           budgetEstimate: budgetEstimate ? parseFloat(budgetEstimate) : undefined,
           budgetNotes: budgetNotes || undefined,
+          checklist: cleanChecklist.length ? cleanChecklist : undefined,
+          timeline: cleanTimeline.length ? cleanTimeline : undefined,
           date: new Date().toISOString(),
         }),
       });
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
         setError(data?.error?.message || 'Failed to save theme. Please try again.');
         return;
       }
-
       router.push('/themes');
       router.refresh();
     } catch {
@@ -189,7 +239,6 @@ const CreateThemePage = () => {
                 placeholder="e.g. Tropical Sunset Celebration"
               />
             </div>
-
             <div>
               <label className={labelClass}>Description</label>
               <textarea
@@ -200,7 +249,6 @@ const CreateThemePage = () => {
                 rows={3}
               />
             </div>
-
             <div>
               <label className={labelClass}>Occasion</label>
               <select
@@ -233,11 +281,7 @@ const CreateThemePage = () => {
                 type="button"
                 onClick={() => toggleColor(color)}
                 style={{ backgroundColor: color }}
-                className={`h-8 w-8 rounded-lg border-2 transition ${
-                  colorPalette.includes(color)
-                    ? 'border-white scale-110'
-                    : 'border-transparent opacity-60'
-                }`}
+                className={`h-8 w-8 rounded-lg border-2 transition ${colorPalette.includes(color) ? 'scale-110 border-white' : 'border-transparent opacity-60'}`}
                 title={color}
               />
             ))}
@@ -272,7 +316,7 @@ const CreateThemePage = () => {
           </div>
         </section>
 
-        {/* Decor, Music, Food */}
+        {/* Details */}
         <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
           <h2 className="mb-4 text-base font-semibold text-[var(--app-text)]">Details</h2>
           <div className="space-y-4">
@@ -326,6 +370,127 @@ const CreateThemePage = () => {
                 rows={2}
               />
             </div>
+          </div>
+        </section>
+
+        {/* Checklist */}
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+          <h2 className="mb-4 text-base font-semibold text-[var(--app-text)]">
+            Checklist
+          </h2>
+          <div className="space-y-2">
+            {checklist.map((item, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => updateChecklistItem(i, e.target.value)}
+                  className={inputClass}
+                  placeholder={`e.g. Book venue`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeChecklistItem(i)}
+                  className="rounded-lg border border-[var(--app-border)] px-3 py-2 text-sm text-[var(--app-muted)] hover:text-red-400"
+                >
+                  <BiX size={16} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addChecklistItem}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[var(--app-border)] px-3 py-2 text-xs text-[var(--app-muted)] transition hover:border-[var(--app-accent)] hover:text-[var(--app-text)]"
+            >
+              <BiPlus size={14} /> Add item
+            </button>
+          </div>
+        </section>
+
+        {/* Timeline */}
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+          <h2 className="mb-4 text-base font-semibold text-[var(--app-text)]">
+            Timeline
+          </h2>
+          <div className="space-y-4">
+            {timeline.map((phase, pi) => (
+              <div
+                key={pi}
+                className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold text-[var(--app-muted)] uppercase tracking-wide">
+                    Phase {pi + 1}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => removePhase(pi)}
+                    className="text-[var(--app-muted)] hover:text-red-400"
+                  >
+                    <BiTrash size={14} />
+                  </button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 mb-3">
+                  <div>
+                    <label className={labelClass}>Phase name</label>
+                    <input
+                      type="text"
+                      value={phase.phase}
+                      onChange={(e) => updatePhase(pi, 'phase', e.target.value)}
+                      className={inputClass}
+                      placeholder="e.g. Planning, Preparation, Day of"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Days before event</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={phase.daysBefore}
+                      onChange={(e) =>
+                        updatePhase(pi, 'daysBefore', parseInt(e.target.value) || 0)
+                      }
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClass}>Tasks</label>
+                  {phase.tasks.map((task, ti) => (
+                    <div key={ti} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={task}
+                        onChange={(e) => updateTask(pi, ti, e.target.value)}
+                        className={inputClass}
+                        placeholder="e.g. Book venue"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeTask(pi, ti)}
+                        className="rounded-lg border border-[var(--app-border)] px-3 py-2 text-sm text-[var(--app-muted)] hover:text-red-400"
+                      >
+                        <BiX size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addTask(pi)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[var(--app-border)] px-3 py-2 text-xs text-[var(--app-muted)] transition hover:border-[var(--app-accent)] hover:text-[var(--app-text)]"
+                  >
+                    <BiPlus size={12} /> Add task
+                  </button>
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addPhase}
+              className="inline-flex items-center gap-2 rounded-lg border border-dashed border-[var(--app-border)] px-4 py-2 text-sm text-[var(--app-muted)] transition hover:border-[var(--app-accent)] hover:text-[var(--app-text)]"
+            >
+              <BiPlus size={16} /> Add phase
+            </button>
           </div>
         </section>
 
