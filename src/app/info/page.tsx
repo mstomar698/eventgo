@@ -7,40 +7,29 @@ import { useSession } from 'next-auth/react';
 
 const EventInfoPage = () => {
   const { data: session } = useSession();
-  const isLoggedIn = Boolean(session);
-
-  if (!isLoggedIn) {
-    return <SignInRequired title="Event info requires sign in" />;
-  }
+  if (!session) return <SignInRequired title="Research assistant requires sign in" />;
 
   return (
-    <AppShell title="Planning Research">
+    <AppShell title="Research Assistant">
       <QueryWorkspace
         endpoint="/api/chatgpt"
-        placeholder="e.g. What should we include in a wedding day-of runbook?"
-        actionLabel="Get insights"
+        placeholder="e.g. How do I structure a day-of runbook for 50 people?"
+        actionLabel="Get advice"
         responseKey="recommendation"
-        responseHeading="Research output"
-        description="Research and learn best practices for event planning. Ask questions about timelines, budgets, vendor coordination, logistics, and more to get expert guidance."
+        responseHeading="Planning advice"
+        mode="text"
+        description="Ask any event planning question — timelines, budgets, vendor coordination, logistics, or best practices — and get structured, actionable advice."
         examples={[
           'How to structure a day-of runbook for 50 attendees?',
-          'What are common budget overrun risks for small events?',
-          'Checklist for venue coordination one week before event',
-          'How to manage guest dietary restrictions effectively?',
+          'What are the biggest budget risks for small events?',
+          'Venue coordination checklist one week before event',
+          'How do I manage guest dietary restrictions?',
           'Best practices for outdoor event contingency planning',
-          'Tips for coordinating multiple vendors on event day',
-          'How to create an emergency contact list and protocol?',
-          'What should be included in a detailed timeline?',
-          'Best ways to gather and display event RSVPs?',
-          'How to negotiate better rates with event vendors?',
-          'Tips for keeping event costs under budget?',
-          'What insurance do I need for my event?',
+          'How to coordinate multiple vendors on event day?',
+          'What should a detailed event timeline include?',
+          'Tips for keeping event costs within budget?',
           'How to handle last-minute guest cancellations?',
-          'Best practices for seating arrangements and flow?',
-          'What technology tools help with event management?',
-          'How to create memorable experiences on a tight budget?',
-          'Tips for managing events in challenging weather?',
-          'How to capture quality event photos and videos?',
+          'Best seating arrangement practices for 30 guests?',
         ]}
       />
     </AppShell>

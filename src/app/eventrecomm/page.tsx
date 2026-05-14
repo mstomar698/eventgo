@@ -7,34 +7,29 @@ import { useSession } from 'next-auth/react';
 
 const EventRecommendationsPage = () => {
   const { data: session } = useSession();
-  const isLoggedIn = Boolean(session);
-
-  if (!isLoggedIn) {
-    return <SignInRequired title="Event recommendation requires sign in" />;
-  }
+  if (!session) return <SignInRequired title="Event ideas requires sign in" />;
 
   return (
-    <AppShell title="Event Recommendations">
+    <AppShell title="Event Ideas">
       <QueryWorkspace
         endpoint="/api/chatgpt2"
-        placeholder="e.g. Team offsite for 15 people in Bangalore"
+        placeholder="e.g. Team bonding for 15 engineers, 1-day budget ₹30k"
         actionLabel="Generate event ideas"
         responseKey="recommendation"
-        responseHeading="Recommendation output"
-        description="Get AI-powered event planning recommendations. Describe your event type, attendees, budget, and preferences to receive tailored ideas and suggestions."
+        responseHeading="Event ideas"
+        mode="text"
+        description="Describe your group, size, budget, and occasion to get 3 concrete event ideas with formats, activities, and budget ranges."
         examples={[
-          'Team offsite for 15 people with 1-day agenda',
-          'Birthday event for 20 people with low budget',
-          'Community meetup for 18 attendees in a cafe',
-          'Wedding anniversary celebration for 25 guests at home',
-          'Professional networking event for startup founders',
-          'Family reunion for 30+ family members outdoors',
-          'Bachelor party weekend getaway for 12 friends',
-          'Charity fundraiser dinner for 40 attendees',
-          'Product launch event for 50 stakeholders',
-          'Housewarming party for neighbors and friends',
-          'Annual team awards ceremony for 100 employees',
-          'Art exhibition opening for local artists',
+          'Team bonding for 15 engineers, 1-day, medium budget',
+          'Birthday celebration for 20 people, low budget, indoor',
+          'Community meetup for 18 locals in a cafe, 2 hours',
+          'Client appreciation dinner for 8 executives',
+          'Weekend getaway for 12 friends, adventure focus',
+          'Charity fundraiser for 40 attendees, evening',
+          'Product launch for 50 stakeholders, corporate',
+          'Family reunion for 30+ people, outdoor, all ages',
+          'Housewarming for neighbours and close friends',
+          'End-of-year party for 25-person startup team',
         ]}
       />
     </AppShell>

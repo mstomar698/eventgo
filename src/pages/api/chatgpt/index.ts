@@ -37,7 +37,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    const prompt = `Explain ${query} for an event planner in practical, concise detail. Include examples where useful.`;
+    const prompt = `You are an expert event planning advisor. Answer this question concisely and practically: "${query}"
+
+Format your response as:
+**Answer:** (2-3 sentences direct answer)
+**Key points:** (3-4 bullet points with actionable advice)
+**Watch out for:** (1-2 common pitfalls)
+
+Keep total response under 180 words.`;
     logger.info({ query: query.substring(0, 100) }, 'Generating AI response');
 
     const startTime = Date.now();

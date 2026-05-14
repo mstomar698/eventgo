@@ -7,37 +7,29 @@ import { useSession } from 'next-auth/react';
 
 const ThemeRecommendationsPage = () => {
   const { data: session } = useSession();
-  const isLoggedIn = Boolean(session);
-
-  if (!isLoggedIn) {
-    return <SignInRequired title="Theme recommendation requires sign in" />;
-  }
+  if (!session) return <SignInRequired title="Theme ideation requires sign in" />;
 
   return (
-    <AppShell title="Theme Recommendations">
+    <AppShell title="Theme Ideation">
       <QueryWorkspace
         endpoint="/api/chatgpt3"
-        placeholder="e.g. Birthday for 12 people, cozy indoor setting"
-        actionLabel="Generate theme ideas"
+        placeholder="e.g. Tropical birthday party for 20 people, outdoor, summer"
+        actionLabel="Generate theme"
         responseKey="recommendation"
         responseHeading="Theme output"
-        description="Discover unique event themes tailored to your occasion. Specify the event type, guest count, venue, and mood to get creative theme suggestions and design ideas."
+        mode="theme"
+        description="Describe your event and get a complete theme with colors, activities, decor, music, food, checklist, and timeline — ready to save directly to your theme library."
         examples={[
-          'Cozy indoor birthday for 12 people',
-          'Retro game-night theme for a teen party',
-          'Nature-themed community workshop setup',
-          'Tropical island themed wedding reception',
-          'Vintage 1920s speakeasy for corporate event',
-          'Minimalist modern art gallery opening',
-          "Enchanted forest fairytale children's party",
-          'Industrial chic loft networking event',
-          'Mediterranean garden summer gathering',
-          'Elegant black-tie gala dinner',
-          'Outdoor carnival festival for family day',
-          'Boho-chic intimate wedding ceremony',
-          'Futuristic tech conference theme',
-          'Rustic barn country-style celebration',
-          'Around-the-world cultural fusion event',
+          'Tropical outdoor birthday for 20 people, summer',
+          'Elegant garden wedding reception for 50 guests',
+          'Corporate innovation summit for 30 professionals',
+          'Cozy winter indoor birthday for 12 close friends',
+          'Retro 80s themed party for adults, evening event',
+          'Minimalist modern art gallery opening for 25 guests',
+          'Mediterranean summer gathering for 18 people',
+          "Children's enchanted forest party for 15 kids",
+          'Rooftop cocktail evening for 40 young professionals',
+          'Boho-chic intimate wedding ceremony for 30 guests',
         ]}
       />
     </AppShell>

@@ -3,11 +3,6 @@ import { getEnvVar, getFirstEnvVar } from '@/lib/env';
 import { generateGeminiText } from '@/lib/gemini';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { AIQuerySchema } from '@/lib/schemas';
-import {
-  getRuleBasedEventSuggestions,
-  parseQueryForSuggestions,
-  AI_PROMPTS,
-} from '@/lib/suggestions';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -22,31 +17,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { query } = AIQuerySchema.parse(req.query);
 
-    // Try rule-based suggestions first
-    const parsedInput = parseQueryForSuggestions(query);
-    const ruleBased = getRuleBasedEventSuggestions(parsedInput);
-    if (ruleBased) {
-      sendSuccess(res, { recommendation: ruleBased });
-      return;
-    }
-
-    // Fall back to AI
     const apiKey = getFirstEnvVar('GEMINI_API_KEY', 'GOOGLE_GEMINI_API_KEY');
     if (!apiKey) {
       sendError(res, 500, {
         code: ERROR_CODES.INTERNAL_ERROR,
-        message: 'GEMINI_API_KEY is not configured',
+        message: 'GEMINI_API_KEY not configured',
       });
       return;
     }
 
-    const prompt = AI_PROMPTS.eventIdeas(query);
+    const prompt = `Suggest 3 distinct event ideas for: "${query}".
+For each idea provide:
+- Name (bold heading)
+- Format & venue type
+- 3 key activities
+- Rough budget range
+Keep total response under 220 words. Use this structure exactly:
+
+**Idea 1: [Name]**
+Format: [venue/format]
+Activities: [activity 1], [activity 2], [activity 3]
+Budget: [range]
+
+**Idea 2: [Name]**
+...`;
+
     const recommendation = await generateGeminiText({
       apiKey,
       prompt,
       model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
-      maxOutputTokens: 500,
+      maxOutputTokens: 400,
     });
+
     sendSuccess(res, { recommendation });
   } catch (error) {
     if (error instanceof Error) {
