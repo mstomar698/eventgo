@@ -567,15 +567,15 @@ const Flowchart = () => {
   return (
     <div
       ref={boardRef}
-      className={`flex w-full flex-col overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] ${isFullscreen ? 'h-screen' : 'h-[60vh] sm:h-[75vh]'}`}
+      className={`flex w-full flex-col rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] ${isFullscreen ? 'h-screen' : 'h-[60vh] sm:h-[75vh]'}`}
     >
       {exportError && (
         <div className="bg-red-500/20 px-3 py-2 text-xs text-red-400 border-b border-red-500/30">
           {exportError}
         </div>
       )}
-      {/* Flow canvas */}
-      <div className="relative flex-1" ref={containerRef}>
+      {/* Flow canvas — overflow-hidden here, not on parent, so toolbar dropdowns aren't clipped */}
+      <div className="relative flex-1 overflow-hidden" ref={containerRef}>
         <ReactFlow
           nodes={nodes}
           onNodesChange={onNodesChange}

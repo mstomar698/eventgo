@@ -1,0 +1,29 @@
+# EventGo
+
+> EventGo is a full-stack event planning workspace for individuals and small teams.
+
+EventGo helps planners create event themes, timelines, checklists, and visual planning boards. It includes AI-assisted ideation, a calendar, vendor booking pipeline, and export tools.
+
+## What EventGo does
+
+- **Theme Library** — Create and browse reusable event themes with colors, mood, activities, decor, music, food, budget, checklist, and timeline phases
+- **AI Studio** — Generate full event themes from a text description using Google Gemini. Also offers event idea suggestions and planning research Q&A
+- **Planner Board** — Visual ReactFlow canvas for building event planning flowcharts. Export as PNG, PDF, JSON, Markdown, or TXT
+- **Notes & Calendar** — Capture planning notes with a month-view calendar showing events and notes on their dates
+- **Vendor Bookings** — Track vendor status from "to contact" through "confirmed"
+- **Planning Themes** — Structured planning templates with checklist, timeline, budget categories, and vendor needs
+
+## Public pages
+
+- `/home` — Product overview and starter themes
+- `/privacy` — Privacy policy
+- `/terms` — Terms of use
+- `/cookies` — Cookie policy
+
+## Authentication
+
+EventGo uses Google OAuth (NextAuth). Authenticated users get access to the full workspace.
+
+## Tech
+
+Built with Next.js 14, MongoDB, Tailwind CSS, ReactFlow, and Google Gemini API.
