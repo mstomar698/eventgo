@@ -104,6 +104,8 @@ const CreateThemePage = () => {
   const [decor, setDecor] = useState<string[]>([]);
   const [music, setMusic] = useState<string[]>([]);
   const [food, setFood] = useState<string[]>([]);
+  const [budgetEstimate, setBudgetEstimate] = useState('');
+  const [budgetNotes, setBudgetNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -146,6 +148,8 @@ const CreateThemePage = () => {
           decor,
           music,
           food,
+          budgetEstimate: budgetEstimate ? parseFloat(budgetEstimate) : undefined,
+          budgetNotes: budgetNotes || undefined,
           date: new Date().toISOString(),
         }),
       });
@@ -293,6 +297,35 @@ const CreateThemePage = () => {
               onAdd={addTag(food, setFood)}
               onRemove={removeTag(food, setFood)}
             />
+          </div>
+        </section>
+
+        {/* Budget */}
+        <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
+          <h2 className="mb-4 text-base font-semibold text-[var(--app-text)]">Budget</h2>
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass}>Estimated budget ($)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={budgetEstimate}
+                onChange={(e) => setBudgetEstimate(e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 500"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Budget notes</label>
+              <textarea
+                value={budgetNotes}
+                onChange={(e) => setBudgetNotes(e.target.value)}
+                className={inputClass}
+                placeholder="e.g. $200 for decor, $150 food, $150 entertainment..."
+                rows={2}
+              />
+            </div>
           </div>
         </section>
 

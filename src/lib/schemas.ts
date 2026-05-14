@@ -43,6 +43,8 @@ export const ThemeSchema = z.object({
   decor: z.array(z.string()).optional(),
   music: z.array(z.string()).optional(),
   food: z.array(z.string()).optional(),
+  budgetEstimate: z.coerce.number().min(0).optional(),
+  budgetNotes: z.string().optional(),
   events: z.array(z.string()),
 });
 

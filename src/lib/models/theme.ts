@@ -10,6 +10,8 @@ export interface ITheme extends Document {
   decor?: string[];
   music?: string[];
   food?: string[];
+  budgetEstimate?: number;
+  budgetNotes?: string;
   events: string[];
 }
 
@@ -23,6 +25,8 @@ const ThemeSchema: Schema = new Schema({
   decor: { type: [String], default: [] },
   music: { type: [String], default: [] },
   food: { type: [String], default: [] },
+  budgetEstimate: { type: Number },
+  budgetNotes: { type: String },
   events: { type: [String], required: true },
 });
 

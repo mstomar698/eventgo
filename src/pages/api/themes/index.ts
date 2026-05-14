@@ -48,6 +48,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const newTheme = new Theme(body);
       const saved = await newTheme.save();
       sendSuccess(res, saved);
+    } else if (req.method === 'PUT') {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        sendError(res, 401, {
+          code: ERROR_CODES.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+        return;
+      }
+      const { id } = z.object({ id: z.string().min(1) }).parse(req.query);
+      const body = ThemeCreateSchema.partial().parse(req.body);
+      const updated = await Theme.findByIdAndUpdate(id, body, { new: true });
+      if (!updated) {
+        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Theme not found' });
+      } else {
+        sendSuccess(res, updated);
+      }
     } else if (req.method === 'DELETE') {
       const session = await getServerSession(req, res, authOptions);
       if (!session) {
