@@ -249,6 +249,11 @@ const Flowchart = () => {
   const [showNewBoardConfirm, setShowNewBoardConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  // Refs + positions for fixed-position dropdowns (overflow-x-auto clips absolute children)
+  const moreRef = useRef<HTMLButtonElement>(null);
+  const exportRef = useRef<HTMLButtonElement>(null);
+  const [morePos, setMorePos] = useState({ top: 0, left: 0 });
+  const [exportPos, setExportPos] = useState({ top: 0, right: 0 });
   const { data: session } = useSession();
   // Prevents the save effect from overwriting the server state before the initial load completes
   const loadedRef = useRef(false);
@@ -630,73 +635,20 @@ const Flowchart = () => {
           <BiDetail size={14} /> Details
         </button>
 
-        {/* More nodes dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => {
-              setShowMoreNodes((v) => !v);
-              setShowImageMenu(false);
-            }}
-            className={toolbarBtnClass}
-          >
-            More <BiChevronDown size={14} />
-          </button>
-          {showMoreNodes && (
-            <div className="absolute bottom-full left-0 z-20 mb-2 w-44 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-xl">
-              <button
-                type="button"
-                onClick={() => {
-                  addNode('input');
-                  setShowMoreNodes(false);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                <BiLogIn size={14} /> Input Node
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  addNode('output');
-                  setShowMoreNodes(false);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                <BiLogOut size={14} /> Output Node
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  addNode('nodetext');
-                  setShowMoreNodes(false);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                <BiNote size={14} /> Text Node
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  addNode('textstrip');
-                  setShowMoreNodes(false);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                <BiStrikethrough size={14} /> Text Strip
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  addNode('imageNode');
-                  setShowMoreNodes(false);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                <BiPhotoAlbum size={14} /> Image Node
-              </button>
-            </div>
-          )}
-        </div>
+        {/* More nodes dropdown — fixed position to escape overflow-x-auto clipping */}
+        <button
+          ref={moreRef}
+          type="button"
+          onClick={() => {
+            const rect = moreRef.current?.getBoundingClientRect();
+            if (rect) setMorePos({ top: rect.top - 8, left: rect.left });
+            setShowMoreNodes((v) => !v);
+            setShowImageMenu(false);
+          }}
+          className={toolbarBtnClass}
+        >
+          More <BiChevronDown size={14} />
+        </button>
 
         {/* Spacer */}
         <div className="flex-1" />
@@ -711,66 +663,109 @@ const Flowchart = () => {
           {isFullscreen ? <BiCollapse size={14} /> : <BiExpand size={14} />}
         </button>
 
-        {/* Export dropdown */}
-        <div className="relative">
+        {/* Export dropdown — fixed position to escape overflow-x-auto clipping */}
+        <button
+          ref={exportRef}
+          type="button"
+          onClick={() => {
+            const rect = exportRef.current?.getBoundingClientRect();
+            if (rect)
+              setExportPos({ top: rect.top - 8, right: window.innerWidth - rect.right });
+            setShowImageMenu((v) => !v);
+            setShowMoreNodes(false);
+          }}
+          className={toolbarBtnClass}
+        >
+          <BiImage size={14} /> Export <BiChevronDown size={14} />
+        </button>
+      </div>
+
+      {/* More nodes — fixed-position so overflow-x-auto never clips it */}
+      {showMoreNodes && (
+        <div
+          className="fixed z-[9999] w-44 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-xl"
+          style={{ top: morePos.top, left: morePos.left, transform: 'translateY(-100%)' }}
+        >
+          {[
+            { type: 'input', icon: <BiLogIn size={14} />, label: 'Input Node' },
+            { type: 'output', icon: <BiLogOut size={14} />, label: 'Output Node' },
+            { type: 'nodetext', icon: <BiNote size={14} />, label: 'Text Node' },
+            {
+              type: 'textstrip',
+              icon: <BiStrikethrough size={14} />,
+              label: 'Text Strip',
+            },
+            { type: 'imageNode', icon: <BiPhotoAlbum size={14} />, label: 'Image Node' },
+          ].map(({ type, icon, label }) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => {
+                addNode(type);
+                setShowMoreNodes(false);
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+            >
+              {icon} {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Export — fixed-position so overflow-x-auto never clips it */}
+      {showImageMenu && (
+        <div
+          className="fixed z-[9999] w-48 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-xl"
+          style={{
+            top: exportPos.top,
+            right: exportPos.right,
+            transform: 'translateY(-100%)',
+          }}
+        >
+          <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--app-muted)]">
+            Image
+          </p>
           <button
             type="button"
-            onClick={() => {
-              setShowImageMenu((v) => !v);
-              setShowMoreNodes(false);
-            }}
-            className={toolbarBtnClass}
+            onClick={handleExportPng}
+            className="flex w-full items-start text-left gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
           >
-            <BiImage size={14} /> Export <BiChevronDown size={14} />
+            🖼 PNG — board snapshot
           </button>
-          {showImageMenu && (
-            <div className="absolute bottom-full right-0 z-20 mb-2 w-48 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-1.5 shadow-xl">
-              <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--app-muted)]">
-                Image
-              </p>
-              <button
-                type="button"
-                onClick={handleExportPng}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                🖼 PNG — board snapshot
-              </button>
-              <button
-                type="button"
-                onClick={handleExportPdf}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                📄 PDF — printable document
-              </button>
-              <div className="my-1 border-t border-[var(--app-border)]" />
-              <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--app-muted)]">
-                Data
-              </p>
-              <button
-                type="button"
-                onClick={handleExportJson}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                {'{ }'} JSON — raw board data
-              </button>
-              <button
-                type="button"
-                onClick={handleExportMd}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                # Markdown — structured doc
-              </button>
-              <button
-                type="button"
-                onClick={handleExportTxt}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-              >
-                ≡ TXT — plain text summary
-              </button>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className="flex w-full items-start text-left gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+          >
+            📄 PDF — printable document
+          </button>
+          <div className="my-1 border-t border-[var(--app-border)]" />
+          <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--app-muted)]">
+            Data
+          </p>
+          <button
+            type="button"
+            onClick={handleExportJson}
+            className="flex w-full items-start text-left gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+          >
+            {'{ }'} JSON — raw board data
+          </button>
+          <button
+            type="button"
+            onClick={handleExportMd}
+            className="flex w-full items-start text-left gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+          >
+            # Markdown — structured doc
+          </button>
+          <button
+            type="button"
+            onClick={handleExportTxt}
+            className="flex w-full items-start text-left gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+          >
+            ≡ TXT — plain text summary
+          </button>
         </div>
-      </div>
+      )}
 
       {/* New Board Confirmation Modal */}
       <ConfirmModal
