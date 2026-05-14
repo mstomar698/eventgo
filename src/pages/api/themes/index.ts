@@ -26,6 +26,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { ThemeCreateSchema } from '@/lib/schemas';
+import { STARTER_THEMES } from '@/lib/starter-themes';
 import { z } from 'zod';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -45,6 +46,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         sendSuccess(res, theme);
         return;
+      }
+      const publicCount = await Theme.countDocuments({ isPublic: true });
+      if (publicCount === 0) {
+        await Theme.insertMany(
+          STARTER_THEMES.map((t) => ({ ...t, isPublic: true, date: new Date() }))
+        );
       }
       const themes = await Theme.find();
       sendSuccess(res, themes);

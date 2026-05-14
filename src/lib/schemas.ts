@@ -56,6 +56,7 @@ export const ThemeSchema = z.object({
     )
     .optional(),
   events: z.array(z.string()),
+  isPublic: z.boolean().optional(),
 });
 
 export const ThemeCreateSchema = ThemeSchema;

@@ -3,7 +3,6 @@
 import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
 import ConfirmModal from '@/components/ui/confirm-modal';
-import Modal from '@/components/ui/modal';
 import useFetch, { revalidate } from 'http-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -26,6 +25,7 @@ interface ThemeWithId {
   checklist?: string[];
   timeline?: Array<{ phase: string; daysBefore: number; tasks: string[] }>;
   events: string[];
+  isPublic?: boolean;
 }
 
 interface Template {
@@ -37,26 +37,14 @@ interface Template {
   isPublic?: boolean;
 }
 
-interface EditFormData {
-  title: string;
-  description: string;
-  occasion: string;
-  budgetEstimate: string;
-  budgetNotes: string;
-}
-
-const inputClass =
-  'w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-2 text-sm text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20';
-const labelClass = 'block text-sm font-medium text-[var(--app-text)] mb-1';
-
 function ThemeCard({
   theme,
-  onEdit,
   onDelete,
+  isPublic,
 }: {
   theme: ThemeWithId;
-  onEdit: (t: ThemeWithId) => void;
   onDelete: (t: ThemeWithId) => void;
+  isPublic?: boolean;
 }) {
   return (
     <article className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
@@ -76,24 +64,25 @@ function ThemeCard({
             </p>
           )}
         </div>
-        <div className="flex shrink-0 gap-1">
-          <button
-            type="button"
-            title="edit-theme"
-            onClick={() => onEdit(theme)}
-            className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-[var(--app-accent)]"
-          >
-            <BiPencil size={14} />
-          </button>
-          <button
-            type="button"
-            title="delete-theme"
-            onClick={() => onDelete(theme)}
-            className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
-          >
-            <BiTrashAlt size={14} />
-          </button>
-        </div>
+        {!isPublic && (
+          <div className="flex shrink-0 gap-1">
+            <Link
+              href={`/themes/${theme._id}/edit`}
+              title="edit-theme"
+              className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-[var(--app-accent)]"
+            >
+              <BiPencil size={14} />
+            </Link>
+            <button
+              type="button"
+              title="delete-theme"
+              onClick={() => onDelete(theme)}
+              className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
+            >
+              <BiTrashAlt size={14} />
+            </button>
+          </div>
+        )}
       </div>
 
       {theme.colorPalette && theme.colorPalette.length > 0 && (
@@ -281,63 +270,13 @@ function ThemesList() {
     default: { data: [] },
   });
 
-  const themes = Array.isArray(response?.data) ? response.data : [];
+  const allThemes = Array.isArray(response?.data) ? response.data : [];
+  const starterThemes = allThemes.filter((t) => t.isPublic);
+  const userThemes = allThemes.filter((t) => !t.isPublic);
 
-  const [editingTheme, setEditingTheme] = useState<ThemeWithId | null>(null);
   const [deleteTheme, setDeleteTheme] = useState<ThemeWithId | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<EditFormData>({
-    title: '',
-    description: '',
-    occasion: 'other',
-    budgetEstimate: '',
-    budgetNotes: '',
-  });
-
-  const handleEdit = (theme: ThemeWithId) => {
-    setEditingTheme(theme);
-    setEditForm({
-      title: theme.title,
-      description: theme.description ?? '',
-      occasion: theme.occasion ?? 'other',
-      budgetEstimate: theme.budgetEstimate != null ? String(theme.budgetEstimate) : '',
-      budgetNotes: theme.budgetNotes ?? '',
-    });
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingTheme) return;
-    setIsSubmitting(true);
-    setSubmitError(null);
-    try {
-      const res = await fetch(`/api/themes?id=${editingTheme._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editForm.title,
-          description: editForm.description || undefined,
-          occasion: editForm.occasion,
-          budgetEstimate: editForm.budgetEstimate
-            ? parseFloat(editForm.budgetEstimate)
-            : undefined,
-          budgetNotes: editForm.budgetNotes || undefined,
-        }),
-      });
-      if (res.ok) {
-        revalidate('GET /themes');
-        setEditingTheme(null);
-      } else {
-        setSubmitError('Failed to update theme. Please try again.');
-      }
-    } catch {
-      setSubmitError('Error updating theme. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleDeleteConfirm = async () => {
     if (!deleteTheme) return;
@@ -348,11 +287,9 @@ function ThemesList() {
         revalidate('GET /themes');
         setDeleteTheme(null);
         setShowDeleteConfirm(false);
-      } else {
-        setSubmitError('Failed to delete theme.');
       }
     } catch {
-      setSubmitError('Error deleting theme.');
+      /* ignore */
     } finally {
       setIsSubmitting(false);
     }
@@ -365,7 +302,6 @@ function ThemesList() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 text-sm text-red-300">
@@ -374,147 +310,82 @@ function ThemesList() {
     );
   }
 
+  const onDelete = (t: ThemeWithId) => {
+    setDeleteTheme(t);
+    setShowDeleteConfirm(true);
+  };
+
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--app-text)]">Your Themes</h2>
-            <p className="mt-1 text-xs text-[var(--app-muted)]">
-              {themes.length} custom themes in your library
-            </p>
-          </div>
-          <Link
-            href="/themes/create"
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            <BiPlus size={18} />
-            Add theme
-          </Link>
-        </div>
-
-        {themes.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {themes.map((theme) => (
-              <ThemeCard
-                key={`theme-${theme._id}`}
-                theme={theme}
-                onEdit={handleEdit}
-                onDelete={(t) => {
-                  setDeleteTheme(t);
-                  setShowDeleteConfirm(true);
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-[var(--app-border)] bg-[var(--app-elevated)]/50 p-6 text-center">
-            <p className="text-sm text-[var(--app-muted)]">No custom themes yet</p>
-            <Link
-              href="/themes/create"
-              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-            >
-              <BiPlus size={16} />
-              Create your first theme
-            </Link>
+      <div className="space-y-8">
+        {/* Starter Themes */}
+        {starterThemes.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-[var(--app-text)]">
+                  Starter Themes
+                </h2>
+                <p className="mt-1 text-xs text-[var(--app-muted)]">
+                  {starterThemes.length} example themes to get started
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {starterThemes.map((theme) => (
+                <ThemeCard
+                  key={`starter-${theme._id}`}
+                  theme={theme}
+                  onDelete={onDelete}
+                  isPublic
+                />
+              ))}
+            </div>
           </div>
         )}
-      </div>
 
-      {/* Edit Modal */}
-      <Modal
-        isOpen={Boolean(editingTheme)}
-        onClose={() => {
-          setEditingTheme(null);
-          setSubmitError(null);
-        }}
-        title="Edit Theme"
-        size="md"
-      >
-        <form onSubmit={handleEditSubmit} className="space-y-4">
-          {submitError && (
-            <div className="rounded-lg bg-red-500/20 p-3 text-sm text-red-400">
-              {submitError}
+        {/* Divider */}
+        {starterThemes.length > 0 && (
+          <div className="border-t border-[var(--app-border)]" />
+        )}
+
+        {/* Your Themes */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-[var(--app-text)]">
+                Your Themes
+              </h2>
+              <p className="mt-1 text-xs text-[var(--app-muted)]">
+                {userThemes.length} custom themes in your library
+              </p>
+            </div>
+            <Link
+              href="/themes/create"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              <BiPlus size={18} /> Add theme
+            </Link>
+          </div>
+          {userThemes.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {userThemes.map((theme) => (
+                <ThemeCard key={`theme-${theme._id}`} theme={theme} onDelete={onDelete} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-[var(--app-border)] bg-[var(--app-elevated)]/50 p-6 text-center">
+              <p className="text-sm text-[var(--app-muted)]">No custom themes yet</p>
+              <Link
+                href="/themes/create"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+              >
+                <BiPlus size={16} /> Create your first theme
+              </Link>
             </div>
           )}
-          <div>
-            <label className={labelClass}>Theme title</label>
-            <input
-              type="text"
-              required
-              value={editForm.title}
-              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Description</label>
-            <textarea
-              value={editForm.description}
-              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-              className={inputClass}
-              rows={2}
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass}>Occasion</label>
-              <select
-                value={editForm.occasion}
-                onChange={(e) => setEditForm({ ...editForm, occasion: e.target.value })}
-                className={inputClass}
-              >
-                <option value="birthday">Birthday</option>
-                <option value="wedding">Wedding</option>
-                <option value="corporate">Corporate</option>
-                <option value="community">Community</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Budget estimate ($)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={editForm.budgetEstimate}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, budgetEstimate: e.target.value })
-                }
-                className={inputClass}
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-          <div>
-            <label className={labelClass}>Budget notes</label>
-            <input
-              type="text"
-              value={editForm.budgetNotes}
-              onChange={(e) => setEditForm({ ...editForm, budgetNotes: e.target.value })}
-              className={inputClass}
-              placeholder="e.g. $200 decor, $150 food..."
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setEditingTheme(null)}
-              disabled={isSubmitting}
-              className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)] disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-70"
-            >
-              {isSubmitting ? 'Saving...' : 'Save changes'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        </div>
+      </div>
 
       <ConfirmModal
         isOpen={showDeleteConfirm}

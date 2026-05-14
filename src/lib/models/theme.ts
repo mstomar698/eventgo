@@ -15,6 +15,7 @@ export interface ITheme extends Document {
   checklist?: string[];
   timeline?: Array<{ phase: string; daysBefore: number; tasks: string[] }>;
   events: string[];
+  isPublic?: boolean;
 }
 
 const ThemeSchema: Schema = new Schema({
@@ -35,6 +36,7 @@ const ThemeSchema: Schema = new Schema({
     default: [],
   },
   events: { type: [String], required: true },
+  isPublic: { type: Boolean, default: false },
 });
 
 export const Theme = (mongoose.models.Theme ||
