@@ -253,7 +253,7 @@ function TemplateWizard() {
       )}
       <div className="flex justify-end gap-3">
         <Link
-          href="/planner"
+          href={`/planner?template=${id}`}
           className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-2 text-sm transition hover:bg-[var(--app-surface)]"
         >
           Start Planning

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ReactFlow, {
   Controls,
   Background,
@@ -36,9 +37,100 @@ const nodeTypes = {
   textstrip: Nodes.TextStrip,
 };
 
+const buildThemeNodes = (theme: any) => {
+  const cols = [100, 300, 500];
+  const nodes: any[] = [
+    {
+      id: '1',
+      type: 'input',
+      data: { label: `Theme: ${theme.title}` },
+      position: { x: 300, y: 0 },
+    },
+  ];
+  let row = 1;
+  const push = (label: string, col = 1) => {
+    nodes.push({
+      id: String(nodes.length + 1),
+      data: { label },
+      position: { x: cols[col], y: row * 100 },
+    });
+  };
+  if (theme.occasion) {
+    push(`Occasion: ${theme.occasion}`, 1);
+    row++;
+  }
+  if (theme.mood?.length) {
+    push(`Mood: ${theme.mood.join(', ')}`, 0);
+  }
+  if (theme.colorPalette?.length) {
+    push(`Colors: ${theme.colorPalette.join(' ')}`, 2);
+    row++;
+  }
+  (theme.events ?? []).forEach((a: string, i: number) => push(a, i % 3));
+  if (theme.events?.length) row++;
+  if (theme.decor?.length) {
+    push(`Decor: ${theme.decor.join(', ')}`, 0);
+  }
+  if (theme.music?.length) {
+    push(`Music: ${theme.music.join(', ')}`, 1);
+  }
+  if (theme.food?.length) {
+    push(`Food: ${theme.food.join(', ')}`, 2);
+    row++;
+  }
+  if (theme.budgetEstimate) {
+    push(`Budget: $${theme.budgetEstimate}`, 1);
+    row++;
+  }
+  nodes.push({
+    id: String(nodes.length + 1),
+    type: 'output',
+    data: { label: 'Event Ready!' },
+    position: { x: 300, y: row * 100 },
+  });
+  return nodes;
+};
+
+const buildTemplateNodes = (template: any) => {
+  const nodes: any[] = [
+    {
+      id: '1',
+      type: 'input',
+      data: { label: template.name },
+      position: { x: 300, y: 0 },
+    },
+  ];
+  let row = 1;
+  (template.timeline ?? []).forEach((phase: any, i: number) => {
+    nodes.push({
+      id: String(nodes.length + 1),
+      data: { label: `${phase.phase} (${phase.daysBefore}d before)` },
+      position: { x: i * 220, y: row * 100 },
+    });
+  });
+  if (template.timeline?.length) row++;
+  (template.budgetCategories ?? []).forEach((cat: any, i: number) => {
+    nodes.push({
+      id: String(nodes.length + 1),
+      data: { label: `${cat.category}: $${cat.estimatedAmount}` },
+      position: { x: i * 220, y: row * 100 },
+    });
+  });
+  if (template.budgetCategories?.length) row++;
+  nodes.push({
+    id: String(nodes.length + 1),
+    type: 'output',
+    data: { label: 'Event Ready!' },
+    position: { x: 300, y: row * 100 },
+  });
+  return nodes;
+};
+
 const Flowchart = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const flowRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [nodes, setNodes] = useState<any[]>(initialNodesForDemoTheme);
   const [edges, setEdges] = useState(initialEdgesForDemoTheme);
 
@@ -63,21 +155,54 @@ const Flowchart = () => {
   const [exportError, setExportError] = useState<string | null>(null);
   const { data: session } = useSession();
 
-  // Load flow from server
+  // Load flow from server or from a theme/template URL param
   useEffect(() => {
-    if (session) {
-      fetch('/api/flows')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.data.nodes && data.data.edges) {
-            const loadedNodes = Array.isArray(data.data.nodes) ? data.data.nodes : [];
-            setNodes(sanitizeNodes(loadedNodes));
-            setEdges(data.data.edges);
+    if (!session) return;
+
+    const themeId = searchParams?.get('theme');
+    const templateId = searchParams?.get('template');
+
+    if (themeId) {
+      fetch(`/api/themes?id=${themeId}`)
+        .then((r) => r.json())
+        .then((d) => {
+          const theme = d?.data ?? d;
+          if (theme?.title) {
+            setNodes(sanitizeNodes(buildThemeNodes(theme)));
+            setEdges([]);
+            router.replace('/planner');
           }
         })
         .catch(console.error);
+      return;
     }
-  }, [session]);
+
+    if (templateId) {
+      fetch(`/api/templates/${templateId}`)
+        .then((r) => r.json())
+        .then((d) => {
+          const template = d?.data ?? d;
+          if (template?.name) {
+            setNodes(sanitizeNodes(buildTemplateNodes(template)));
+            setEdges([]);
+            router.replace('/planner');
+          }
+        })
+        .catch(console.error);
+      return;
+    }
+
+    fetch('/api/flows')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data.nodes && data.data.edges) {
+          const loadedNodes = Array.isArray(data.data.nodes) ? data.data.nodes : [];
+          setNodes(sanitizeNodes(loadedNodes));
+          setEdges(data.data.edges);
+        }
+      })
+      .catch(console.error);
+  }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setNodeCount(nodes.length);

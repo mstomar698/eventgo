@@ -33,6 +33,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDB();
 
     if (req.method === 'GET') {
+      const { id } = req.query;
+      if (typeof id === 'string' && id) {
+        const theme = await Theme.findById(id);
+        if (!theme) {
+          sendError(res, 404, {
+            code: ERROR_CODES.NOT_FOUND,
+            message: 'Theme not found',
+          });
+          return;
+        }
+        sendSuccess(res, theme);
+        return;
+      }
       const themes = await Theme.find();
       sendSuccess(res, themes);
     } else if (req.method === 'POST') {

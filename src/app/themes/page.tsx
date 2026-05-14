@@ -8,7 +8,7 @@ import useFetch, { revalidate } from 'http-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { BiPlus, BiTrashAlt, BiRocket, BiPencil } from 'react-icons/bi';
+import { BiPlus, BiTrashAlt, BiRocket, BiPencil, BiMap } from 'react-icons/bi';
 
 interface ThemeWithId {
   _id: string;
@@ -165,6 +165,16 @@ function ThemeCard({
             {theme.budgetNotes ? ` — ${theme.budgetNotes}` : ''}
           </p>
         )}
+      </div>
+
+      <div className="mt-4">
+        <Link
+          href={`/planner?theme=${theme._id}`}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+        >
+          <BiMap size={13} />
+          Start Planning
+        </Link>
       </div>
     </article>
   );
