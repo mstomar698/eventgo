@@ -11,7 +11,7 @@ import ReactFlow, {
   addEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { toPng } from 'html-to-image';
+import { toCanvas } from 'html-to-image';
 import { useSession } from 'next-auth/react';
 import {
   BiPlus,
@@ -383,17 +383,86 @@ const Flowchart = () => {
   };
 
   const captureImage = async (): Promise<string> => {
-    // Target .react-flow so the edges SVG is included in the capture
-    const el =
+    const flowEl =
       (containerRef.current?.querySelector('.react-flow') as HTMLElement) ??
       containerRef.current;
-    if (!el) throw new Error('No element');
-    return toPng(el, {
-      backgroundColor: bgColor(),
-      pixelRatio: 2,
-      // Inline CSS so SVG stroke/fill CSS variables resolve correctly
-      includeQueryParams: true,
+    if (!flowEl) throw new Error('No element');
+
+    const dpr = 2;
+
+    // Read viewport transform so edges are drawn in the right coordinate space
+    const viewportEl = flowEl.querySelector('.react-flow__viewport') as HTMLElement;
+    const matrix = new DOMMatrix(getComputedStyle(viewportEl).transform);
+    const tx = matrix.e;
+    const ty = matrix.f;
+    const sc = matrix.a; // uniform scale
+
+    // Record actual rendered node dimensions from the DOM before capture
+    const nodeRects: Record<string, { w: number; h: number }> = {};
+    flowEl.querySelectorAll('.react-flow__node').forEach((el) => {
+      const id = el.getAttribute('data-id') ?? '';
+      if (id)
+        nodeRects[id] = {
+          w: (el as HTMLElement).offsetWidth || 200,
+          h: (el as HTMLElement).offsetHeight || 80,
+        };
     });
+
+    // Capture node content as canvas (edges SVG unreliable via html-to-image)
+    const base = await toCanvas(flowEl, { backgroundColor: bgColor(), pixelRatio: dpr });
+    const ctx = base.getContext('2d')!;
+
+    // Resolve edge color from CSS variable
+    const edgeColor =
+      getComputedStyle(document.documentElement).getPropertyValue('--app-muted').trim() ||
+      '#94a3b8';
+
+    // Draw each edge as a bezier curve on top of the captured canvas
+    ctx.save();
+    ctx.scale(dpr, dpr); // match html-to-image's pixelRatio
+    ctx.translate(tx, ty);
+    ctx.scale(sc, sc);
+    ctx.strokeStyle = edgeColor;
+    ctx.lineWidth = 1.5;
+    ctx.fillStyle = edgeColor;
+
+    edges.forEach((edge: any) => {
+      const srcNode = nodes.find((n: any) => n.id === edge.source);
+      const tgtNode = nodes.find((n: any) => n.id === edge.target);
+      if (!srcNode || !tgtNode) return;
+
+      const sw = nodeRects[edge.source]?.w ?? srcNode.width ?? 200;
+      const sh = nodeRects[edge.source]?.h ?? srcNode.height ?? 80;
+      const tw = nodeRects[edge.target]?.w ?? tgtNode.width ?? 200;
+
+      const x1 = srcNode.position.x + sw / 2;
+      const y1 = srcNode.position.y + sh;
+      const x2 = tgtNode.position.x + tw / 2;
+      const y2 = tgtNode.position.y;
+      const my = (y1 + y2) / 2;
+
+      // Smooth-step bezier
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.bezierCurveTo(x1, my, x2, my, x2, y2);
+      ctx.stroke();
+
+      // Arrowhead at target
+      const as = 7;
+      ctx.save();
+      ctx.translate(x2, y2);
+      ctx.rotate(Math.PI / 2);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-as / 2, -as);
+      ctx.lineTo(as / 2, -as);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+
+    ctx.restore();
+    return base.toDataURL('image/png');
   };
 
   const handleExportPng = async () => {
@@ -415,16 +484,18 @@ const Flowchart = () => {
     setShowImageMenu(false);
     try {
       const dataUrl = await captureImage();
-      const el = containerRef.current!;
-      const { jsPDF } = (await import('jspdf')).default
-        ? await import('jspdf')
-        : { jsPDF: (await import('jspdf')).jsPDF };
+      const flowEl =
+        (containerRef.current?.querySelector('.react-flow') as HTMLElement) ??
+        containerRef.current!;
+      const w = flowEl.offsetWidth;
+      const h = flowEl.offsetHeight;
+      const { jsPDF } = await import('jspdf');
       const pdf = new jsPDF({
-        orientation: el.offsetWidth > el.offsetHeight ? 'landscape' : 'portrait',
+        orientation: w > h ? 'landscape' : 'portrait',
         unit: 'px',
-        format: [el.offsetWidth, el.offsetHeight],
+        format: [w, h],
       });
-      pdf.addImage(dataUrl, 'PNG', 0, 0, el.offsetWidth, el.offsetHeight);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, w, h);
       pdf.save('eventgo-plan.pdf');
     } catch {
       setExportError('PDF export failed. Please try again.');
