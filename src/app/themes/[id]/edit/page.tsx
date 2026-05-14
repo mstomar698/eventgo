@@ -2,7 +2,6 @@
 
 import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
-import useFetch from 'http-react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState, FormEvent } from 'react';
@@ -99,14 +98,6 @@ function TagInput({
 
 function EditThemeForm({ themeId }: { themeId: string }) {
   const router = useRouter();
-  const { data: response, loadingFirst } = useFetch<{ data?: any }>(
-    `/themes?id=${themeId}`,
-    {
-      default: { data: undefined },
-    }
-  );
-
-  const theme = response?.data;
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -125,30 +116,38 @@ function EditThemeForm({ themeId }: { themeId: string }) {
   ]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loadingFirst, setLoadingFirst] = useState(true);
 
   useEffect(() => {
-    if (theme && !loaded) {
-      setTitle(theme.title ?? '');
-      setDescription(theme.description ?? '');
-      setOccasion(theme.occasion ?? 'other');
-      setMood(theme.mood ?? []);
-      setColorPalette(theme.colorPalette ?? []);
-      setActivities(theme.events ?? []);
-      setDecor(theme.decor ?? []);
-      setMusic(theme.music ?? []);
-      setFood(theme.food ?? []);
-      setBudgetEstimate(theme.budgetEstimate != null ? String(theme.budgetEstimate) : '');
-      setBudgetNotes(theme.budgetNotes ?? '');
-      setChecklist(theme.checklist?.length ? theme.checklist : ['']);
-      setTimeline(
-        theme.timeline?.length
-          ? theme.timeline
-          : [{ phase: '', daysBefore: 30, tasks: [''] }]
-      );
-      setLoaded(true);
-    }
-  }, [theme, loaded]);
+    if (!themeId) return;
+    fetch(`/api/themes?id=${themeId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        const theme = d?.data;
+        if (!theme) return;
+        setTitle(theme.title ?? '');
+        setDescription(theme.description ?? '');
+        setOccasion(theme.occasion ?? 'other');
+        setMood(theme.mood ?? []);
+        setColorPalette(theme.colorPalette ?? []);
+        setActivities(theme.events ?? []);
+        setDecor(theme.decor ?? []);
+        setMusic(theme.music ?? []);
+        setFood(theme.food ?? []);
+        setBudgetEstimate(
+          theme.budgetEstimate != null ? String(theme.budgetEstimate) : ''
+        );
+        setBudgetNotes(theme.budgetNotes ?? '');
+        setChecklist(theme.checklist?.length ? theme.checklist : ['']);
+        setTimeline(
+          theme.timeline?.length
+            ? theme.timeline
+            : [{ phase: '', daysBefore: 30, tasks: [''] }]
+        );
+      })
+      .catch(console.error)
+      .finally(() => setLoadingFirst(false));
+  }, [themeId]);
 
   const addTag = (list: string[], set: (v: string[]) => void) => (val: string) =>
     set([...list, val]);
