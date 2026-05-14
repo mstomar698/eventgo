@@ -404,11 +404,11 @@ const UseTemplatePage = () => {
   const { data: session } = useSession();
 
   if (!session) {
-    return <SignInRequired title="Template setup requires sign in" />;
+    return <SignInRequired title="Theme setup requires sign in" />;
   }
 
   return (
-    <AppShell title="Plan from Template">
+    <AppShell title="Plan from Theme">
       <TemplateWizard />
     </AppShell>
   );

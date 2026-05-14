@@ -75,7 +75,7 @@ function TemplateCard({
           href={`/templates/${template._id}/use`}
           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
         >
-          Use Template
+          Use Theme
         </Link>
       )}
     </article>
@@ -193,11 +193,11 @@ function TemplatesList() {
   return (
     <>
       <div className="space-y-6">
-        {/* Starter Templates Section */}
+        {/* Starter Themes Section */}
         <div>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--app-text)]">
-              Starter Templates
+              Starter Themes
             </h2>
             <p className="text-xs text-[var(--app-muted)]">
               {starterTemplates.length} available
@@ -211,15 +211,15 @@ function TemplatesList() {
             </div>
           ) : (
             <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-6 text-center text-sm text-[var(--app-muted)]">
-              No starter templates available
+              No starter themes available
             </div>
           )}
         </div>
 
-        {/* My Templates Section */}
+        {/* My Themes Section */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--app-text)]">My Templates</h2>
+            <h2 className="text-lg font-semibold text-[var(--app-text)]">My Themes</h2>
             <Link
               href="/templates/create"
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
@@ -251,7 +251,7 @@ function TemplatesList() {
                 className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
               >
                 <BiPlus size={16} />
-                Create your first template
+                Create your first theme
               </Link>
             </div>
           )}
@@ -381,7 +381,7 @@ const TemplatesPage = () => {
   }
 
   return (
-    <AppShell title="Event Templates">
+    <AppShell title="Themes">
       <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
         <TemplatesList />
       </section>

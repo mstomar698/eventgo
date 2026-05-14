@@ -130,7 +130,7 @@ export default function CreateTemplatePage() {
     vendorNeeds: [''],
   });
 
-  if (!session) return <SignInRequired title="Create template requires sign in" />;
+  if (!session) return <SignInRequired title="Create theme requires sign in" />;
 
   const set = (field: string, value: any) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -249,7 +249,7 @@ export default function CreateTemplatePage() {
   };
 
   return (
-    <AppShell title="Create Template">
+    <AppShell title="Create Theme">
       {submitError && (
         <div className="mb-6 rounded-lg bg-red-500/20 p-4 text-sm text-red-400">
           {submitError}
@@ -656,7 +656,7 @@ export default function CreateTemplatePage() {
             disabled={isSubmitting || !formData.name.trim()}
             className="rounded-lg bg-[var(--app-accent-strong)] px-6 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            {isSubmitting ? 'Creating...' : 'Create Template'}
+            {isSubmitting ? 'Creating...' : 'Create Theme'}
           </button>
         </div>
       </form>

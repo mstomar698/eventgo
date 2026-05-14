@@ -19,9 +19,9 @@ const highlights = [
       'Generate event concepts, theme options, and planning insights quickly during discovery.',
   },
   {
-    title: 'Template-first execution',
+    title: 'Theme-first execution',
     description:
-      'Start from proven packs for birthdays and small community events, then adapt to your needs.',
+      'Start from proven starter themes for birthdays, weddings, and corporate events, then make them your own.',
   },
 ];
 
@@ -34,25 +34,29 @@ const landingMilestones = [
   'Post-event summary and reuse support',
 ];
 
-interface Template {
+interface StarterTheme {
   _id: string;
-  name: string;
+  title: string;
   description?: string;
-  headcount?: number;
+  occasion?: string;
+  colorPalette?: string[];
 }
-
-const launchTemplates: Template[] = [];
 
 const HomeRoute = () => {
   const { status } = useSession();
   const isLoggedIn = status === 'authenticated';
   const isAuthLoading = status === 'loading';
 
-  const { data: tplResp, loadingFirst } = useFetch<{ data?: Template[] }>('/templates', {
-    default: { data: [] },
-  });
+  const { data: themeResp, loadingFirst } = useFetch<{ data?: StarterTheme[] }>(
+    '/themes',
+    {
+      default: { data: [] },
+    }
+  );
 
-  const templates = Array.isArray(tplResp?.data) ? tplResp!.data : [];
+  const themes = (Array.isArray(themeResp?.data) ? themeResp!.data : []).filter(
+    (t) => (t as any).isPublic
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--app-bg)] text-[var(--app-text)]">
@@ -69,8 +73,8 @@ const HomeRoute = () => {
           <p className="mt-5 max-w-2xl text-sm leading-6 text-[var(--app-muted)] sm:text-base">
             EventGo helps teams and independent planners convert rough ideas into
             executable plans. Build structure, collect insights, and keep every milestone
-            organized in one system. We prioritize reproducible templates, simple
-            collaboration primitives, and clear exportable run-of-show artifacts.
+            organized in one system. We prioritize reusable themes, simple collaboration
+            primitives, and clear exportable run-of-show artifacts.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {isLoggedIn ? (
@@ -161,46 +165,61 @@ const HomeRoute = () => {
           </article>
 
           <article className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6">
-            <h2 className="text-xl font-semibold">Ready starter templates</h2>
+            <h2 className="text-xl font-semibold">Ready starter themes</h2>
             <p className="mt-2 text-sm text-[var(--app-muted)]">
-              Launch quickly with prebuilt plans designed for under-20 attendee events.
+              Launch quickly with prebuilt themes for birthdays, weddings, and corporate
+              events.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {loadingFirst ? (
                 <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-surface)] p-4 text-sm text-[var(--app-muted)]">
-                  Loading templates...
+                  Loading themes...
                 </div>
-              ) : (
-                (templates.length ? templates.slice(0, 4) : launchTemplates).map(
-                  (template) => (
-                    <article
-                      key={template._id ?? template.name}
-                      className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
-                    >
-                      <h3 className="text-sm font-semibold">{template.name}</h3>
-                      <p className="mt-1 text-xs text-[var(--app-muted)]">
-                        {template.description}
-                      </p>
-                      <div className="mt-3">
-                        {template._id ? (
-                          <Link
-                            href={`/templates/${template._id}/use`}
-                            className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-                          >
-                            Use template
-                          </Link>
-                        ) : (
-                          <Link
-                            href="/templates"
-                            className="inline-flex items-center gap-2 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-                          >
-                            View templates
-                          </Link>
-                        )}
+              ) : themes.length > 0 ? (
+                themes.slice(0, 4).map((theme) => (
+                  <article
+                    key={theme._id}
+                    className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
+                  >
+                    {theme.colorPalette && theme.colorPalette.length > 0 && (
+                      <div className="mb-2 flex gap-1">
+                        {theme.colorPalette.slice(0, 4).map((c) => (
+                          <span
+                            key={c}
+                            style={{ backgroundColor: c }}
+                            className="h-3 w-3 rounded-full"
+                          />
+                        ))}
                       </div>
-                    </article>
-                  )
-                )
+                    )}
+                    <h3 className="text-sm font-semibold">{theme.title}</h3>
+                    {theme.occasion && (
+                      <p className="mt-0.5 text-xs capitalize text-[var(--app-accent)]">
+                        {theme.occasion}
+                      </p>
+                    )}
+                    <p className="mt-1 line-clamp-2 text-xs text-[var(--app-muted)]">
+                      {theme.description}
+                    </p>
+                    <div className="mt-3">
+                      <Link
+                        href={`/themes/${theme._id}/view`}
+                        className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                      >
+                        View theme
+                      </Link>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="col-span-2 rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-4 text-center text-sm text-[var(--app-muted)]">
+                  <Link
+                    href="/themes"
+                    className="text-[var(--app-accent)] hover:underline"
+                  >
+                    Browse starter themes →
+                  </Link>
+                </div>
               )}
             </div>
           </article>
