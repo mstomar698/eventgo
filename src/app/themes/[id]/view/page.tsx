@@ -2,11 +2,10 @@
 
 import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
-import useFetch from 'http-react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BiArrowToLeft, BiMap, BiCopy, BiCheck } from 'react-icons/bi';
 
 interface Theme {
@@ -52,18 +51,24 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function ThemeViewContent({ themeId }: { themeId: string }) {
   const router = useRouter();
-  const {
-    data: response,
-    loadingFirst,
-    error,
-  } = useFetch<{ data?: Theme }>(`/themes?id=${themeId}`, {
-    default: { data: undefined },
-  });
-
-  const theme = response?.data;
+  const [theme, setTheme] = useState<Theme | null>(null);
+  const [loadingFirst, setLoadingFirst] = useState(true);
+  const [error, setError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!themeId) return;
+    fetch(`/api/themes?id=${themeId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && d.data) setTheme(d.data);
+        else setError(true);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoadingFirst(false));
+  }, [themeId]);
 
   const handleSaveAsMine = async () => {
     if (!theme) return;
