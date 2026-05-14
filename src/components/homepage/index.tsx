@@ -1,5 +1,4 @@
 // Homepage content component used on authenticated workspace root
-// Contains quick links to main workspace areas and AI studio
 'use client';
 
 import AppShell from '@/components/layout/app-shell';
@@ -49,86 +48,30 @@ const aiSections = [
   },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const templateExamples = [
-  'Birthday at home (<20 attendees)',
-  'Birthday at a cafe (<20 attendees)',
-  'Small community meetup (<20 attendees)',
-  'Neighborhood workshop / book club (<20 attendees)',
-  'Casual game night or movie viewing',
-  'Potluck dinner gathering',
-  'Outdoor picnic celebration',
-  'Coffee or brunch social',
-  'Virtual or hybrid online event',
-  'Small wedding or engagement party',
-  'Baby shower or bridal shower',
-  'Holiday or seasonal celebration',
-];
-
-interface ReadyTemplate {
-  _id?: string;
-  name: string;
-  useCases?: string;
+interface StarterTheme {
+  _id: string;
+  title: string;
+  description?: string;
+  occasion?: string;
+  colorPalette?: string[];
+  mood?: string[];
+  isPublic?: boolean;
 }
-
-const readyTemplatesFallback: ReadyTemplate[] = [
-  {
-    name: 'Birthday at Home',
-    useCases: 'Family celebration with simple logistics',
-  },
-  {
-    name: 'Birthday at Cafe/Restaurant',
-    useCases: 'Hosted celebration with venue support',
-  },
-  {
-    name: 'Small Community Meetup',
-    useCases: 'Recurring local gathering format',
-  },
-  {
-    name: 'Neighborhood Workshop',
-    useCases: 'Educational or hobby-based session',
-  },
-  {
-    name: 'Casual Game Night',
-    useCases: 'Friends gathering for games and snacks',
-  },
-  {
-    name: 'Potluck Dinner',
-    useCases: 'Community gathering with shared dishes',
-  },
-  {
-    name: 'Garden Picnic',
-    useCases: 'Outdoor casual celebration',
-  },
-  {
-    name: 'Virtual/Hybrid Meetup',
-    useCases: 'Online gathering with tech setup',
-  },
-  {
-    name: 'Baby Shower',
-    useCases: 'Celebration for parents-to-be',
-  },
-  {
-    name: 'Wedding Engagement Party',
-    useCases: 'Intimate celebration for engaged couples',
-  },
-];
 
 const HomePage = () => {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.split(' ')[0] ?? 'Planner';
 
-  const { data: tplResp, loadingFirst } = useFetch<{ data?: ReadyTemplate[] }>(
-    '/templates',
+  const { data: themeResp, loadingFirst } = useFetch<{ data?: StarterTheme[] }>(
+    '/themes',
     {
       default: { data: [] },
     }
   );
 
-  const templates =
-    Array.isArray(tplResp?.data) && tplResp?.data.length
-      ? tplResp.data
-      : readyTemplatesFallback;
+  const starterThemes = (Array.isArray(themeResp?.data) ? themeResp!.data : []).filter(
+    (t) => (t as any).isPublic
+  );
 
   return (
     <AppShell
@@ -142,7 +85,7 @@ const HomePage = () => {
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--app-muted)]">
           EventGo helps you move from concept to execution with structured planning,
-          AI-assisted suggestions, and reusable templates designed for small-to-medium
+          AI-assisted suggestions, and reusable themes designed for small-to-medium
           events.
         </p>
       </section>
@@ -189,46 +132,78 @@ const HomePage = () => {
       <section className="mt-6 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold">Starter templates now available</h2>
+            <h2 className="text-xl font-semibold">Starter themes</h2>
             <p className="mt-2 text-sm text-[var(--app-muted)]">
-              Launch plans faster with template packs already prepared for small events.
+              Jump-start your planning with ready-made themes for any occasion.
             </p>
           </div>
           <Link
-            href="/templates"
+            href="/themes"
             className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
           >
-            Open full library
+            Open theme library
           </Link>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {(loadingFirst ? readyTemplatesFallback : templates).map((template) => (
-            <article
-              key={template._id ?? template.name}
-              className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
-            >
-              <h3 className="text-sm font-semibold">{template.name}</h3>
-              <p className="mt-1 text-xs text-[var(--app-muted)]">{template.useCases}</p>
-              <div className="mt-3">
-                {template._id ? (
-                  <Link
-                    href={`/templates/${template._id}/use`}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-                  >
-                    Use template
-                  </Link>
-                ) : (
-                  <Link
-                    href="/templates"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
-                  >
-                    View templates
-                  </Link>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {loadingFirst ? (
+            <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-4 text-sm text-[var(--app-muted)]">
+              Loading themes...
+            </div>
+          ) : starterThemes.length > 0 ? (
+            starterThemes.map((theme) => (
+              <article
+                key={theme._id}
+                className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
+              >
+                {theme.colorPalette && theme.colorPalette.length > 0 && (
+                  <div className="mb-2 flex gap-1.5">
+                    {theme.colorPalette.slice(0, 4).map((c) => (
+                      <span
+                        key={c}
+                        style={{ backgroundColor: c }}
+                        className="h-3 w-3 rounded-full"
+                      />
+                    ))}
+                  </div>
                 )}
-              </div>
-            </article>
-          ))}
+                <h3 className="text-sm font-semibold">{theme.title}</h3>
+                {theme.occasion && (
+                  <p className="mt-0.5 text-xs capitalize text-[var(--app-accent)]">
+                    {theme.occasion}
+                  </p>
+                )}
+                {theme.mood && theme.mood.length > 0 && (
+                  <p className="mt-1 text-xs italic text-[var(--app-muted)]">
+                    {theme.mood.slice(0, 3).join(' · ')}
+                  </p>
+                )}
+                <p className="mt-1 line-clamp-2 text-xs text-[var(--app-muted)]">
+                  {theme.description}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Link
+                    href={`/themes/${theme._id}/view`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                  >
+                    View theme
+                  </Link>
+                  <Link
+                    href={`/planner?theme=${theme._id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)]"
+                  >
+                    Plan
+                  </Link>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="col-span-3 rounded-lg border border-dashed border-[var(--app-border)] bg-[var(--app-elevated)]/50 p-6 text-center text-sm text-[var(--app-muted)]">
+              <Link href="/themes" className="text-[var(--app-accent)] hover:underline">
+                Browse starter themes →
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </AppShell>
