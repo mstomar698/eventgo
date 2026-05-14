@@ -13,6 +13,13 @@ interface ThemeWithId {
   _id: string;
   title: string;
   date: string;
+  description?: string;
+  occasion?: string;
+  mood?: string[];
+  colorPalette?: string[];
+  decor?: string[];
+  music?: string[];
+  food?: string[];
   events: string[];
 }
 
@@ -54,25 +61,96 @@ function ThemeCard(props: ThemeWithId) {
     <>
       <article className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold">{props.title}</h3>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm font-semibold">{props.title}</h3>
+              {props.occasion && (
+                <span className="rounded-full bg-[var(--app-accent)]/20 px-2 py-0.5 text-xs capitalize text-[var(--app-accent)]">
+                  {props.occasion}
+                </span>
+              )}
+            </div>
+            {props.description && (
+              <p className="mt-1 line-clamp-2 text-xs text-[var(--app-muted)]">
+                {props.description}
+              </p>
+            )}
+          </div>
           <button
             title="delete-theme"
             type="button"
-            className="rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
+            className="shrink-0 rounded-lg border border-[var(--app-border)] p-2 text-[var(--app-muted)] transition hover:text-red-400"
             onClick={handleDelete}
           >
             <BiTrashAlt size={16} />
           </button>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {props.events.map((event) => (
-            <span
-              key={`${props._id}-${event}`}
-              className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-1 text-xs text-[var(--app-muted)]"
-            >
-              {event}
-            </span>
-          ))}
+
+        {props.colorPalette && props.colorPalette.length > 0 && (
+          <div className="mt-3 flex gap-1.5">
+            {props.colorPalette.map((color) => (
+              <span
+                key={color}
+                style={{ backgroundColor: color }}
+                className="h-4 w-4 rounded-full border border-[var(--app-border)]"
+                title={color}
+              />
+            ))}
+          </div>
+        )}
+
+        {props.mood && props.mood.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {props.mood.map((m) => (
+              <span
+                key={m}
+                className="rounded-full bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)] italic"
+              >
+                {m}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-3 space-y-1.5">
+          {props.events.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-[var(--app-muted)] uppercase tracking-wide mb-1">
+                Activities
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {props.events.map((event) => (
+                  <span
+                    key={`${props._id}-${event}`}
+                    className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)]"
+                  >
+                    {event}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {props.decor && props.decor.length > 0 && (
+            <p className="text-xs text-[var(--app-muted)]">
+              <span className="font-medium">Decor:</span>{' '}
+              {props.decor.slice(0, 3).join(', ')}
+              {props.decor.length > 3 ? '…' : ''}
+            </p>
+          )}
+          {props.music && props.music.length > 0 && (
+            <p className="text-xs text-[var(--app-muted)]">
+              <span className="font-medium">Music:</span>{' '}
+              {props.music.slice(0, 3).join(', ')}
+              {props.music.length > 3 ? '…' : ''}
+            </p>
+          )}
+          {props.food && props.food.length > 0 && (
+            <p className="text-xs text-[var(--app-muted)]">
+              <span className="font-medium">Food:</span>{' '}
+              {props.food.slice(0, 3).join(', ')}
+              {props.food.length > 3 ? '…' : ''}
+            </p>
+          )}
         </div>
       </article>
 

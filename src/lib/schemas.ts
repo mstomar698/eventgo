@@ -35,7 +35,14 @@ export const EventResponseSchema = EventSchema.extend({
  */
 export const ThemeSchema = z.object({
   title: z.string().min(1).trim(),
-  date: z.date(),
+  date: z.coerce.date(),
+  description: z.string().optional(),
+  occasion: z.enum(['birthday', 'wedding', 'corporate', 'community', 'other']).optional(),
+  mood: z.array(z.string()).optional(),
+  colorPalette: z.array(z.string()).optional(),
+  decor: z.array(z.string()).optional(),
+  music: z.array(z.string()).optional(),
+  food: z.array(z.string()).optional(),
   events: z.array(z.string()),
 });
 
