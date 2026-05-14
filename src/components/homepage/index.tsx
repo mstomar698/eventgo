@@ -112,7 +112,7 @@ const HomePage = () => {
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xl font-semibold">AI planning studio</h2>
           <p className="text-xs uppercase tracking-[0.2em] text-[var(--app-accent)]">
-            AI experimental mode — for ideation and research
+            AI mode — for ideation and research
           </p>
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
