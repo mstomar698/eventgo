@@ -24,6 +24,7 @@ import {
   BiNote,
   BiStrikethrough,
   BiRefresh,
+  BiPhotoAlbum,
 } from 'react-icons/bi';
 import ConfirmModal from '@/components/ui/confirm-modal';
 import { initialNodesForDemoTheme } from '../../lib/flowschemas/initialnodes';
@@ -35,6 +36,7 @@ const nodeTypes = {
   nodesad: Nodes.NodeWithSAD,
   nodetext: Nodes.NodeWithText,
   textstrip: Nodes.TextStrip,
+  imageNode: Nodes.ImageNode,
 };
 
 const GAP = 130;
@@ -197,6 +199,8 @@ const Flowchart = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const { data: session } = useSession();
+  // Prevents the save effect from overwriting the server state before the initial load completes
+  const loadedRef = useRef(false);
 
   // Load flow from server or from a theme/template URL param
   useEffect(() => {
@@ -217,7 +221,10 @@ const Flowchart = () => {
             router.replace('/planner');
           }
         })
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => {
+          loadedRef.current = true;
+        });
       return;
     }
 
@@ -233,7 +240,10 @@ const Flowchart = () => {
             router.replace('/planner');
           }
         })
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => {
+          loadedRef.current = true;
+        });
       return;
     }
 
@@ -246,22 +256,24 @@ const Flowchart = () => {
           setEdges(data.data.edges);
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => {
+        loadedRef.current = true;
+      });
   }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setNodeCount(nodes.length);
   }, [nodes]);
 
-  // Save flow to server
+  // Save flow to server — guarded by loadedRef so initial demo nodes never overwrite saved state
   useEffect(() => {
-    if (session && nodes.length > 0) {
-      fetch('/api/flows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nodes: sanitizeNodes(nodes), edges }),
-      }).catch(console.error);
-    }
+    if (!loadedRef.current || !session) return;
+    fetch('/api/flows', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nodes: sanitizeNodes(nodes), edges }),
+    }).catch(console.error);
   }, [nodes, edges, session]);
 
   const onNodesChange = useCallback(
@@ -314,13 +326,18 @@ const Flowchart = () => {
 
     setExportError(null);
     try {
+      const bgColor =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--app-surface')
+          .trim() || '#111c33';
       const canvas = await html2canvas(el, {
         width: el.offsetWidth,
         height: el.offsetHeight,
         scale: 2,
         useCORS: true,
-        backgroundColor: 'var(--app-surface)',
+        backgroundColor: bgColor,
         foreignObjectRendering: true,
+        logging: false,
       });
 
       const dataURL = canvas.toDataURL('image/png');
@@ -456,6 +473,16 @@ const Flowchart = () => {
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
               >
                 <BiStrikethrough size={14} /> Text Strip
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  addNode('imageNode');
+                  setShowMoreNodes(false);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+              >
+                <BiPhotoAlbum size={14} /> Image Node
               </button>
             </div>
           )}
