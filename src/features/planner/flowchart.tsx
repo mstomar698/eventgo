@@ -368,6 +368,8 @@ const Flowchart = () => {
     }
   };
 
+  const ts = () => new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
   const bgColor = () =>
     getComputedStyle(document.documentElement).getPropertyValue('--app-surface').trim() ||
     '#111c33';
@@ -471,7 +473,7 @@ const Flowchart = () => {
     try {
       const dataUrl = await captureImage();
       const a = document.createElement('a');
-      a.download = 'eventgo-plan.png';
+      a.download = `eventgo-plan-${ts()}.png`;
       a.href = dataUrl;
       a.click();
     } catch {
@@ -496,7 +498,7 @@ const Flowchart = () => {
         format: [w, h],
       });
       pdf.addImage(dataUrl, 'PNG', 0, 0, w, h);
-      pdf.save('eventgo-plan.pdf');
+      pdf.save(`eventgo-plan-${ts()}.pdf`);
     } catch {
       setExportError('PDF export failed. Please try again.');
     }
@@ -505,7 +507,7 @@ const Flowchart = () => {
   const handleExportJson = () => {
     setShowImageMenu(false);
     const data = JSON.stringify({ nodes: sanitizeNodes(nodes), edges }, null, 2);
-    downloadBlob(data, 'eventgo-plan.json', 'application/json');
+    downloadBlob(data, `eventgo-plan-${ts()}.json`, 'application/json');
   };
 
   const handleExportMd = () => {
@@ -528,7 +530,7 @@ const Flowchart = () => {
         lines.push('');
       }
     });
-    downloadBlob(lines.join('\n'), 'eventgo-plan.md', 'text/markdown');
+    downloadBlob(lines.join('\n'), `eventgo-plan-${ts()}.md`, 'text/markdown');
   };
 
   const handleExportTxt = () => {
@@ -539,7 +541,7 @@ const Flowchart = () => {
       const raw: string = node.data?.label || '';
       lines.push(`[${idx + 1}] ${raw.replace(/\n/g, ' | ')}`);
     });
-    downloadBlob(lines.join('\n'), 'eventgo-plan.txt', 'text/plain');
+    downloadBlob(lines.join('\n'), `eventgo-plan-${ts()}.txt`, 'text/plain');
   };
 
   const toggleFullscreen = () => {
