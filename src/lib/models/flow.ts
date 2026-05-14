@@ -7,24 +7,27 @@ export interface IFlow extends Document {
   updatedAt: Date;
 }
 
-const FlowSchema: Schema = new Schema({
-  userId: {
-    type: String,
-    required: true,
+const FlowSchema: Schema = new Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+    },
+    nodes: {
+      type: [Schema.Types.Mixed],
+      required: true,
+    },
+    edges: {
+      type: [Schema.Types.Mixed],
+      required: true,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  nodes: {
-    type: [Schema.Types.Mixed],
-    required: true,
-  },
-  edges: {
-    type: [Schema.Types.Mixed],
-    required: true,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 export const FlowModel = (mongoose.models.Flow ||
   mongoose.model<IFlow>('Flow', FlowSchema)) as Model<IFlow>;

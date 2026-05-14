@@ -11,18 +11,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectToDB();
 
+    const session = await getServerSession(req, res, authOptions);
+    if (!session?.user?.email) {
+      sendError(res, 401, {
+        code: ERROR_CODES.UNAUTHORIZED,
+        message: 'Authentication required',
+      });
+      return;
+    }
+    const email = session.user.email;
+
     if (req.method === 'GET') {
-      const posts = await Post.find();
-      sendSuccess(res, posts.reverse());
+      const posts = await Post.find({ createdBy: email }).sort({ createdAt: -1 });
+      sendSuccess(res, posts);
+    } else if (req.method === 'POST') {
+      const body = PostCreateSchema.parse(req.body);
+      const saved = await new Post({ ...body, createdBy: email }).save();
+      sendSuccess(res, saved);
     } else if (req.method === 'PATCH') {
-      const session = await getServerSession(req, res, authOptions);
-      if (!session) {
-        sendError(res, 401, {
-          code: ERROR_CODES.UNAUTHORIZED,
-          message: 'Authentication required',
-        });
-        return;
-      }
       const { id, ...updateData } = req.body;
       if (!id) {
         sendError(res, 400, {
@@ -32,40 +38,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
       }
       const body = PostCreateSchema.partial().parse(updateData);
-      const updated = await Post.findByIdAndUpdate(id, body, { new: true });
+      const updated = await Post.findOneAndUpdate({ _id: id, createdBy: email }, body, {
+        new: true,
+      });
       if (!updated) {
         sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Post not found' });
         return;
       }
       sendSuccess(res, updated);
-    } else if (req.method === 'POST') {
-      const session = await getServerSession(req, res, authOptions);
-      if (!session) {
-        sendError(res, 401, {
-          code: ERROR_CODES.UNAUTHORIZED,
-          message: 'Authentication required',
-        });
-        return;
-      }
-      const body = PostCreateSchema.parse(req.body);
-      const newPost = new Post(body);
-      const saved = await newPost.save();
-      sendSuccess(res, saved);
     } else if (req.method === 'DELETE') {
-      const session = await getServerSession(req, res, authOptions);
-      if (!session) {
-        sendError(res, 401, {
-          code: ERROR_CODES.UNAUTHORIZED,
-          message: 'Authentication required',
-        });
-        return;
-      }
       const { id } = z.object({ id: z.string().min(1) }).parse(req.query);
-      const deletedPost = await Post.findByIdAndDelete(id);
-      if (!deletedPost) {
+      const deleted = await Post.findOneAndDelete({ _id: id, createdBy: email });
+      if (!deleted) {
         sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Post not found' });
       } else {
-        sendSuccess(res, deletedPost);
+        sendSuccess(res, deleted);
       }
     } else {
       sendError(res, 405, {

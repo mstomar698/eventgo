@@ -1,24 +1,3 @@
-// import { Theme } from '@/lib/models';
-// import { connectToDB } from '@/lib/mongodb';
-// import Validate from 'next-api-validation';
-
-// connectToDB();
-
-// const themesHandler = Validate({
-//   async post(req, res) {
-//     try {
-//       const body = req.body;
-//       const newTheme = new Theme(body);
-//       const saved = await newTheme.save();
-//       res.send(saved);
-//     } catch (err) {
-//       console.log(err);
-//       res.status(500).send('error');
-//     }
-//   },
-// });
-
-// export default themesHandler;
 import { Theme } from '@/lib/models';
 import { connectToDB } from '@/lib/mongodb';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -35,6 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'GET') {
       const { id } = req.query;
+
+      // Single theme fetch (no auth required — used by view/edit pages)
       if (typeof id === 'string' && id) {
         const theme = await Theme.findById(id);
         if (!theme) {
@@ -47,17 +28,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sendSuccess(res, theme);
         return;
       }
+
+      // Seed starter themes once
       const publicCount = await Theme.countDocuments({ isPublic: true });
       if (publicCount === 0) {
         await Theme.insertMany(
           STARTER_THEMES.map((t) => ({ ...t, isPublic: true, date: new Date() }))
         );
       }
-      const themes = await Theme.find();
+
+      // Return public (starter) themes + this user's private themes
+      const session = await getServerSession(req, res, authOptions);
+      const email = session?.user?.email;
+      const query = email
+        ? { $or: [{ isPublic: true }, { createdBy: email }] }
+        : { isPublic: true };
+
+      const themes = await Theme.find(query).sort({ createdAt: -1 });
       sendSuccess(res, themes);
     } else if (req.method === 'POST') {
       const session = await getServerSession(req, res, authOptions);
-      if (!session) {
+      if (!session?.user?.email) {
         sendError(res, 401, {
           code: ERROR_CODES.UNAUTHORIZED,
           message: 'Authentication required',
@@ -65,12 +56,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
       }
       const body = ThemeCreateSchema.parse(req.body);
-      const newTheme = new Theme(body);
-      const saved = await newTheme.save();
+      const saved = await new Theme({ ...body, createdBy: session.user.email }).save();
       sendSuccess(res, saved);
     } else if (req.method === 'PUT') {
       const session = await getServerSession(req, res, authOptions);
-      if (!session) {
+      if (!session?.user?.email) {
         sendError(res, 401, {
           code: ERROR_CODES.UNAUTHORIZED,
           message: 'Authentication required',
@@ -79,15 +69,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       const { id } = z.object({ id: z.string().min(1) }).parse(req.query);
       const body = ThemeCreateSchema.partial().parse(req.body);
-      const updated = await Theme.findByIdAndUpdate(id, body, { new: true });
+      // Only allow editing own themes
+      const updated = await Theme.findOneAndUpdate(
+        { _id: id, createdBy: session.user.email },
+        body,
+        { new: true }
+      );
       if (!updated) {
-        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Theme not found' });
+        sendError(res, 404, {
+          code: ERROR_CODES.NOT_FOUND,
+          message: 'Theme not found or not authorised',
+        });
       } else {
         sendSuccess(res, updated);
       }
     } else if (req.method === 'DELETE') {
       const session = await getServerSession(req, res, authOptions);
-      if (!session) {
+      if (!session?.user?.email) {
         sendError(res, 401, {
           code: ERROR_CODES.UNAUTHORIZED,
           message: 'Authentication required',
@@ -95,11 +93,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return;
       }
       const { id } = z.object({ id: z.string().min(1) }).parse(req.query);
-      const deletedTheme = await Theme.findByIdAndDelete(id);
-      if (!deletedTheme) {
-        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Theme not found' });
+      // Only allow deleting own themes
+      const deleted = await Theme.findOneAndDelete({
+        _id: id,
+        createdBy: session.user.email,
+      });
+      if (!deleted) {
+        sendError(res, 404, {
+          code: ERROR_CODES.NOT_FOUND,
+          message: 'Theme not found or not authorised',
+        });
       } else {
-        sendSuccess(res, deletedTheme);
+        sendSuccess(res, deleted);
       }
     } else {
       sendError(res, 405, {

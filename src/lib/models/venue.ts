@@ -13,47 +13,50 @@ export interface IVenueOption extends Document {
   createdAt: Date;
 }
 
-const VenueOptionSchema: Schema = new Schema({
-  name: {
-    type: String,
-    required: true,
+const VenueOptionSchema: Schema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+      required: true,
+    },
+    capacity: {
+      type: Number,
+      required: true,
+    },
+    priceRange: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    nearbyServices: {
+      type: [String],
+      default: [],
+    },
+    fitScore: {
+      type: Number,
+      default: 0,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  type: {
-    type: String,
-    required: true,
-  },
-  location: {
-    type: String,
-    required: true,
-  },
-  capacity: {
-    type: Number,
-    required: true,
-  },
-  priceRange: {
-    type: String,
-    required: true,
-  },
-  rating: {
-    type: Number,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  nearbyServices: {
-    type: [String],
-    default: [],
-  },
-  fitScore: {
-    type: Number,
-    default: 0,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 export const VenueOption = (mongoose.models.VenueOption ||
   mongoose.model<IVenueOption>('VenueOption', VenueOptionSchema)) as Model<IVenueOption>;

@@ -30,77 +30,80 @@ export interface IEventTemplate extends Document {
   createdAt: Date;
 }
 
-const EventTemplateSchema: Schema = new Schema({
-  name: {
-    type: String,
-    required: true,
+const EventTemplateSchema: Schema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    headcount: {
+      type: Number,
+      required: true,
+    },
+    checklist: {
+      type: [String],
+      default: [],
+    },
+    timeline: {
+      type: [
+        {
+          phase: String,
+          daysBefore: Number,
+          tasks: [String],
+        },
+      ],
+      default: [],
+    },
+    budgetCategories: {
+      type: [
+        {
+          category: String,
+          estimatedAmount: Number,
+          notes: String,
+        },
+      ],
+      default: [],
+    },
+    colorPalette: { type: [String], default: [] },
+    mood: { type: [String], default: [] },
+    activities: { type: [String], default: [] },
+    decor: { type: [String], default: [] },
+    music: { type: [String], default: [] },
+    food: { type: [String], default: [] },
+    vendorNeeds: {
+      type: [String],
+      default: [],
+    },
+    nearbyConsiderations: {
+      type: [String],
+      default: [],
+    },
+    communicationPlan: {
+      type: [String],
+      default: [],
+    },
+    createdBy: {
+      type: String,
+    },
+    isPublic: {
+      type: Boolean,
+      default: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  category: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  headcount: {
-    type: Number,
-    required: true,
-  },
-  checklist: {
-    type: [String],
-    default: [],
-  },
-  timeline: {
-    type: [
-      {
-        phase: String,
-        daysBefore: Number,
-        tasks: [String],
-      },
-    ],
-    default: [],
-  },
-  budgetCategories: {
-    type: [
-      {
-        category: String,
-        estimatedAmount: Number,
-        notes: String,
-      },
-    ],
-    default: [],
-  },
-  colorPalette: { type: [String], default: [] },
-  mood: { type: [String], default: [] },
-  activities: { type: [String], default: [] },
-  decor: { type: [String], default: [] },
-  music: { type: [String], default: [] },
-  food: { type: [String], default: [] },
-  vendorNeeds: {
-    type: [String],
-    default: [],
-  },
-  nearbyConsiderations: {
-    type: [String],
-    default: [],
-  },
-  communicationPlan: {
-    type: [String],
-    default: [],
-  },
-  createdBy: {
-    type: String,
-  },
-  isPublic: {
-    type: Boolean,
-    default: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 export const EventTemplate = (mongoose.models.EventTemplate ||
   mongoose.model<IEventTemplate>(

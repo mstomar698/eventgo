@@ -11,26 +11,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectToDB();
 
-    if (req.method === 'POST') {
-      const session = await getServerSession(req, res, authOptions);
-      if (!session) {
-        sendError(res, 401, {
-          code: ERROR_CODES.UNAUTHORIZED,
-          message: 'Authentication required',
-        });
-        return;
-      }
+    const session = await getServerSession(req, res, authOptions);
+    if (!session?.user?.email) {
+      sendError(res, 401, {
+        code: ERROR_CODES.UNAUTHORIZED,
+        message: 'Authentication required',
+      });
+      return;
+    }
+    const email = session.user.email;
+
+    if (req.method === 'GET') {
+      const events = await EventModel.find({ createdBy: email }).sort({ start: 1 });
+      sendSuccess(res, events);
+    } else if (req.method === 'POST') {
       const eventData = EventCreateSchema.parse(req.body);
       const created = await EventModel.create({
         title: eventData.title,
         start: eventData.start,
         end: eventData.end,
         color: eventData.color,
+        createdBy: email,
       });
       sendSuccess(res, created);
-    } else if (req.method === 'GET') {
-      const events = await EventModel.find().sort({ start: 1 });
-      sendSuccess(res, events);
     } else if (req.method === 'DELETE') {
       const eventId = req.query.id;
       if (typeof eventId !== 'string' || !mongoose.Types.ObjectId.isValid(eventId)) {
@@ -40,16 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
         return;
       }
-
-      const deleted = await EventModel.findByIdAndDelete(eventId);
+      const deleted = await EventModel.findOneAndDelete({
+        _id: eventId,
+        createdBy: email,
+      });
       if (!deleted) {
-        sendError(res, 404, {
-          code: ERROR_CODES.NOT_FOUND,
-          message: 'Event not found',
-        });
+        sendError(res, 404, { code: ERROR_CODES.NOT_FOUND, message: 'Event not found' });
         return;
       }
-
       sendSuccess(res, { id: eventId }, 'Event deleted');
     } else {
       sendError(res, 405, {
