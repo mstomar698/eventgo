@@ -17,7 +17,7 @@ const appLinks = [
   { href: '/planner', label: 'Planner' },
   { href: '/posts', label: 'Notes' },
   { href: '/themes', label: 'Themes' },
-  { href: '/eventrecomm', label: 'AI Studio' },
+  { href: '/themerecomm', label: 'AI Studio' },
 ];
 
 const linkClasses = (active: boolean) =>
