@@ -3,6 +3,7 @@ import { getEnvVar, getFirstEnvVar } from '@/lib/env';
 import { generateGeminiText } from '@/lib/gemini';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { AIQuerySchema } from '@/lib/schemas';
+import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,6 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
     return;
   }
+
+  if (!enforceRateLimit(req, res, aiRateLimit)) return;
 
   try {
     const { query } = AIQuerySchema.parse(req.query);
