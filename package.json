@@ -10,6 +10,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepare": "husky"
   },
   "dependencies": {
@@ -69,7 +71,8 @@
     "lint-staged": "^15.5.2",
     "postcss": "^8.5.8",
     "prettier": "^3.6.2",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "vitest": "^3.2.6"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -50,8 +50,13 @@ Every PR must pass these — they run in CI and are enforced as required status 
 ```bash
 npm run lint          # ESLint
 npm run format:check  # Prettier
+npm test              # Vitest unit tests
 npm run build         # Production build (also typechecks)
 ```
+
+Tests live next to the code they cover under `src/**/__tests__/*.test.ts` and run with
+[Vitest](https://vitest.dev). Use `npm run test:watch` while developing. Pure logic
+(`src/lib/*`) should have unit tests; please add or update tests with your change.
 
 Auto-fix locally with:
 
