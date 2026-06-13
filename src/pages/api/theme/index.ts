@@ -10,7 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       await connectToDB();
       const { searchTerm } = ThemeSearchSchema.parse(req.body);
-      const themes = await Theme.find({ title: searchTerm });
+      // Only public themes are searchable — never expose other users' private themes.
+      const themes = await Theme.find({ title: searchTerm, isPublic: true });
       sendSuccess(res, { themes });
     } catch (error) {
       logger.error({ err: error }, 'theme handler error');

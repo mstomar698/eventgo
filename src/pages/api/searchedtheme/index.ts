@@ -10,8 +10,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       await connectToDB();
       const { searchTerm } = ThemeSearchSchema.parse(req.body);
+      // Escape regex metacharacters so user input can't inject a pattern (ReDoS / broad
+      // enumeration), and restrict the search to public themes only.
+      const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const themes = await Theme.find({
-        title: { $regex: new RegExp(searchTerm, 'i') },
+        title: { $regex: new RegExp(escaped, 'i') },
+        isPublic: true,
       });
       sendSuccess(res, { themes });
     } catch (error) {

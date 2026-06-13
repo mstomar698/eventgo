@@ -17,7 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       const { id } = req.query;
 
-      // Single theme fetch (no auth required — used by view/edit pages)
+      // Single theme fetch. Public themes are readable by anyone (view pages);
+      // private themes are only readable by their owner (edit pages).
       if (typeof id === 'string' && id) {
         const theme = await Theme.findById(id);
         if (!theme) {
@@ -26,6 +27,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             message: 'Theme not found',
           });
           return;
+        }
+        if (!theme.isPublic) {
+          const session = await getServerSession(req, res, authOptions);
+          if (!session?.user?.email || theme.createdBy !== session.user.email) {
+            // 404 (not 403) so we don't reveal that a private theme exists.
+            sendError(res, 404, {
+              code: ERROR_CODES.NOT_FOUND,
+              message: 'Theme not found',
+            });
+            return;
+          }
         }
         sendSuccess(res, theme);
         return;
