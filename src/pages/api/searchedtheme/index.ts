@@ -4,8 +4,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { ThemeSearchSchema } from '@/lib/schemas';
 import logger from '@/lib/logger';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
       await connectToDB();
@@ -39,3 +40,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+export default withApiLogging(handler);

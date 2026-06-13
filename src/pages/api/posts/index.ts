@@ -7,8 +7,9 @@ import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { enforceRateLimit, generalRateLimit } from '@/lib/rate-limit';
 import { PostCreateSchema } from '@/lib/schemas';
 import { z } from 'zod';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
   try {
     await connectToDB();
@@ -73,3 +74,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+export default withApiLogging(handler);

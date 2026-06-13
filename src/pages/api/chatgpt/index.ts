@@ -6,8 +6,9 @@ import { AIQuerySchema } from '@/lib/schemas';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 import { cacheKey, getCached, setCached } from '@/lib/cache';
 import logger from '@/lib/logger';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   logger.info(
     {
       method: req.method,
@@ -92,3 +93,4 @@ Keep total response under 180 words.`;
     }
   }
 }
+export default withApiLogging(handler);

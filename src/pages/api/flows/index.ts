@@ -5,8 +5,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { enforceRateLimit, flowsRateLimit } from '@/lib/rate-limit';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const session = await getServerSession(req, res, authOptions);
     if (!session || !session.user?.email) {
@@ -54,3 +55,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+export default withApiLogging(handler);

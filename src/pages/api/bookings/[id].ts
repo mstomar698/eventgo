@@ -7,8 +7,9 @@ import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { enforceRateLimit, generalRateLimit } from '@/lib/rate-limit';
 import { BookingUpdateSchema } from '@/lib/schemas';
 import logger from '@/lib/logger';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
   try {
     const session = await getServerSession(req, res, authOptions);
@@ -76,3 +77,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+export default withApiLogging(handler);
