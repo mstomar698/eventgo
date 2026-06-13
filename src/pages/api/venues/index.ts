@@ -10,6 +10,7 @@ import {
 } from '@/lib/suggestions';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 import { cacheKey, getCached, setCached } from '@/lib/cache';
+import { searchFoursquareVenues, formatVenueResults } from '@/lib/venues-provider';
 import { withApiLogging } from '@/lib/with-logging';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -36,8 +37,24 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const { query } = AIQuerySchema.parse({ query: String(rawQuery) });
 
-    // Try rule-based suggestions first
     const parsedInput = parseQueryForSuggestions(query);
+
+    // Prefer real venue data when the Foursquare integration is configured.
+    // Returns null when no key is set or the request fails → fall through below.
+    const foursquare = await searchFoursquareVenues({
+      query,
+      near: parsedInput.location,
+    });
+    if (foursquare) {
+      res.setHeader('X-Venue-Source', 'foursquare');
+      sendSuccess(res, {
+        recommendation: formatVenueResults(foursquare, parsedInput.location),
+        venues: foursquare,
+      });
+      return;
+    }
+
+    // Try rule-based suggestions next
     const ruleBased = parsedInput.location
       ? getRuleBasedVenueSuggestions(
           parsedInput.location,
