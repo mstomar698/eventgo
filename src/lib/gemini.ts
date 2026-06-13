@@ -82,6 +82,7 @@ export const generateGeminiText = async ({
         // Client errors other than 429 are deterministic — don't retry.
         if (response.status >= 400 && response.status < 500 && response.status !== 429) {
           bail(new Error(message));
+          return ''; // bail() has already rejected; stop this attempt
         }
         throw new Error(message);
       }
@@ -99,9 +100,10 @@ export const generateGeminiText = async ({
             reason ? `Gemini returned no text (${reason})` : 'Gemini returned no text'
           )
         );
+        return ''; // bail() has already rejected; stop this attempt
       }
 
-      return text as string;
+      return text;
     },
     { retries, minTimeout: 500, maxTimeout: 4000 }
   );
