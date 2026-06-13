@@ -5,6 +5,10 @@ on:
     branches:
       - '**'
 
+concurrency:
+  group: pr-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest

@@ -1,90 +1,57 @@
-# EventGo Implementation Status and Validation Guide
+# EventGo — Implementation Status & Roadmap
 
-## Snapshot from `plan.md`
+_Last reviewed: 2026-06-13_
 
-### Completed
+This document is the single source of truth for what is **done**, what is **partial**, and
+what is **remaining**. Each remaining workstream is tracked as an `epic`-labelled GitHub
+issue with task issues underneath it. See the
+[issues board](https://github.com/mstomar698/eventgo/issues).
 
-- Baseline quality checks established (lint and build workflows operational).
-- Environment/auth hardening and route consolidation completed.
-- Profile-level UI settings (theme + font scale) implemented.
-- OSS quality tooling and CI quality checks added.
-- UI refresh completed with app shell, public `/home`, and authenticated `/` workspace.
-- Google auth flow enabled with public landing and protected workspace.
-- Gemini-backed AI route path active for dev/testing endpoints.
-- API error handling improved with standardized error contracts.
+## Legend
 
-### In Progress / Partial
+- ✅ **Done** — implemented and working in production.
+- 🟡 **Partial** — works but has known gaps or hardening needed.
+- ⛔ **Missing** — not started.
 
-- Stability smoke test noted as healthy for key routes, but UX gaps remain in Notes calendar interactions and profile settings behavior.
-- Starter templates exist and API supports fetching public templates, but product surfacing and guided onboarding still need expansion.
+## Current state (verified against code, 2026-06-13)
 
-### Remaining (from plan phases)
+| Area                        | Status | Notes                                                                                    |
+| --------------------------- | :----: | ---------------------------------------------------------------------------------------- |
+| API response contract       |   ✅   | `{ success, data?, error? }` via `src/lib/api-utils.ts`; security headers set.           |
+| Zod validation              |   ✅   | Inputs validated via `src/lib/schemas.ts`.                                               |
+| Auth (NextAuth + Google)    |   ✅   | `src/pages/api/auth/[...nextauth].ts`; data scoped by `session.user.email`.              |
+| Ownership checks            |   ✅   | Enforced on themes, templates, events, posts CRUD.                                       |
+| Data models                 |   ✅   | 8 Mongoose models with timestamps + `createdBy`.                                         |
+| Planner persistence         |   🟡   | Autosave works but fires on every change (no debounce), last-write-wins, no conflict UX. |
+| AI endpoints (Gemini)       |   🟡   | 3 endpoints work; direct passthrough, no rate limit, inconsistent retry, no cost guard.  |
+| Templates & themes          |   ✅   | Full CRUD + seeding + "use template" flow.                                               |
+| Bookings                    |   🟡   | POST/GET + status tracking; **no edit/delete** API yet.                                  |
+| Venue / nearby intelligence |   🟡   | Rule-based + AI text suggestions; no maps/places data, no geolocation.                   |
+| Rate limiting               |   🟡   | Limiters defined in `src/lib/rate-limit.ts` but **applied to zero routes**.              |
+| Logging (pino)              |   🟡   | Configured; used on only a few endpoints.                                                |
+| Automated tests             |   ⛔   | No test runner, zero tests.                                                              |
+| OSS governance              |   ✅   | LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, issue/PR templates.                    |
 
-- API/data contract standardization (Phase 1).
-- AI endpoint modernization orchestration and tiering strategy (Phase 3, beyond basic Gemini wiring).
-- Planner persistence hardening (autosave/conflict-safe behavior, ownership checks) (Phase 2).
-- Venue/nearby intelligence modules (Phase 4).
-- Template wizard and reusable save workflow (Phase 5).
-- Booking/day-of execution/export operations (Phase 6).
-- Production observability/security/cost controls (Phase 7).
+## Roadmap epics
 
-## What Was Implemented in this change set
+These map to `epic` issues. Order reflects priority for the OSS release.
 
-1. **Homepage and auth CTA stability**
-   - Auth CTAs now handle loading state cleanly to prevent non-responsive buttons.
-   - Workspace/home entry links are consistent for authenticated and unauthenticated sessions.
+1. **OSS readiness & contributor lifecycle** — governance docs, issue/PR templates, branch
+   protection, accurate roadmap. _(this change set)_
+2. **Test foundation** — pick a runner (Vitest), test `api-utils`/`schemas`/`suggestions`,
+   add a CI test gate. Unblocks confident contribution.
+3. **Security & abuse hardening** — apply the existing rate limiters to AI + write routes,
+   audit ownership checks, expand structured logging.
+4. **Planner persistence hardening** — debounce autosave, save status indicator,
+   last-write-wins safety / version field.
+5. **Bookings completion** — edit/delete API + UI, link bookings to events.
+6. **AI endpoint modernization** — consistent retry/timeout, input size limits, response
+   caching/cost controls, shared client.
+7. **Venue/nearby intelligence** — real places data source, fit scoring, map surface.
+8. **Onboarding & template wizard polish** — guided first-run, template surfacing on the
+   authenticated home.
 
-2. **Notes calendar UX fixes**
-   - Calendar now parses API response shape correctly (`{ success, data }`).
-   - Added explicit helper text for create/delete interactions.
-   - Event cards are clearly clickable; selecting a slot adds events, selecting an event removes it from UI.
-   - Increased calendar viewport height for better readability.
+## How we work
 
-3. **Footer pinning on sparse pages**
-   - App shell moved to a flex-column layout with `main` area set to grow (`flex-1`) so footer stays at the bottom even when content is short.
-
-4. **Profile typography settings fixed and expanded**
-   - Added persisted `fontFamily` setting (`sans`, `serif`, `mono`) in provider and localStorage payload.
-   - Added global CSS `data-font-family` variable support and wired body to CSS variable-based font family.
-   - Restored/expanded preview section with a visible live preview card that reflects active settings.
-
-5. **Theme CSS correction**
-   - Re-added the missing `:root[data-theme='light']` block so light mode values are applied correctly.
-
-## Validation Checklist
-
-Run these commands from repo root:
-
-```bash
-npm run lint
-npm run build
-```
-
-Manual validation:
-
-1. **Landing page (`/home`, logged out)**
-   - "Try for free" button is enabled when session state resolves.
-   - Clicking CTA starts Google auth flow.
-
-2. **Workspace entry (`/`, logged in)**
-   - Navbar logo and workspace links navigate correctly.
-
-3. **Notes page (`/posts`)**
-   - Calendar loads existing events.
-   - Drag/select timeslot prompts for event creation and event appears on calendar.
-   - Clicking an event prompts delete confirmation and removes event from view.
-
-4. **Footer behavior**
-   - On short-content pages, footer remains anchored at the page bottom.
-
-5. **Profile settings (`/profile`)**
-   - Theme switcher applies dark/light mode immediately.
-   - Font size switcher (`Small/Medium/Large`) updates typography scale.
-   - Font family switcher (`Sans/Serif/Mono`) updates typography style.
-   - Preview block reflects setting changes.
-   - Refresh page: settings persist.
-
-## Known follow-ups
-
-- Calendar event delete currently removes from UI state only; API delete endpoint can be added for full persistence.
-- Landing page content expansion and authenticated homepage template surfacing should be further extended as part of template rollout UX.
+PR-based, no direct pushes to `main`. CI (lint + format + build + route smoke) and a passing
+review are required before merge. See [CONTRIBUTING.md](../CONTRIBUTING.md).
