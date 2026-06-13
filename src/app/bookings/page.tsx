@@ -130,6 +130,7 @@ function BookingsList() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [formData, setFormData] = useState<BookingFormData>(EMPTY_FORM);
 
   const openAdd = () => {
@@ -198,6 +199,7 @@ function BookingsList() {
   const handleDelete = async () => {
     if (!deletingBooking) return;
     setIsDeleting(true);
+    setDeleteError(null);
     try {
       const response = await fetch(`/api/bookings/${deletingBooking._id}`, {
         method: 'DELETE',
@@ -205,9 +207,12 @@ function BookingsList() {
       if (response.ok) {
         revalidate('GET /bookings');
         setDeletingBooking(null);
+      } else {
+        setDeleteError('Failed to delete booking. Please try again.');
       }
     } catch (err) {
       console.error('Delete failed:', err);
+      setDeleteError('Error deleting booking. Please try again.');
     } finally {
       setIsDeleting(false);
     }
@@ -368,11 +373,19 @@ function BookingsList() {
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deletingBooking !== null}
-        onClose={() => setDeletingBooking(null)}
+        onClose={() => {
+          setDeletingBooking(null);
+          setDeleteError(null);
+        }}
         title="Delete Booking"
         size="sm"
       >
         <div className="space-y-4">
+          {deleteError && (
+            <div className="rounded-lg bg-red-500/20 p-3 text-sm text-red-400">
+              {deleteError}
+            </div>
+          )}
           <p className="text-sm text-[var(--app-muted)]">
             Delete the booking for{' '}
             <span className="font-semibold text-[var(--app-text)]">
