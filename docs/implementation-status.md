@@ -27,7 +27,7 @@ issue with task issues underneath it. See the
 | Templates & themes          |   ✅   | Full CRUD + seeding + "use template" flow.                                               |
 | Bookings                    |   🟡   | POST/GET + status tracking; **no edit/delete** API yet.                                  |
 | Venue / nearby intelligence |   🟡   | Rule-based + AI text suggestions; no maps/places data, no geolocation.                   |
-| Rate limiting               |   🟡   | Limiters defined in `src/lib/rate-limit.ts` but **applied to zero routes**.              |
+| Rate limiting               |   ✅   | `aiRateLimit` on AI routes; `generalRateLimit` on CRUD writes (in-memory, see note).     |
 | Logging (pino)              |   🟡   | Configured; used on only a few endpoints.                                                |
 | Automated tests             |   ⛔   | No test runner, zero tests.                                                              |
 | OSS governance              |   ✅   | LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, issue/PR templates.                    |

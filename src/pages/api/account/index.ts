@@ -5,9 +5,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { enforceRateLimit, generalRateLimit } from '@/lib/rate-limit';
 
 // Deletes all user-owned data. action=data → data only; action=account → data + session invalidation signal
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
   if (req.method !== 'DELETE') {
     sendError(res, 405, {
       code: ERROR_CODES.METHOD_NOT_ALLOWED,

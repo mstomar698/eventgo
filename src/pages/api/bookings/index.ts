@@ -4,10 +4,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { enforceRateLimit, generalRateLimit } from '@/lib/rate-limit';
 import { BookingCreateSchema } from '@/lib/schemas';
 import logger from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
   try {
     logger.info({ method: req.method }, '[api/bookings] handler invoked');
     const session = await getServerSession(req, res, authOptions);
