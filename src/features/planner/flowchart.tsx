@@ -249,6 +249,10 @@ const Flowchart = () => {
   const [showNewBoardConfirm, setShowNewBoardConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle'
+  );
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Refs + positions for fixed-position dropdowns (overflow-x-auto clips absolute children)
   const moreRef = useRef<HTMLButtonElement>(null);
   const exportRef = useRef<HTMLButtonElement>(null);
@@ -322,14 +326,30 @@ const Flowchart = () => {
     setNodeCount(nodes.length);
   }, [nodes]);
 
-  // Save flow to server — guarded by loadedRef so initial demo nodes never overwrite saved state
+  // Save flow to server — debounced so dragging/typing doesn't fire a POST per change.
+  // Guarded by loadedRef so initial demo nodes never overwrite saved state.
   useEffect(() => {
     if (!loadedRef.current || !session) return;
-    fetch('/api/flows', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nodes: sanitizeNodes(nodes), edges }),
-    }).catch(console.error);
+    setSaveStatus('saving');
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      fetch('/api/flows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nodes: sanitizeNodes(nodes), edges }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`Save failed (${res.status})`);
+          setSaveStatus('saved');
+        })
+        .catch((err) => {
+          console.error(err);
+          setSaveStatus('error');
+        });
+    }, 800);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, [nodes, edges, session]);
 
   const onNodesChange = useCallback(
@@ -597,6 +617,22 @@ const Flowchart = () => {
           <div className="absolute left-2 top-2 z-10 rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--app-muted)]">
             {nodeCount} nodes
           </div>
+          {/* Save status indicator */}
+          {session && saveStatus !== 'idle' && (
+            <div
+              className={`absolute right-2 top-2 z-10 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium ${
+                saveStatus === 'error'
+                  ? 'border-red-500/30 bg-red-500/15 text-red-400'
+                  : 'border-[var(--app-border)] bg-[var(--app-elevated)] text-[var(--app-muted)]'
+              }`}
+              role="status"
+              aria-live="polite"
+            >
+              {saveStatus === 'saving' && 'Saving…'}
+              {saveStatus === 'saved' && 'All changes saved'}
+              {saveStatus === 'error' && 'Save failed — retrying on next change'}
+            </div>
+          )}
         </ReactFlow>
       </div>
 
