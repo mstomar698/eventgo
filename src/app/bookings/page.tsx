@@ -6,7 +6,15 @@ import Modal from '@/components/ui/modal';
 import useFetch, { revalidate } from 'http-react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { BiPlus, BiPhone, BiEnvelope, BiDollar, BiCalendar } from 'react-icons/bi';
+import {
+  BiPlus,
+  BiPhone,
+  BiEnvelope,
+  BiDollar,
+  BiCalendar,
+  BiEdit,
+  BiTrash,
+} from 'react-icons/bi';
 
 interface Booking {
   _id: string;
@@ -25,6 +33,14 @@ interface BookingFormData {
   notes: string;
 }
 
+const EMPTY_FORM: BookingFormData = {
+  vendorName: '',
+  status: 'to_contact',
+  quote: '',
+  dueDate: '',
+  notes: '',
+};
+
 const statusColors = {
   to_contact: 'bg-gray-100 text-gray-800',
   contacted: 'bg-yellow-100 text-yellow-800',
@@ -33,7 +49,17 @@ const statusColors = {
   cancelled: 'bg-red-100 text-red-800',
 };
 
-function BookingCard({ booking }: { booking: Booking }) {
+function BookingCard({
+  booking,
+  onEdit,
+  onDelete,
+}: {
+  booking: Booking;
+  onEdit: (booking: Booking) => void;
+  onDelete: (booking: Booking) => void;
+}) {
+  const iconBtn =
+    'rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]';
   return (
     <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
       <div className="flex items-start justify-between gap-3">
@@ -60,19 +86,27 @@ function BookingCard({ booking }: { booking: Booking }) {
           )}
         </div>
         <div className="flex gap-1">
-          <button
-            type="button"
-            title="phone"
-            className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]"
-          >
+          <button type="button" title="phone" className={iconBtn}>
             <BiPhone size={14} />
+          </button>
+          <button type="button" title="email" className={iconBtn}>
+            <BiEnvelope size={14} />
           </button>
           <button
             type="button"
-            title="email"
-            className="rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]"
+            title="Edit booking"
+            onClick={() => onEdit(booking)}
+            className={iconBtn}
           >
-            <BiEnvelope size={14} />
+            <BiEdit size={14} />
+          </button>
+          <button
+            type="button"
+            title="Delete booking"
+            onClick={() => onDelete(booking)}
+            className="rounded border border-red-500/30 p-2 text-red-400 hover:bg-red-500/10"
+          >
+            <BiTrash size={14} />
           </button>
         </div>
       </div>
@@ -90,16 +124,34 @@ function BookingsList() {
   });
 
   const bookings = Array.isArray(response?.data) ? response.data : [];
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<BookingFormData>({
-    vendorName: '',
-    status: 'to_contact',
-    quote: '',
-    dueDate: '',
-    notes: '',
-  });
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<BookingFormData>(EMPTY_FORM);
+
+  const openAdd = () => {
+    setEditingId(null);
+    setFormData(EMPTY_FORM);
+    setSubmitError(null);
+    setShowFormModal(true);
+  };
+
+  const openEdit = (booking: Booking) => {
+    setEditingId(booking._id);
+    setFormData({
+      vendorName: booking.vendorName,
+      status: booking.status,
+      quote: booking.quote != null ? String(booking.quote) : '',
+      dueDate: booking.dueDate ? booking.dueDate.slice(0, 10) : '',
+      notes: booking.notes ?? '',
+    });
+    setSubmitError(null);
+    setShowFormModal(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,30 +167,54 @@ function BookingsList() {
         notes: formData.notes.trim(),
       };
 
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        editingId ? `/api/bookings/${editingId}` : '/api/bookings',
+        {
+          method: editingId ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (response.ok) {
         revalidate('GET /bookings');
-        setShowAddModal(false);
-        setFormData({
-          vendorName: '',
-          status: 'to_contact',
-          quote: '',
-          dueDate: '',
-          notes: '',
-        });
+        setShowFormModal(false);
+        setEditingId(null);
+        setFormData(EMPTY_FORM);
       } else {
-        setSubmitError('Failed to create booking. Please try again.');
+        setSubmitError(
+          editingId
+            ? 'Failed to update booking. Please try again.'
+            : 'Failed to create booking. Please try again.'
+        );
       }
-    } catch (error) {
-      console.error('Submit failed:', error);
-      setSubmitError('Error creating booking. Please try again.');
+    } catch (err) {
+      console.error('Submit failed:', err);
+      setSubmitError('Error saving booking. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingBooking) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/bookings/${deletingBooking._id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        revalidate('GET /bookings');
+        setDeletingBooking(null);
+      } else {
+        setDeleteError('Failed to delete booking. Please try again.');
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      setDeleteError('Error deleting booking. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -170,7 +246,7 @@ function BookingsList() {
             {bookings.length} bookings in your pipeline
           </p>
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={openAdd}
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
           >
             <BiPlus size={18} />
@@ -179,19 +255,24 @@ function BookingsList() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {bookings.map((booking) => (
-            <BookingCard key={booking._id} booking={booking} />
+            <BookingCard
+              key={booking._id}
+              booking={booking}
+              onEdit={openEdit}
+              onDelete={setDeletingBooking}
+            />
           ))}
         </div>
       </div>
 
-      {/* Add Booking Modal */}
+      {/* Add / Edit Booking Modal */}
       <Modal
-        isOpen={showAddModal}
+        isOpen={showFormModal}
         onClose={() => {
-          setShowAddModal(false);
+          setShowFormModal(false);
           setSubmitError(null);
         }}
-        title="Add Booking"
+        title={editingId ? 'Edit Booking' : 'Add Booking'}
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -266,7 +347,7 @@ function BookingsList() {
           <div className="flex gap-3 justify-end pt-2">
             <button
               type="button"
-              onClick={() => setShowAddModal(false)}
+              onClick={() => setShowFormModal(false)}
               disabled={isSubmitting}
               className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)] disabled:opacity-50"
             >
@@ -277,10 +358,60 @@ function BookingsList() {
               disabled={isSubmitting || !formData.vendorName.trim()}
               className="rounded-lg bg-[var(--app-accent-strong)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-70"
             >
-              {isSubmitting ? 'Adding...' : 'Add Booking'}
+              {isSubmitting
+                ? editingId
+                  ? 'Saving...'
+                  : 'Adding...'
+                : editingId
+                  ? 'Save Changes'
+                  : 'Add Booking'}
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deletingBooking !== null}
+        onClose={() => {
+          setDeletingBooking(null);
+          setDeleteError(null);
+        }}
+        title="Delete Booking"
+        size="sm"
+      >
+        <div className="space-y-4">
+          {deleteError && (
+            <div className="rounded-lg bg-red-500/20 p-3 text-sm text-red-400">
+              {deleteError}
+            </div>
+          )}
+          <p className="text-sm text-[var(--app-muted)]">
+            Delete the booking for{' '}
+            <span className="font-semibold text-[var(--app-text)]">
+              {deletingBooking?.vendorName}
+            </span>
+            ? This cannot be undone.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              type="button"
+              onClick={() => setDeletingBooking(null)}
+              disabled={isDeleting}
+              className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)] disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-70"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </>
   );
