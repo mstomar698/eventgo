@@ -5,9 +5,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { enforceRateLimit, generalRateLimit } from '@/lib/rate-limit';
 import { EventCreateSchema } from '@/lib/schemas';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
   try {
     await connectToDB();
 
