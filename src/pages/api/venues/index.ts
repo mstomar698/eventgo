@@ -8,6 +8,7 @@ import {
   parseQueryForSuggestions,
   AI_PROMPTS,
 } from '@/lib/suggestions';
+import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -18,6 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
     return;
   }
+
+  if (!enforceRateLimit(req, res, aiRateLimit)) return;
 
   try {
     // If no query provided, return a friendly usage response instead of an error.
