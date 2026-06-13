@@ -7,8 +7,9 @@ import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { enforceRateLimit, generalRateLimit } from '@/lib/rate-limit';
 import { BookingCreateSchema } from '@/lib/schemas';
 import logger from '@/lib/logger';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
   try {
     logger.info({ method: req.method }, '[api/bookings] handler invoked');
@@ -58,3 +59,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+export default withApiLogging(handler);

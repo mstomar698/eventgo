@@ -5,8 +5,9 @@ import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { AIQuerySchema } from '@/lib/schemas';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 import { cacheKey, getCached, setCached } from '@/lib/cache';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     sendError(res, 405, {
@@ -76,3 +77,4 @@ Budget: [range]
     }
   }
 }
+export default withApiLogging(handler);

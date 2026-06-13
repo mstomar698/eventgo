@@ -4,6 +4,7 @@ import { generateGeminiText } from '@/lib/gemini';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { AIQuerySchema } from '@/lib/schemas';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
+import { withApiLogging } from '@/lib/with-logging';
 
 const VALID_OCCASIONS = [
   'birthday',
@@ -84,7 +85,7 @@ function buildTheme(raw: any, fallbackTitle: string) {
   };
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     sendError(res, 405, {
@@ -137,3 +138,4 @@ Return ONLY valid JSON, no markdown, no extra text:
     }
   }
 }
+export default withApiLogging(handler);

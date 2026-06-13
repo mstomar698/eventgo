@@ -1,6 +1,9 @@
 import { sendSuccess } from '@/lib/api-utils';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default function apiIndex(req: NextApiRequest, res: NextApiResponse) {
+function apiIndex(req: NextApiRequest, res: NextApiResponse) {
   sendSuccess(res, { message: 'API is running' });
 }
+
+export default withApiLogging(apiIndex);

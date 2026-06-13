@@ -4,8 +4,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { STARTER_TEMPLATES } from '@/lib/templates';
 import logger from '@/lib/logger';
+import { withApiLogging } from '@/lib/with-logging';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     sendError(res, 405, {
       code: ERROR_CODES.METHOD_NOT_ALLOWED,
@@ -36,3 +37,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+export default withApiLogging(handler);
