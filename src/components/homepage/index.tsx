@@ -58,6 +58,15 @@ interface StarterTheme {
   isPublic?: boolean;
 }
 
+interface StarterTemplate {
+  _id: string;
+  name: string;
+  category: string;
+  description: string;
+  headcount: number;
+  isPublic?: boolean;
+}
+
 const HomePage = () => {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.split(' ')[0] ?? 'Planner';
@@ -72,6 +81,16 @@ const HomePage = () => {
   const starterThemes = (Array.isArray(themeResp?.data) ? themeResp!.data : []).filter(
     (t) => (t as any).isPublic
   );
+
+  const { data: templateResp, loadingFirst: loadingTemplates } = useFetch<{
+    data?: StarterTemplate[];
+  }>('/templates', {
+    default: { data: [] },
+  });
+
+  const starterTemplates = (
+    Array.isArray(templateResp?.data) ? templateResp!.data : []
+  ).filter((t) => (t as any).isPublic);
 
   return (
     <AppShell
@@ -201,6 +220,70 @@ const HomePage = () => {
             <div className="col-span-3 rounded-lg border border-dashed border-[var(--app-border)] bg-[var(--app-elevated)]/50 p-6 text-center text-sm text-[var(--app-muted)]">
               <Link href="/themes" className="text-[var(--app-accent)] hover:underline">
                 Browse starter themes →
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Planning templates</h2>
+            <p className="mt-2 text-sm text-[var(--app-muted)]">
+              Start from a structured plan — checklist, timeline, and budget already
+              mapped.
+            </p>
+          </div>
+          <Link
+            href="/templates"
+            className="rounded-lg border border-[var(--app-border)] px-4 py-2 text-sm font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-elevated)]"
+          >
+            Browse templates
+          </Link>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {loadingTemplates ? (
+            <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] p-4 text-sm text-[var(--app-muted)]">
+              Loading templates...
+            </div>
+          ) : starterTemplates.length > 0 ? (
+            starterTemplates.slice(0, 6).map((template) => (
+              <article
+                key={template._id}
+                className="flex flex-col rounded-lg border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3"
+              >
+                <h3 className="text-sm font-semibold">{template.name}</h3>
+                <p className="mt-0.5 text-xs capitalize text-[var(--app-accent)]">
+                  {template.category} · up to {template.headcount} people
+                </p>
+                <p className="mt-1 line-clamp-2 text-xs text-[var(--app-muted)]">
+                  {template.description}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Link
+                    href={`/templates/${template._id}/use`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--app-accent-strong)] px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                  >
+                    Use template
+                  </Link>
+                  <Link
+                    href={`/planner?template=${template._id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-3 py-2 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)]"
+                  >
+                    Plan
+                  </Link>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="col-span-3 rounded-lg border border-dashed border-[var(--app-border)] bg-[var(--app-elevated)]/50 p-6 text-center text-sm text-[var(--app-muted)]">
+              <Link
+                href="/templates"
+                className="text-[var(--app-accent)] hover:underline"
+              >
+                Browse planning templates →
               </Link>
             </div>
           )}
