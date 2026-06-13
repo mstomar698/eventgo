@@ -185,7 +185,7 @@ export const BookingSchema = z.object({
   status: BookingStatusSchema.default('to_contact'),
   quote: z.number().optional(),
   notes: z.string().default(''),
-  dueDate: z.date().optional(),
+  dueDate: z.coerce.date().optional(),
 });
 
 export const BookingCreateSchema = BookingSchema;

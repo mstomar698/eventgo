@@ -61,6 +61,15 @@ describe('BookingSchema', () => {
     expect(b.status).toBe('to_contact');
     expect(b.notes).toBe('');
   });
+
+  it('coerces a date-string dueDate (as sent by <input type="date">)', () => {
+    const b = BookingSchema.parse({
+      vendorId: 'v1',
+      vendorName: 'Acme',
+      dueDate: '2026-07-01',
+    });
+    expect(b.dueDate).toBeInstanceOf(Date);
+  });
 });
 
 describe('ThemeSchema', () => {
