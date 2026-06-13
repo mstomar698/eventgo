@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
+import { enforceRateLimit, flowsRateLimit } from '@/lib/rate-limit';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -16,6 +17,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
     const userId = session.user.email;
+
+    // Throttle autosave writes (the debounced client stays well under this).
+    if (req.method === 'POST' && !enforceRateLimit(req, res, flowsRateLimit)) return;
 
     await connectToDB();
 

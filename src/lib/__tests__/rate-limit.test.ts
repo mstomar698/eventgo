@@ -5,6 +5,7 @@ import {
   getClientKey,
   enforceRateLimit,
   aiRateLimit,
+  flowsRateLimit,
   _store,
   type RateLimitRule,
 } from '../rate-limit';
@@ -59,6 +60,16 @@ describe('consume', () => {
   it('reports retryAfter in seconds', () => {
     const r = consume('k', RULE, 1_000_000);
     expect(r.retryAfterSeconds).toBe(1); // 1000ms window → 1s
+  });
+
+  it('allows flowsRateLimit.max autosaves then blocks the next', () => {
+    const now = 1_000_000;
+    let last;
+    for (let i = 0; i < flowsRateLimit.max; i++) {
+      last = consume('flow', flowsRateLimit, now);
+    }
+    expect(last?.allowed).toBe(true);
+    expect(consume('flow', flowsRateLimit, now).allowed).toBe(false);
   });
 });
 

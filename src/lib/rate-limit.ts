@@ -34,6 +34,15 @@ export const generalRateLimit: RateLimitRule = {
   message: 'Too many requests, please try again later.',
 };
 
+// Planner autosave limiter: generous (120/min) so debounced saves are never blocked,
+// but a script hammering /api/flows is throttled.
+export const flowsRateLimit: RateLimitRule = {
+  windowMs: 60 * 1000,
+  max: 120,
+  code: 'FLOWS_RATE_LIMIT_EXCEEDED',
+  message: 'Too many save requests, please slow down.',
+};
+
 // Stricter limiter for AI endpoints: 10 requests / minute.
 export const aiRateLimit: RateLimitRule = {
   windowMs: 60 * 1000,
