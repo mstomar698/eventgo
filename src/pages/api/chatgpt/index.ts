@@ -5,7 +5,6 @@ import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { AIQuerySchema } from '@/lib/schemas';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
-import retry from 'async-retry';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   logger.info(
@@ -51,29 +50,13 @@ Keep total response under 180 words.`;
     logger.info({ query: query.substring(0, 100) }, 'Generating AI response');
 
     const startTime = Date.now();
-    const recommendation = await retry(
-      async (bail) => {
-        try {
-          return await generateGeminiText({
-            apiKey,
-            prompt,
-            model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
-            maxOutputTokens: 450,
-          });
-        } catch (error) {
-          logger.warn(
-            { error: error instanceof Error ? error.message : 'Unknown' },
-            'AI call failed, retrying'
-          );
-          // Bail on validation errors, retry on network/server errors
-          if (error instanceof Error && error.message.includes('validation')) {
-            bail(error);
-          }
-          throw error;
-        }
-      },
-      { retries: 2, minTimeout: 1000, maxTimeout: 5000 }
-    );
+    // Timeout + retry are handled inside generateGeminiText (shared across all AI routes).
+    const recommendation = await generateGeminiText({
+      apiKey,
+      prompt,
+      model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
+      maxOutputTokens: 450,
+    });
     const duration = Date.now() - startTime;
 
     logger.info(
