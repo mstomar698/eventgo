@@ -30,6 +30,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
         return;
       }
+      // Public templates are readable by anyone; private ones only by their owner.
+      if (!template.isPublic) {
+        const session = await getServerSession(req, res, authOptions);
+        if (!session?.user?.email || template.createdBy !== session.user.email) {
+          // 404 (not 403) so we don't reveal that a private template exists.
+          sendError(res, 404, {
+            code: ERROR_CODES.NOT_FOUND,
+            message: 'Template not found',
+          });
+          return;
+        }
+      }
       sendSuccess(res, template);
     } else if (req.method === 'PUT') {
       const session = await getServerSession(req, res, authOptions);

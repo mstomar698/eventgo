@@ -31,14 +31,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToDB();
     const email = session.user.email;
 
-    // Delete user-scoped content
+    // Delete user-scoped content. Every deletion MUST be scoped to this user —
+    // never delete by a non-owner filter (a previous unscoped deleteMany here wiped
+    // every user's private themes platform-wide).
     const [templates, themes] = await Promise.all([
       EventTemplate.deleteMany({ createdBy: email }),
       Theme.deleteMany({ isPublic: false, createdBy: email }),
     ]);
-
-    // Also attempt themes without createdBy (legacy user themes)
-    await Theme.deleteMany({ isPublic: false });
 
     sendSuccess(
       res,
