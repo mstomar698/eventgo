@@ -4,6 +4,7 @@ import { generateGeminiText } from '@/lib/gemini';
 import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-utils';
 import { AIQuerySchema } from '@/lib/schemas';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
+import { cacheKey, getCached, setCached } from '@/lib/cache';
 import logger from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -47,6 +48,16 @@ Format your response as:
 **Watch out for:** (1-2 common pitfalls)
 
 Keep total response under 180 words.`;
+    const model = getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash';
+    const key = cacheKey('chatgpt', model, query);
+    const cached = getCached(key);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      logger.info({ cache: 'hit' }, 'AI response served from cache');
+      sendSuccess(res, { recommendation: cached });
+      return;
+    }
+
     logger.info({ query: query.substring(0, 100) }, 'Generating AI response');
 
     const startTime = Date.now();
@@ -54,11 +65,13 @@ Keep total response under 180 words.`;
     const recommendation = await generateGeminiText({
       apiKey,
       prompt,
-      model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
+      model,
       maxOutputTokens: 450,
     });
     const duration = Date.now() - startTime;
 
+    setCached(key, recommendation);
+    res.setHeader('X-Cache', 'MISS');
     logger.info(
       { duration, tokens: Math.ceil(prompt.length / 4) },
       'AI response generated'
