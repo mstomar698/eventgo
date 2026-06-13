@@ -9,6 +9,7 @@ import {
   AI_PROMPTS,
 } from '@/lib/suggestions';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
+import { cacheKey, getCached, setCached } from '@/lib/cache';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -58,13 +59,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
+    const model = getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash';
+    const key = cacheKey('venues', model, query);
+    const cached = getCached(key);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      sendSuccess(res, { recommendation: cached });
+      return;
+    }
+
     const prompt = AI_PROMPTS.venues(query);
     const recommendation = await generateGeminiText({
       apiKey,
       prompt,
-      model: getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash',
+      model,
       maxOutputTokens: 500,
     });
+
+    setCached(key, recommendation);
+    res.setHeader('X-Cache', 'MISS');
     sendSuccess(res, { recommendation });
   } catch (error) {
     if (error instanceof Error) {
