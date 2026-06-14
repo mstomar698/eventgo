@@ -14,6 +14,7 @@ import {
   BiCalendar,
   BiEdit,
   BiTrash,
+  BiCalendarEvent,
 } from 'react-icons/bi';
 
 interface Booking {
@@ -23,6 +24,13 @@ interface Booking {
   quote?: number;
   notes: string;
   dueDate?: string;
+  eventId?: string;
+}
+
+interface EventLite {
+  _id: string;
+  title: string;
+  start?: string;
 }
 
 interface BookingFormData {
@@ -31,6 +39,7 @@ interface BookingFormData {
   quote: string;
   dueDate: string;
   notes: string;
+  eventId: string;
 }
 
 const EMPTY_FORM: BookingFormData = {
@@ -39,6 +48,7 @@ const EMPTY_FORM: BookingFormData = {
   quote: '',
   dueDate: '',
   notes: '',
+  eventId: '',
 };
 
 const statusColors = {
@@ -53,13 +63,18 @@ function BookingCard({
   booking,
   onEdit,
   onDelete,
+  events,
 }: {
   booking: Booking;
   onEdit: (booking: Booking) => void;
   onDelete: (booking: Booking) => void;
+  events: EventLite[];
 }) {
   const iconBtn =
     'rounded border border-[var(--app-border)] p-2 hover:bg-[var(--app-surface)]';
+  const linkedEvent = booking.eventId
+    ? events.find((e) => e._id === booking.eventId)
+    : undefined;
   return (
     <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4">
       <div className="flex items-start justify-between gap-3">
@@ -79,6 +94,12 @@ function BookingCard({
             <p className="mt-1 flex items-center gap-1 text-sm text-[var(--app-muted)]">
               <BiCalendar size={14} />
               Due: {new Date(booking.dueDate).toLocaleDateString()}
+            </p>
+          )}
+          {linkedEvent && (
+            <p className="mt-1 flex items-center gap-1 text-sm text-[var(--app-accent)]">
+              <BiCalendarEvent size={14} />
+              {linkedEvent.title}
             </p>
           )}
           {booking.notes && (
@@ -124,6 +145,12 @@ function BookingsList() {
   });
 
   const bookings = Array.isArray(response?.data) ? response.data : [];
+
+  const { data: eventsResp } = useFetch<{ data?: EventLite[] }>('/events', {
+    default: { data: [] },
+  });
+  const events = Array.isArray(eventsResp?.data) ? eventsResp.data : [];
+
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<Booking | null>(null);
@@ -148,6 +175,7 @@ function BookingsList() {
       quote: booking.quote != null ? String(booking.quote) : '',
       dueDate: booking.dueDate ? booking.dueDate.slice(0, 10) : '',
       notes: booking.notes ?? '',
+      eventId: booking.eventId ?? '',
     });
     setSubmitError(null);
     setShowFormModal(true);
@@ -165,6 +193,7 @@ function BookingsList() {
         quote: formData.quote ? parseFloat(formData.quote) : undefined,
         dueDate: formData.dueDate || undefined,
         notes: formData.notes.trim(),
+        eventId: formData.eventId,
       };
 
       const response = await fetch(
@@ -260,6 +289,7 @@ function BookingsList() {
               booking={booking}
               onEdit={openEdit}
               onDelete={setDeletingBooking}
+              events={events}
             />
           ))}
         </div>
@@ -332,6 +362,25 @@ function BookingsList() {
               className={inputClass}
             />
           </div>
+
+          {events.length > 0 && (
+            <div>
+              <label className={labelClass}>Linked event</label>
+              <select
+                value={formData.eventId}
+                onChange={(e) => setFormData({ ...formData, eventId: e.target.value })}
+                className={inputClass}
+              >
+                <option value="">No event</option>
+                {events.map((ev) => (
+                  <option key={ev._id} value={ev._id}>
+                    {ev.title}
+                    {ev.start ? ` — ${new Date(ev.start).toLocaleDateString()}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className={labelClass}>Notes</label>

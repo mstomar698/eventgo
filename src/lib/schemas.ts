@@ -180,7 +180,7 @@ export const BookingStatusSchema = z.enum([
 
 export const BookingSchema = z.object({
   eventId: z.string().optional(),
-  vendorId: z.string(),
+  vendorId: z.string().optional(),
   vendorName: z.string(),
   status: BookingStatusSchema.default('to_contact'),
   quote: z.number().optional(),
