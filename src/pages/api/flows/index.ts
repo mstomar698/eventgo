@@ -20,7 +20,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const userId = session.user.email;
 
     // Throttle autosave writes (the debounced client stays well under this).
-    if (req.method === 'POST' && !enforceRateLimit(req, res, flowsRateLimit)) return;
+    if (req.method === 'POST' && !(await enforceRateLimit(req, res, flowsRateLimit)))
+      return;
 
     await connectToDB();
 

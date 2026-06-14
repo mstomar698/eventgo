@@ -10,6 +10,8 @@
  * would give, but it still removes duplicate calls within a single warm instance.
  */
 
+import { getSharedStore } from './redis';
+
 interface Entry {
   value: string;
   expiresAt: number;
@@ -27,8 +29,11 @@ export function cacheKey(...parts: string[]): string {
   return parts.map((p) => p.trim().toLowerCase()).join('|');
 }
 
-/** Returns the cached value if present and unexpired, else undefined. */
-export function getCached(key: string, now: number = Date.now()): string | undefined {
+/** In-memory get — also the fallback when no shared store is configured. */
+export function getCachedInMemory(
+  key: string,
+  now: number = Date.now()
+): string | undefined {
   const entry = store.get(key);
   if (!entry) return undefined;
   if (entry.expiresAt <= now) {
@@ -38,8 +43,8 @@ export function getCached(key: string, now: number = Date.now()): string | undef
   return entry.value;
 }
 
-/** Stores a value under `key` for `ttlMs`. Evicts the oldest entry when full. */
-export function setCached(
+/** In-memory set — also the fallback when no shared store is configured. */
+export function setCachedInMemory(
   key: string,
   value: string,
   ttlMs: number = DEFAULT_TTL_MS,
@@ -51,4 +56,43 @@ export function setCached(
     if (oldest !== undefined) store.delete(oldest);
   }
   store.set(key, { value, expiresAt: now + ttlMs });
+}
+
+/**
+ * Returns the cached value if present and unexpired. Uses the shared Redis store when
+ * configured, else in-memory. Falls back to memory if the shared store errors.
+ */
+export async function getCached(
+  key: string,
+  now: number = Date.now()
+): Promise<string | undefined> {
+  const sharedStore = getSharedStore();
+  if (sharedStore) {
+    try {
+      const value = await sharedStore.get(`cache:${key}`);
+      return value ?? undefined;
+    } catch {
+      // fall through to in-memory
+    }
+  }
+  return getCachedInMemory(key, now);
+}
+
+/** Stores a value under `key` for `ttlMs`. Writes to the shared store when configured. */
+export async function setCached(
+  key: string,
+  value: string,
+  ttlMs: number = DEFAULT_TTL_MS,
+  now: number = Date.now()
+): Promise<void> {
+  const sharedStore = getSharedStore();
+  if (sharedStore) {
+    try {
+      await sharedStore.setEx(`cache:${key}`, value, Math.ceil(ttlMs / 1000));
+      return;
+    } catch {
+      // fall through to in-memory
+    }
+  }
+  setCachedInMemory(key, value, ttlMs, now);
 }

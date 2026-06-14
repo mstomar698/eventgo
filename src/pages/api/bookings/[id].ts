@@ -10,7 +10,8 @@ import logger from '@/lib/logger';
 import { withApiLogging } from '@/lib/with-logging';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
+  if (req.method !== 'GET' && !(await enforceRateLimit(req, res, generalRateLimit)))
+    return;
   try {
     const session = await getServerSession(req, res, authOptions);
     if (!session || !session.user?.email) {

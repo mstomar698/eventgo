@@ -23,7 +23,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  if (!enforceRateLimit(req, res, aiRateLimit)) return;
+  if (!(await enforceRateLimit(req, res, aiRateLimit))) return;
 
   try {
     // If no query provided, return a friendly usage response instead of an error.
@@ -79,7 +79,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const model = getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash';
     const key = cacheKey('venues', model, query);
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
       sendSuccess(res, { recommendation: cached });
@@ -94,7 +94,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       maxOutputTokens: 500,
     });
 
-    setCached(key, recommendation);
+    await setCached(key, recommendation);
     res.setHeader('X-Cache', 'MISS');
     sendSuccess(res, { recommendation });
   } catch (error) {

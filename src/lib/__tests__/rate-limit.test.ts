@@ -17,59 +17,60 @@ const RULE: RateLimitRule = {
   message: 'slow down',
 };
 
+// No UPSTASH_* env in tests → consume()/enforce*() use the in-memory window.
 beforeEach(() => _store.clear());
 
 describe('consume', () => {
-  it('allows requests up to max, then blocks', () => {
+  it('allows requests up to max, then blocks', async () => {
     const now = 1_000_000;
-    expect(consume('k', RULE, now).allowed).toBe(true);
-    expect(consume('k', RULE, now).allowed).toBe(true);
-    expect(consume('k', RULE, now).allowed).toBe(true);
-    const fourth = consume('k', RULE, now);
+    expect((await consume('k', RULE, now)).allowed).toBe(true);
+    expect((await consume('k', RULE, now)).allowed).toBe(true);
+    expect((await consume('k', RULE, now)).allowed).toBe(true);
+    const fourth = await consume('k', RULE, now);
     expect(fourth.allowed).toBe(false);
     expect(fourth.remaining).toBe(0);
   });
 
-  it('decrements remaining as requests are consumed', () => {
+  it('decrements remaining as requests are consumed', async () => {
     const now = 1_000_000;
-    expect(consume('k', RULE, now).remaining).toBe(2);
-    expect(consume('k', RULE, now).remaining).toBe(1);
-    expect(consume('k', RULE, now).remaining).toBe(0);
+    expect((await consume('k', RULE, now)).remaining).toBe(2);
+    expect((await consume('k', RULE, now)).remaining).toBe(1);
+    expect((await consume('k', RULE, now)).remaining).toBe(0);
   });
 
-  it('resets after the window elapses', () => {
+  it('resets after the window elapses', async () => {
     const now = 1_000_000;
-    consume('k', RULE, now);
-    consume('k', RULE, now);
-    consume('k', RULE, now);
-    expect(consume('k', RULE, now).allowed).toBe(false);
+    await consume('k', RULE, now);
+    await consume('k', RULE, now);
+    await consume('k', RULE, now);
+    expect((await consume('k', RULE, now)).allowed).toBe(false);
     // Past the window → fresh budget
     const later = now + RULE.windowMs + 1;
-    expect(consume('k', RULE, later).allowed).toBe(true);
+    expect((await consume('k', RULE, later)).allowed).toBe(true);
   });
 
-  it('keeps separate budgets per key', () => {
+  it('keeps separate budgets per key', async () => {
     const now = 1_000_000;
-    consume('a', RULE, now);
-    consume('a', RULE, now);
-    consume('a', RULE, now);
-    expect(consume('a', RULE, now).allowed).toBe(false);
-    expect(consume('b', RULE, now).allowed).toBe(true);
+    await consume('a', RULE, now);
+    await consume('a', RULE, now);
+    await consume('a', RULE, now);
+    expect((await consume('a', RULE, now)).allowed).toBe(false);
+    expect((await consume('b', RULE, now)).allowed).toBe(true);
   });
 
-  it('reports retryAfter in seconds', () => {
-    const r = consume('k', RULE, 1_000_000);
+  it('reports retryAfter in seconds', async () => {
+    const r = await consume('k', RULE, 1_000_000);
     expect(r.retryAfterSeconds).toBe(1); // 1000ms window → 1s
   });
 
-  it('allows flowsRateLimit.max autosaves then blocks the next', () => {
+  it('allows flowsRateLimit.max autosaves then blocks the next', async () => {
     const now = 1_000_000;
     let last;
     for (let i = 0; i < flowsRateLimit.max; i++) {
-      last = consume('flow', flowsRateLimit, now);
+      last = await consume('flow', flowsRateLimit, now);
     }
     expect(last?.allowed).toBe(true);
-    expect(consume('flow', flowsRateLimit, now).allowed).toBe(false);
+    expect((await consume('flow', flowsRateLimit, now)).allowed).toBe(false);
   });
 });
 
@@ -121,38 +122,38 @@ function mockReqRes(ip: string) {
 }
 
 describe('enforceRateLimit', () => {
-  it('allows the first request and sets RateLimit headers', () => {
+  it('allows the first request and sets RateLimit headers', async () => {
     const { req, res, headers, getStatus } = mockReqRes('1.1.1.1');
-    const ok = enforceRateLimit(req, res, RULE);
+    const ok = await enforceRateLimit(req, res, RULE);
     expect(ok).toBe(true);
     expect(headers['RateLimit-Limit']).toBe('3');
     expect(headers['RateLimit-Remaining']).toBe('2');
     expect(getStatus()).toBe(0); // no error sent
   });
 
-  it('sends a 429 with Retry-After once the limit is exceeded', () => {
+  it('sends a 429 with Retry-After once the limit is exceeded', async () => {
     const ip = '2.2.2.2';
     for (let i = 0; i < RULE.max; i++) {
       const { req, res } = mockReqRes(ip);
-      expect(enforceRateLimit(req, res, RULE)).toBe(true);
+      expect(await enforceRateLimit(req, res, RULE)).toBe(true);
     }
     const { req, res, getStatus, getBody, headers } = mockReqRes(ip);
-    const ok = enforceRateLimit(req, res, RULE);
+    const ok = await enforceRateLimit(req, res, RULE);
     expect(ok).toBe(false);
     expect(getStatus()).toBe(429);
     expect(headers['Retry-After']).toBeDefined();
     expect(getBody()).toMatchObject({ success: false, error: { code: 'TEST' } });
   });
 
-  it('namespaces by rule code so different rules do not share a budget', () => {
+  it('namespaces by rule code so different rules do not share a budget', async () => {
     const ip = '3.3.3.3';
     // Exhaust the test RULE
     for (let i = 0; i < RULE.max; i++) {
       const { req, res } = mockReqRes(ip);
-      enforceRateLimit(req, res, RULE);
+      await enforceRateLimit(req, res, RULE);
     }
     // A different rule (aiRateLimit) for the same IP is unaffected
     const { req, res } = mockReqRes(ip);
-    expect(enforceRateLimit(req, res, aiRateLimit)).toBe(true);
+    expect(await enforceRateLimit(req, res, aiRateLimit)).toBe(true);
   });
 });

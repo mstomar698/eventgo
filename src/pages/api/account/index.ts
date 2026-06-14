@@ -10,7 +10,8 @@ import { withApiLogging } from '@/lib/with-logging';
 
 // Deletes all user-owned data. action=data → data only; action=account → data + session invalidation signal
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
+  if (req.method !== 'GET' && !(await enforceRateLimit(req, res, generalRateLimit)))
+    return;
   if (req.method !== 'DELETE') {
     sendError(res, 405, {
       code: ERROR_CODES.METHOD_NOT_ALLOWED,

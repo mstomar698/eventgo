@@ -95,7 +95,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  if (!enforceRateLimit(req, res, aiRateLimit)) return;
+  if (!(await enforceRateLimit(req, res, aiRateLimit))) return;
 
   try {
     const { query } = AIQuerySchema.parse(req.query);

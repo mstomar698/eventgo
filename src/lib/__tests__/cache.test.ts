@@ -11,25 +11,26 @@ describe('cacheKey', () => {
   });
 });
 
+// No UPSTASH_* env in tests → get/setCached use the in-memory store.
 describe('get/set', () => {
-  it('returns a stored value before expiry', () => {
-    setCached('k', 'hello', 1000, 1_000_000);
-    expect(getCached('k', 1_000_500)).toBe('hello');
+  it('returns a stored value before expiry', async () => {
+    await setCached('k', 'hello', 1000, 1_000_000);
+    expect(await getCached('k', 1_000_500)).toBe('hello');
   });
 
-  it('returns undefined for a missing key', () => {
-    expect(getCached('nope')).toBeUndefined();
+  it('returns undefined for a missing key', async () => {
+    expect(await getCached('nope')).toBeUndefined();
   });
 
-  it('expires entries after the TTL and evicts them', () => {
-    setCached('k', 'hello', 1000, 1_000_000);
-    expect(getCached('k', 1_000_000 + 1001)).toBeUndefined();
+  it('expires entries after the TTL and evicts them', async () => {
+    await setCached('k', 'hello', 1000, 1_000_000);
+    expect(await getCached('k', 1_000_000 + 1001)).toBeUndefined();
     expect(_cacheStore.has('k')).toBe(false); // lazily deleted on read
   });
 
-  it('overwrites an existing key with a fresh TTL', () => {
-    setCached('k', 'old', 1000, 1_000_000);
-    setCached('k', 'new', 1000, 1_000_000);
-    expect(getCached('k', 1_000_500)).toBe('new');
+  it('overwrites an existing key with a fresh TTL', async () => {
+    await setCached('k', 'old', 1000, 1_000_000);
+    await setCached('k', 'new', 1000, 1_000_000);
+    expect(await getCached('k', 1_000_500)).toBe('new');
   });
 });
