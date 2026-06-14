@@ -22,6 +22,56 @@ export interface VenueResult {
   /** Metres from the searched location, when Foursquare provides it. */
   distance?: number;
   fsqId?: string;
+  /** 0–100 relevance score (distance + event-appropriate category). */
+  fitScore?: number;
+}
+
+// Categories that tend to suit events; a match nudges the fit score up.
+const EVENT_CATEGORY_HINTS = [
+  'event',
+  'hall',
+  'banquet',
+  'ballroom',
+  'hotel',
+  'conference',
+  'venue',
+  'garden',
+  'rooftop',
+  'restaurant',
+  'bar',
+  'lounge',
+  'club',
+  'community',
+  'theater',
+  'theatre',
+  'gallery',
+  'winery',
+  'museum',
+];
+
+/**
+ * Assigns each venue a 0–100 fit score and returns them sorted best-first. The signal is
+ * proximity (closer ranks higher, scaled within the result set) plus a bonus for
+ * event-appropriate categories. Foursquare does not expose capacity/price, so headcount and
+ * budget can't be scored directly — they remain part of the search query.
+ */
+export function scoreVenues(results: VenueResult[]): VenueResult[] {
+  const distances = results
+    .map((v) => v.distance)
+    .filter((d): d is number => typeof d === 'number');
+  const maxDistance = distances.length ? Math.max(...distances) : 0;
+
+  return results
+    .map((v) => {
+      let score = 50;
+      if (typeof v.distance === 'number' && maxDistance > 0) {
+        score += Math.round(40 * (1 - Math.min(v.distance, maxDistance) / maxDistance));
+      }
+      const cat = (v.category ?? '').toLowerCase();
+      if (EVENT_CATEGORY_HINTS.some((hint) => cat.includes(hint))) score += 10;
+      return { ...v, fitScore: Math.max(0, Math.min(100, score)) };
+    })
+    .sort((a, b) => (b.fitScore ?? 0) - (a.fitScore ?? 0));
 }
 
 interface FoursquarePlace {

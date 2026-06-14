@@ -10,7 +10,11 @@ import {
 } from '@/lib/suggestions';
 import { enforceRateLimit, aiRateLimit } from '@/lib/rate-limit';
 import { cacheKey, getCached, setCached } from '@/lib/cache';
-import { searchFoursquareVenues, formatVenueResults } from '@/lib/venues-provider';
+import {
+  searchFoursquareVenues,
+  formatVenueResults,
+  scoreVenues,
+} from '@/lib/venues-provider';
 import { withApiLogging } from '@/lib/with-logging';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -46,10 +50,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       near: parsedInput.location,
     });
     if (foursquare) {
+      const ranked = scoreVenues(foursquare);
       res.setHeader('X-Venue-Source', 'foursquare');
       sendSuccess(res, {
-        recommendation: formatVenueResults(foursquare, parsedInput.location),
-        venues: foursquare,
+        recommendation: formatVenueResults(ranked, parsedInput.location),
+        venues: ranked,
       });
       return;
     }

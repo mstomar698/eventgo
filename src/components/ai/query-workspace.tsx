@@ -36,6 +36,24 @@ interface HistoryItem {
   response: string;
 }
 
+interface VenueCard {
+  name: string;
+  category?: string;
+  address?: string;
+  locality?: string;
+  latitude?: number;
+  longitude?: number;
+  fitScore?: number;
+}
+
+function mapHref(v: VenueCard): string {
+  const q =
+    v.latitude != null && v.longitude != null
+      ? `${v.latitude},${v.longitude}`
+      : [v.name, v.address ?? v.locality].filter(Boolean).join(' ');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+
 const Tag = ({ label }: { label: string }) => (
   <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-surface)] px-2 py-0.5 text-xs text-[var(--app-muted)]">
     {label}
@@ -56,6 +74,7 @@ const QueryWorkspace = ({
   const [query, setQuery] = useState('');
   const [responseText, setResponseText] = useState<string | null>(null);
   const [themeData, setThemeData] = useState<ThemeData | null>(null);
+  const [venues, setVenues] = useState<VenueCard[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -73,6 +92,7 @@ const QueryWorkspace = ({
     setIsLoading(true);
     setResponseText(null);
     setThemeData(null);
+    setVenues(null);
     setCreateStatus('idle');
 
     const response = await fetch(`${endpoint}?query=${encodeURIComponent(query)}`);
@@ -85,6 +105,10 @@ const QueryWorkspace = ({
 
     const data = await response.json();
     const payload = data?.data ?? data;
+
+    if (Array.isArray(payload?.venues) && payload.venues.length > 0) {
+      setVenues(payload.venues as VenueCard[]);
+    }
 
     if (mode === 'theme' && payload?.theme) {
       setThemeData(payload.theme as ThemeData);
@@ -384,6 +408,53 @@ const QueryWorkspace = ({
               Failed to create theme. Please try again.
             </p>
           )}
+        </div>
+      )}
+
+      {/* Venue results: structured cards with fit score + map link */}
+      {venues && venues.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-accent)]">
+            Matched venues
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {venues.map((v, i) => (
+              <article
+                key={`${v.name}-${i}`}
+                className="flex flex-col rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] p-4"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-[var(--app-text)]">
+                    {v.name}
+                  </h3>
+                  {typeof v.fitScore === 'number' && (
+                    <span
+                      className="shrink-0 rounded-full border border-[var(--app-accent)]/40 px-2 py-0.5 text-xs font-medium text-[var(--app-accent)]"
+                      title="Fit score (proximity + category)"
+                    >
+                      {v.fitScore}% fit
+                    </span>
+                  )}
+                </div>
+                {v.category && (
+                  <p className="mt-0.5 text-xs text-[var(--app-muted)]">{v.category}</p>
+                )}
+                {(v.address || v.locality) && (
+                  <p className="mt-1 text-xs text-[var(--app-muted)]">
+                    {v.address ?? v.locality}
+                  </p>
+                )}
+                <a
+                  href={mapHref(v)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-3 py-1.5 text-xs font-semibold text-[var(--app-text)] transition hover:bg-[var(--app-surface)]"
+                >
+                  View on map ↗
+                </a>
+              </article>
+            ))}
+          </div>
         </div>
       )}
 
