@@ -7,7 +7,9 @@ import { getEnvVar } from './env';
  * and callers fall back to the existing rule-based / AI-text suggestions. So the feature is
  * inactive (and harmless) until a key is provided — no behavior change on deploys without it.
  *
- * Docs: https://docs.foursquare.com/developer/reference/place-search
+ * Uses the current Places API (places-api.foursquare.com, Bearer auth, dated version header);
+ * the legacy api.foursquare.com/v3 endpoint is deprecated.
+ * Docs: https://docs.foursquare.com/fsq-developers-places/reference/place-search
  */
 
 export interface VenueResult {
@@ -15,12 +17,22 @@ export interface VenueResult {
   category?: string;
   address?: string;
   locality?: string;
+  latitude?: number;
+  longitude?: number;
+  /** Metres from the searched location, when Foursquare provides it. */
+  distance?: number;
+  fsqId?: string;
 }
 
 interface FoursquarePlace {
+  fsq_place_id?: string;
   name?: string;
+  latitude?: number;
+  longitude?: number;
+  distance?: number;
   location?: {
     formatted_address?: string;
+    address?: string;
     locality?: string;
     region?: string;
   };
@@ -31,7 +43,8 @@ interface FoursquareResponse {
   results?: FoursquarePlace[];
 }
 
-const ENDPOINT = 'https://api.foursquare.com/v3/places/search';
+const ENDPOINT = 'https://places-api.foursquare.com/places/search';
+const API_VERSION = '2025-06-17';
 const DEFAULT_TIMEOUT_MS = 8000;
 
 /** Maps a raw Foursquare place to our trimmed VenueResult. */
@@ -39,8 +52,12 @@ export function mapFoursquarePlace(place: FoursquarePlace): VenueResult {
   return {
     name: place.name ?? 'Unnamed venue',
     category: place.categories?.[0]?.name,
-    address: place.location?.formatted_address,
+    address: place.location?.formatted_address ?? place.location?.address,
     locality: place.location?.locality ?? place.location?.region,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    distance: place.distance,
+    fsqId: place.fsq_place_id,
   };
 }
 
@@ -80,7 +97,11 @@ export async function searchFoursquareVenues(opts: {
   );
   try {
     const response = await fetch(`${ENDPOINT}?${params.toString()}`, {
-      headers: { Authorization: key, Accept: 'application/json' },
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'X-Places-Api-Version': API_VERSION,
+        Accept: 'application/json',
+      },
       signal: controller.signal,
     });
     if (!response.ok) return null;
