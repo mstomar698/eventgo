@@ -9,7 +9,7 @@ export type BookingStatus =
 
 export interface IBooking extends Document {
   eventId?: string; // reference to event if exists
-  vendorId: string;
+  vendorId?: string; // optional link to a Vendor entity; the UI uses free-text vendorName
   vendorName: string; // cached for display
   status: BookingStatus;
   quote?: number;
@@ -27,7 +27,6 @@ const BookingSchema: Schema = new Schema(
     },
     vendorId: {
       type: String,
-      required: true,
     },
     vendorName: {
       type: String,

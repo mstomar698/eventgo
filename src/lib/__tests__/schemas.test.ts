@@ -70,6 +70,12 @@ describe('BookingSchema', () => {
     });
     expect(b.dueDate).toBeInstanceOf(Date);
   });
+
+  it('accepts a booking without vendorId (the UI uses free-text vendorName)', () => {
+    const b = BookingSchema.parse({ vendorName: 'Acme', eventId: 'evt1' });
+    expect(b.vendorName).toBe('Acme');
+    expect(b.eventId).toBe('evt1');
+  });
 });
 
 describe('ThemeSchema', () => {
