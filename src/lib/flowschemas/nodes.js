@@ -248,6 +248,10 @@ export const ImageNode = ({ id, data, isConnectable }) => {
       <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
       <div className={nodeBox}>
         {data.imageUrl ? (
+          // User-uploaded base64 data URL inside a resizable canvas node. next/image
+          // needs fixed dimensions and would be `unoptimized` for a data URL anyway,
+          // so a plain <img> is the correct choice here.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.imageUrl}
             alt="node"

@@ -53,7 +53,6 @@ const makeEdge = (src: string, tgt: string) => ({
 });
 
 const W = 200; // node width
-const H = 100; // node height
 const COL_GAP = 240; // horizontal gap between columns
 const ROW_GAP = 140; // vertical gap between rows
 
