@@ -17,7 +17,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  if (!enforceRateLimit(req, res, aiRateLimit)) return;
+  if (!(await enforceRateLimit(req, res, aiRateLimit))) return;
 
   try {
     const { query } = AIQuerySchema.parse(req.query);
@@ -33,7 +33,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const model = getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash';
     const key = cacheKey('chatgpt2', model, query);
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
       sendSuccess(res, { recommendation: cached });
@@ -63,7 +63,7 @@ Budget: [range]
       maxOutputTokens: 400,
     });
 
-    setCached(key, recommendation);
+    await setCached(key, recommendation);
     res.setHeader('X-Cache', 'MISS');
     sendSuccess(res, { recommendation });
   } catch (error) {

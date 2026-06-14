@@ -27,7 +27,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  if (!enforceRateLimit(req, res, aiRateLimit)) return;
+  if (!(await enforceRateLimit(req, res, aiRateLimit))) return;
 
   try {
     const { query } = AIQuerySchema.parse(req.query);
@@ -51,7 +51,7 @@ Format your response as:
 Keep total response under 180 words.`;
     const model = getEnvVar('GEMINI_MODEL') ?? 'gemini-2.0-flash';
     const key = cacheKey('chatgpt', model, query);
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
       logger.info({ cache: 'hit' }, 'AI response served from cache');
@@ -71,7 +71,7 @@ Keep total response under 180 words.`;
     });
     const duration = Date.now() - startTime;
 
-    setCached(key, recommendation);
+    await setCached(key, recommendation);
     res.setHeader('X-Cache', 'MISS');
     logger.info(
       { duration, tokens: Math.ceil(prompt.length / 4) },

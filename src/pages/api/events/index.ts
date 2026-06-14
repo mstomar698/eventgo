@@ -10,7 +10,8 @@ import { EventCreateSchema } from '@/lib/schemas';
 import { withApiLogging } from '@/lib/with-logging';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET' && !enforceRateLimit(req, res, generalRateLimit)) return;
+  if (req.method !== 'GET' && !(await enforceRateLimit(req, res, generalRateLimit)))
+    return;
   try {
     await connectToDB();
 

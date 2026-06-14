@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { sendError } from './api-utils';
+import { getSharedStore } from './redis';
 
 /**
  * Lightweight, dependency-free fixed-window rate limiter for Next.js API routes.
@@ -85,10 +86,14 @@ export interface ConsumeResult {
 }
 
 /**
- * Pure rate-limit accounting. Records one hit for `key` under `rule` at time `now`
- * and returns the resulting state. Exposed for unit testing.
+ * In-memory fixed-window accounting. Records one hit for `key` under `rule` at time `now`.
+ * Exposed for unit testing; also the fallback when no shared store is configured.
  */
-export function consume(key: string, rule: RateLimitRule, now: number): ConsumeResult {
+export function consumeInMemory(
+  key: string,
+  rule: RateLimitRule,
+  now: number
+): ConsumeResult {
   if (_store.size > SWEEP_THRESHOLD) sweep(now);
 
   const existing = _store.get(key);
@@ -116,6 +121,37 @@ export function consume(key: string, rule: RateLimitRule, now: number): ConsumeR
 }
 
 /**
+ * Records one hit for `key` under `rule`. Uses the shared Redis store when configured (so
+ * limits are global across instances), otherwise the in-memory window. Falls back to memory
+ * if the shared store errors, so a Redis outage degrades gracefully rather than failing open.
+ */
+export async function consume(
+  key: string,
+  rule: RateLimitRule,
+  now: number
+): Promise<ConsumeResult> {
+  const store = getSharedStore();
+  if (store) {
+    try {
+      const ttlSeconds = Math.ceil(rule.windowMs / 1000);
+      const count = await store.incrWithExpiry(`rl:${key}`, ttlSeconds);
+      if (count !== null) {
+        return {
+          allowed: count <= rule.max,
+          limit: rule.max,
+          remaining: Math.max(0, rule.max - count),
+          resetAt: now + rule.windowMs,
+          retryAfterSeconds: ttlSeconds,
+        };
+      }
+    } catch {
+      // Shared store unavailable → fall back to the in-memory window.
+    }
+  }
+  return consumeInMemory(key, rule, now);
+}
+
+/**
  * Derives a client identifier from the request. Prefers the left-most address in
  * `x-forwarded-for` (the original client behind proxies), falling back to the socket.
  */
@@ -136,16 +172,16 @@ export function getClientKey(req: NextApiRequest): string {
  * the request is allowed and the handler should continue.
  *
  * Usage:
- *   if (!enforceRateLimit(req, res, aiRateLimit)) return;
+ *   if (!(await enforceRateLimit(req, res, aiRateLimit))) return;
  */
-export function enforceRateLimit(
+export async function enforceRateLimit(
   req: NextApiRequest,
   res: NextApiResponse,
   rule: RateLimitRule,
   namespace?: string
-): boolean {
+): Promise<boolean> {
   const key = `${namespace ?? rule.code}:${getClientKey(req)}`;
-  const result = consume(key, rule, Date.now());
+  const result = await consume(key, rule, Date.now());
 
   res.setHeader('RateLimit-Limit', String(result.limit));
   res.setHeader('RateLimit-Remaining', String(result.remaining));
