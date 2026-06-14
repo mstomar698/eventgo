@@ -3,6 +3,7 @@ import {
   mapFoursquarePlace,
   formatVenueResults,
   searchFoursquareVenues,
+  scoreVenues,
 } from '../venues-provider';
 
 afterEach(() => {
@@ -59,6 +60,30 @@ describe('formatVenueResults', () => {
     );
     expect(out).toContain('Venues near Springfield:');
     expect(out).toContain('1. **Grand Hall** (Event Space — 1 Main St)');
+  });
+});
+
+describe('scoreVenues', () => {
+  it('ranks a closer, event-appropriate venue above a far, generic one', () => {
+    const ranked = scoreVenues([
+      { name: 'Far Shop', category: 'Hardware Store', distance: 5000 },
+      { name: 'Near Hall', category: 'Event Hall', distance: 100 },
+    ]);
+    expect(ranked[0].name).toBe('Near Hall');
+    expect(ranked[0].fitScore!).toBeGreaterThan(ranked[1].fitScore!);
+  });
+
+  it('assigns every venue a 0–100 fitScore', () => {
+    const ranked = scoreVenues([{ name: 'A', category: 'Cafe', distance: 0 }]);
+    expect(ranked[0].fitScore).toBeGreaterThanOrEqual(0);
+    expect(ranked[0].fitScore).toBeLessThanOrEqual(100);
+  });
+
+  it('does not crash when distances are absent', () => {
+    const ranked = scoreVenues([{ name: 'A' }, { name: 'B', category: 'Banquet Hall' }]);
+    expect(ranked).toHaveLength(2);
+    // category bonus still applies
+    expect(ranked[0].name).toBe('B');
   });
 });
 
