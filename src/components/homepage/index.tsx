@@ -5,6 +5,7 @@ import AppShell from '@/components/layout/app-shell';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import useFetch from 'http-react';
+import FirstRunGuide from '@/components/homepage/first-run-guide';
 
 const workspaceSections = [
   {
@@ -97,6 +98,8 @@ const HomePage = () => {
       title="Workspace"
       subtitle="Your authenticated planning dashboard for building real event workflows."
     >
+      <FirstRunGuide />
+
       <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-lg sm:p-8">
         <p className="text-sm text-[var(--app-muted)]">Welcome back, {firstName}</p>
         <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">
