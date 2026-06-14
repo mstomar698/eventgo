@@ -248,10 +248,13 @@ const Flowchart = () => {
   const [showNewBoardConfirm, setShowNewBoardConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>(
-    'idle'
-  );
+  const [saveStatus, setSaveStatus] = useState<
+    'idle' | 'saving' | 'saved' | 'error' | 'conflict'
+  >('idle');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Last version we loaded/saved — sent on each save so the server can reject a write
+  // based on a stale version (e.g. another tab saved in the meantime).
+  const lastSavedAtRef = useRef<string | null>(null);
   // Refs + positions for fixed-position dropdowns (overflow-x-auto clips absolute children)
   const moreRef = useRef<HTMLButtonElement>(null);
   const exportRef = useRef<HTMLButtonElement>(null);
@@ -313,6 +316,7 @@ const Flowchart = () => {
           const loadedNodes = Array.isArray(data.data.nodes) ? data.data.nodes : [];
           setNodes(sanitizeNodes(loadedNodes));
           setEdges(data.data.edges);
+          lastSavedAtRef.current = data.data.updatedAt ?? null;
         }
       })
       .catch(console.error)
@@ -335,10 +339,20 @@ const Flowchart = () => {
       fetch('/api/flows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nodes: sanitizeNodes(nodes), edges }),
+        body: JSON.stringify({
+          nodes: sanitizeNodes(nodes),
+          edges,
+          baseUpdatedAt: lastSavedAtRef.current,
+        }),
       })
-        .then((res) => {
+        .then(async (res) => {
+          if (res.status === 409) {
+            setSaveStatus('conflict');
+            return;
+          }
           if (!res.ok) throw new Error(`Save failed (${res.status})`);
+          const data = await res.json().catch(() => null);
+          if (data?.data?.updatedAt) lastSavedAtRef.current = data.data.updatedAt;
           setSaveStatus('saved');
         })
         .catch((err) => {
@@ -620,7 +634,7 @@ const Flowchart = () => {
           {session && saveStatus !== 'idle' && (
             <div
               className={`absolute right-2 top-2 z-10 flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium ${
-                saveStatus === 'error'
+                saveStatus === 'error' || saveStatus === 'conflict'
                   ? 'border-red-500/30 bg-red-500/15 text-red-400'
                   : 'border-[var(--app-border)] bg-[var(--app-elevated)] text-[var(--app-muted)]'
               }`}
@@ -630,6 +644,7 @@ const Flowchart = () => {
               {saveStatus === 'saving' && 'Saving…'}
               {saveStatus === 'saved' && 'All changes saved'}
               {saveStatus === 'error' && 'Save failed — retrying on next change'}
+              {saveStatus === 'conflict' && 'Updated elsewhere — reload to continue'}
             </div>
           )}
         </ReactFlow>

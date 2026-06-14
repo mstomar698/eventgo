@@ -29,16 +29,39 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       const flow = await FlowModel.findOne({ userId });
       sendSuccess(
         res,
-        flow ? { nodes: flow.nodes, edges: flow.edges } : { nodes: [], edges: [] }
+        flow
+          ? { nodes: flow.nodes, edges: flow.edges, updatedAt: flow.updatedAt }
+          : { nodes: [], edges: [], updatedAt: null }
       );
     } else if (req.method === 'POST') {
-      const { nodes, edges } = req.body;
+      const { nodes, edges, baseUpdatedAt } = req.body;
+
+      // Optimistic concurrency: if the client based its edit on an older version than
+      // what's stored (e.g. another tab/device saved in the meantime), reject with 409
+      // so it doesn't silently clobber the newer board.
+      const existing = await FlowModel.findOne({ userId });
+      if (
+        existing &&
+        baseUpdatedAt &&
+        new Date(existing.updatedAt).getTime() > new Date(baseUpdatedAt).getTime()
+      ) {
+        sendError(res, 409, {
+          code: 'CONFLICT',
+          message: 'This board was updated elsewhere. Reload to get the latest version.',
+        });
+        return;
+      }
+
       const updatedFlow = await FlowModel.findOneAndUpdate(
         { userId },
         { nodes, edges, updatedAt: new Date() },
         { upsert: true, returnDocument: 'after' }
       );
-      sendSuccess(res, { nodes: updatedFlow.nodes, edges: updatedFlow.edges });
+      sendSuccess(res, {
+        nodes: updatedFlow.nodes,
+        edges: updatedFlow.edges,
+        updatedAt: updatedFlow.updatedAt,
+      });
     } else {
       sendError(res, 405, {
         code: ERROR_CODES.METHOD_NOT_ALLOWED,
