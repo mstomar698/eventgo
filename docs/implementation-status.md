@@ -13,53 +13,50 @@ issue with task issues underneath it. See the
 - 🟡 **Partial** — works but has known gaps or hardening needed.
 - ⛔ **Missing** — not started.
 
-## Current state (verified against code, 2026-06-13)
+## Current state (verified against code, 2026-06-14)
 
-| Area                        | Status | Notes                                                                                    |
-| --------------------------- | :----: | ---------------------------------------------------------------------------------------- |
-| API response contract       |   ✅   | `{ success, data?, error? }` via `src/lib/api-utils.ts`; security headers set.           |
-| Zod validation              |   ✅   | Inputs validated via `src/lib/schemas.ts`.                                               |
-| Auth (NextAuth + Google)    |   ✅   | `src/pages/api/auth/[...nextauth].ts`; data scoped by `session.user.email`.              |
-| Ownership checks            |   ✅   | Audited (#31); IDOR reads + a cross-tenant delete bug fixed. All routes scoped.          |
-| Data models                 |   ✅   | 8 Mongoose models with timestamps + `createdBy`.                                         |
-| Planner persistence         |   🟡   | Autosave debounced + save indicator (#26); flows rate-limited (#30). No version guard.   |
-| AI endpoints (Gemini)       |   🟡   | Shared client w/ timeout + retry (#29); rate-limited (#25). No response caching yet.     |
-| Templates & themes          |   ✅   | Full CRUD + seeding + "use template" flow.                                               |
-| Bookings                    |   ✅   | Full CRUD incl. edit/delete (#27), ownership-checked.                                    |
-| Venue / nearby intelligence |   🟡   | Rule-based + AI text suggestions; no maps/places data, no geolocation.                   |
-| Rate limiting               |   ✅   | AI (#25), CRUD writes (#28), flows (#30). In-memory — see note on shared store.          |
-| Logging (pino)              |   🟡   | Configured; used on several endpoints, not yet uniform.                                  |
-| Automated tests             |   🟡   | Vitest + 54 unit tests (#24, #25, #29); CI gate. No route-handler/integration tests yet. |
-| OSS governance              |   ✅   | LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, issue/PR templates, labels.            |
+| Area                        | Status | Notes                                                                                |
+| --------------------------- | :----: | ------------------------------------------------------------------------------------ |
+| API response contract       |   ✅   | `{ success, data?, error? }` via `src/lib/api-utils.ts`; security headers set.       |
+| Zod validation              |   ✅   | Inputs validated via `src/lib/schemas.ts`.                                           |
+| Auth (NextAuth + Google)    |   ✅   | `src/pages/api/auth/[...nextauth].ts`; data scoped by `session.user.email`.          |
+| Ownership checks            |   ✅   | Audited (#31); IDOR reads + a cross-tenant delete bug fixed. All routes scoped.      |
+| Data models                 |   ✅   | 8 Mongoose models with timestamps + `createdBy`.                                     |
+| Planner persistence         |   ✅   | Debounced autosave + indicator (#26), flows limiter (#30), 409 conflict guard (#41). |
+| AI endpoints (Gemini)       |   ✅   | Shared client w/ timeout + retry (#29); rate-limited (#25); response caching (#33).  |
+| Templates & themes          |   ✅   | Full CRUD + seeding + "use template" flow; surfaced on home (#37).                   |
+| Bookings                    |   ✅   | Full CRUD incl. edit/delete (#27) + event linking (#42); fixed broken create.        |
+| Venue / nearby intelligence |   ✅   | Real Foursquare data (#35/#38), fit-scoring + map cards (#43); AI/rule fallback.     |
+| Rate limiting               |   ✅   | AI (#25), CRUD writes (#28), flows (#30); optional shared Redis store (#39).         |
+| Logging (pino)              |   ✅   | Uniform per-request logging on every route via `withApiLogging` (#34).               |
+| Automated tests             |   ✅   | Vitest + 91 tests incl. route-handler integration (#24/#36/#41); CI gate.            |
+| OSS governance              |   ✅   | LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, issue/PR templates, labels.        |
 
 ## Roadmap epics
 
-These map to `epic` issues. Status reflects work through PR #31.
+All planned epics are addressed. The only open item is branch protection, which is deferred
+pending the repo going public.
 
-1. **OSS readiness & contributor lifecycle** (#9) — ✅ governance/templates/CI/roadmap
-   merged (#23). ⛔ _Blocked:_ branch protection needs the repo public or GitHub Pro.
-2. **Test foundation** (#10) — ✅ Vitest + 54 unit tests + CI gate (#24). 🟡 route-handler
-   integration tests remain (stretch).
-3. **Security & abuse hardening** (#11) — ✅ rate limiting (#25/#28/#30) + ownership audit &
-   IDOR/cross-tenant fixes (#31). 🟡 uniform logging. ⛔ _Blocked:_ shared rate-limit store
-   (Redis/Upstash) needs infra provisioning for true multi-instance limits.
-4. **Planner persistence hardening** (#12) — ✅ debounce + save indicator (#26). 🟡 optional
-   version/`updatedAt` conflict guard (low value: one flow doc per user).
-5. **Bookings completion** (#13) — ✅ edit/delete + ownership (#27). 🟡 optional booking↔event link.
-6. **AI endpoint modernization** (#14) — ✅ shared client w/ timeout+retry (#29), input cap
-   (Zod 1000-char). 🟡 response caching for idempotent calls; per-route token/latency logs.
-7. **Venue/nearby intelligence** (#15) — 🟡 rule-based + AI text today. ⛔ _Blocked:_ real
-   places data needs a maps/places provider choice + API key.
-8. **Onboarding & template wizard polish** (#16) — ✅ starter themes surfaced on the
-   authenticated home. 🟡 template surfacing + first-run empty-state guidance.
+1. **OSS readiness & contributor lifecycle** (#9) — ✅ governance/templates/CI/roadmap (#23).
+   ⛔ branch protection deferred (needs repo public or GitHub Pro).
+2. **Test foundation** (#10) — ✅ Vitest + 91 tests + CI gate + route-handler integration tests.
+3. **Security & abuse hardening** (#11) — ✅ rate limiting (#25/#28/#30), ownership audit +
+   IDOR/cross-tenant fixes (#31), uniform logging (#34), optional shared Redis store (#39).
+4. **Planner persistence hardening** (#12) — ✅ debounce + indicator (#26), 409 conflict guard (#41).
+5. **Bookings completion** (#13) — ✅ edit/delete + ownership (#27), event linking + create fix (#42).
+6. **AI endpoint modernization** (#14) — ✅ shared client w/ timeout+retry (#29), input cap,
+   response caching (#33), per-request logging (#34).
+7. **Venue/nearby intelligence** (#15) — ✅ Foursquare integration (#35/#38), fit-scoring + map
+   cards (#43). Capacity/budget fit is limited by the data source (kept in the search query).
+8. **Onboarding & template wizard polish** (#16) — ✅ themes + templates on home (#37), first-run
+   guide (#44). Further refinements tracked as new issues.
 
-### Blocked on a maintainer decision (manual intervention)
+### Optional / opt-in env activation (no code change needed)
 
-- **Branch protection** (#9): make the repo public (the OSS-release goal) or enable GitHub Pro.
-- **Maps/places provider** (#15): pick a provider (Google Places, Mapbox, etc.) + supply a
-  server-side API key before venue intelligence can use real data.
-- **Shared rate-limit store** (#11): provision Redis/Upstash for exact multi-instance limits
-  on serverless (current in-memory limiter is best-effort per instance).
+- **`FOURSQUARE_API_KEY`** — real venue data (active in production).
+- **`UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`** — shared rate-limit + cache store
+  across serverless instances (falls back to per-instance memory when unset).
+- **Branch protection** (#9) — enable once the repo is public (the OSS-release goal) or on Pro.
 
 ## How we work
 
