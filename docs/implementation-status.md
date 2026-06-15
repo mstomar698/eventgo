@@ -1,11 +1,26 @@
 # EventGo — Implementation Status & Roadmap
 
-_Last reviewed: 2026-06-13 (after PRs #23–#31)_
+_Last reviewed: 2026-06-15 (after PRs #23–#48)_
+
+Live: **[eventgo.vercel.app](https://eventgo.vercel.app)** (auto-deploys from `main` via Vercel).
 
 This document is the single source of truth for what is **done**, what is **partial**, and
 what is **remaining**. Each remaining workstream is tracked as an `epic`-labelled GitHub
 issue with task issues underneath it. See the
 [issues board](https://github.com/mstomar698/eventgo/issues).
+
+## Recent changes (post-roadmap)
+
+- **#46** — Navigation discoverability: shared `AiStudioNav` cross-links all four AI surfaces
+  (Theme, Event, Venue, Research); added Bookings to the navbar; Venue card on the home.
+- **#47** — Fixed the Venue Recommendations **404** (the page fetched `/venues` instead of
+  `/api/venues`).
+- **#48** — **Consolidated Templates into Themes.** Themes is the single reusable-blueprint
+  library; `/templates*` now 307-redirects to `/themes`. `/api/templates*` and the planner's
+  `?template=` flow are kept, and no template data is deleted (reversible).
+- **Production**: `FOURSQUARE_API_KEY` added to the Vercel environment and deployed, so venue
+  search returns real Foursquare data live (`x-venue-source: foursquare`). `UPSTASH_*` remain
+  unset (per-instance fallback).
 
 ## Legend
 
@@ -15,22 +30,22 @@ issue with task issues underneath it. See the
 
 ## Current state (verified against code, 2026-06-14)
 
-| Area                        | Status | Notes                                                                                |
-| --------------------------- | :----: | ------------------------------------------------------------------------------------ |
-| API response contract       |   ✅   | `{ success, data?, error? }` via `src/lib/api-utils.ts`; security headers set.       |
-| Zod validation              |   ✅   | Inputs validated via `src/lib/schemas.ts`.                                           |
-| Auth (NextAuth + Google)    |   ✅   | `src/pages/api/auth/[...nextauth].ts`; data scoped by `session.user.email`.          |
-| Ownership checks            |   ✅   | Audited (#31); IDOR reads + a cross-tenant delete bug fixed. All routes scoped.      |
-| Data models                 |   ✅   | 8 Mongoose models with timestamps + `createdBy`.                                     |
-| Planner persistence         |   ✅   | Debounced autosave + indicator (#26), flows limiter (#30), 409 conflict guard (#41). |
-| AI endpoints (Gemini)       |   ✅   | Shared client w/ timeout + retry (#29); rate-limited (#25); response caching (#33).  |
-| Templates & themes          |   ✅   | Full CRUD + seeding + "use template" flow; surfaced on home (#37).                   |
-| Bookings                    |   ✅   | Full CRUD incl. edit/delete (#27) + event linking (#42); fixed broken create.        |
-| Venue / nearby intelligence |   ✅   | Real Foursquare data (#35/#38), fit-scoring + map cards (#43); AI/rule fallback.     |
-| Rate limiting               |   ✅   | AI (#25), CRUD writes (#28), flows (#30); optional shared Redis store (#39).         |
-| Logging (pino)              |   ✅   | Uniform per-request logging on every route via `withApiLogging` (#34).               |
-| Automated tests             |   ✅   | Vitest + 91 tests incl. route-handler integration (#24/#36/#41); CI gate.            |
-| OSS governance              |   ✅   | LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, issue/PR templates, labels.        |
+| Area                        | Status | Notes                                                                                    |
+| --------------------------- | :----: | ---------------------------------------------------------------------------------------- |
+| API response contract       |   ✅   | `{ success, data?, error? }` via `src/lib/api-utils.ts`; security headers set.           |
+| Zod validation              |   ✅   | Inputs validated via `src/lib/schemas.ts`.                                               |
+| Auth (NextAuth + Google)    |   ✅   | `src/pages/api/auth/[...nextauth].ts`; data scoped by `session.user.email`.              |
+| Ownership checks            |   ✅   | Audited (#31); IDOR reads + a cross-tenant delete bug fixed. All routes scoped.          |
+| Data models                 |   ✅   | 8 Mongoose models with timestamps + `createdBy`.                                         |
+| Planner persistence         |   ✅   | Debounced autosave + indicator (#26), flows limiter (#30), 409 conflict guard (#41).     |
+| AI endpoints (Gemini)       |   ✅   | Shared client w/ timeout + retry (#29); rate-limited (#25); response caching (#33).      |
+| Themes (single library)     |   ✅   | Full CRUD + seeding; Templates consolidated in (#48). `/api/templates` kept for planner. |
+| Bookings                    |   ✅   | Full CRUD incl. edit/delete (#27) + event linking (#42); fixed broken create.            |
+| Venue / nearby intelligence |   ✅   | Real Foursquare data (#35/#38), fit-scoring + map cards (#43); AI/rule fallback.         |
+| Rate limiting               |   ✅   | AI (#25), CRUD writes (#28), flows (#30); optional shared Redis store (#39).             |
+| Logging (pino)              |   ✅   | Uniform per-request logging on every route via `withApiLogging` (#34).                   |
+| Automated tests             |   ✅   | Vitest + 91 tests incl. route-handler integration (#24/#36/#41); CI gate.                |
+| OSS governance              |   ✅   | LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, issue/PR templates, labels.            |
 
 ## Roadmap epics
 
@@ -48,8 +63,8 @@ pending the repo going public.
    response caching (#33), per-request logging (#34).
 7. **Venue/nearby intelligence** (#15) — ✅ Foursquare integration (#35/#38), fit-scoring + map
    cards (#43). Capacity/budget fit is limited by the data source (kept in the search query).
-8. **Onboarding & template wizard polish** (#16) — ✅ themes + templates on home (#37), first-run
-   guide (#44). Further refinements tracked as new issues.
+8. **Onboarding & template wizard polish** (#16) — ✅ starter themes on home (#37), first-run
+   guide (#44). Templates were consolidated into Themes (#48). Further refinements as new issues.
 
 ### Optional / opt-in env activation (no code change needed)
 
