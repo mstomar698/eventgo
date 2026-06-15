@@ -1,23 +1,32 @@
 # EventGo
 
-**EventGo** is a full-stack AI-powered event planning workspace built with Next.js 14, MongoDB, Tailwind CSS, ReactFlow, and Google Gemini. It helps individuals and small teams plan events from concept to execution — creating themes, visual flowcharts, checklists, budgets, and exporting everything in multiple formats.
+**EventGo** is a full-stack, AI-powered event planning workspace built with Next.js 16, MongoDB, Tailwind CSS, ReactFlow, and Google Gemini. It helps individuals and small teams plan events from concept to execution — designing themes, visual flowcharts, checklists, budgets, and real venue suggestions, then exporting everything in multiple formats.
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](#)
+### 🔗 Live demo: **[eventgo.vercel.app](https://eventgo.vercel.app)**
 
-> For the full project encyclopedia (architecture, all routes, data models, components, AI details, UI system) see **[docs/README.md](./docs/README.md)**.
+[![Live](https://img.shields.io/badge/demo-eventgo.vercel.app-14b8a6)](https://eventgo.vercel.app)
+[![CI](https://github.com/mstomar698/eventgo/actions/workflows/ci.yml/badge.svg)](https://github.com/mstomar698/eventgo/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+> The public landing is open; the planning workspace is behind Google sign-in.
+> New contributor? Start with **[CONTRIBUTING.md](./CONTRIBUTING.md)** and the
+> **[good first issues](https://github.com/mstomar698/eventgo/labels/good%20first%20issue)**.
+> For the full encyclopedia (architecture, every route, data models, AI details) see
+> **[docs/README.md](./docs/README.md)**; for current status & roadmap see
+> **[docs/implementation-status.md](./docs/implementation-status.md)**.
 
 ---
 
 ## What it does
 
-| Feature              | Description                                                                                                                                        |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Theme Library**    | Create event themes with colors, mood, activities, decor, music, food, budget, checklist, and timeline phases. Starter themes included.            |
-| **AI Studio**        | Generate full themes from a text description (returns structured JSON). Also: 3-idea event suggestions and planning Q&A. Powered by Google Gemini. |
-| **Visual Planner**   | ReactFlow canvas — add/edit/connect nodes, resize them, lock the board, export as PNG/PDF/JSON/Markdown/TXT.                                       |
-| **Notes & Calendar** | Capture planning notes linked to dates. Month-view calendar shows notes and events. No timezone drift.                                             |
-| **Vendor Bookings**  | Track vendors from "to contact" through "confirmed" with quote and due date.                                                                       |
-| **Planning Themes**  | Structured planning templates with timeline phases, budget categories, vendor needs, checklist.                                                    |
+| Feature                   | Description                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Theme Library**         | The single library of reusable event blueprints — colors, mood, activities, decor, music, food, budget, checklist, and timeline phases. Starter themes included. |
+| **AI Studio**             | Four Gemini-powered surfaces: generate a full structured theme, 3-idea event suggestions, a planning Q&A research assistant, and venue recommendations.          |
+| **Venue Recommendations** | Real nearby venues via the Foursquare Places API, ranked by a fit score (proximity + category), each with a "View on map" link. Falls back to AI text.           |
+| **Visual Planner**        | ReactFlow canvas — add/edit/connect/resize nodes, lock the board, debounced autosave with a save-status indicator + conflict guard, export PNG/PDF/JSON/MD/TXT.  |
+| **Notes & Calendar**      | Capture planning notes linked to dates. Month-view calendar shows notes and events. No timezone drift.                                                           |
+| **Vendor Bookings**       | Track vendors from "to contact" through "confirmed" with quote, due date, and an optional linked event.                                                          |
 
 ---
 
@@ -39,8 +48,14 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-2.0-flash   # optional
-FOURSQUARE_API_KEY=...          # optional — enables real venue data (else AI-text fallback)
+FOURSQUARE_API_KEY=...          # optional — real venue data (else AI-text fallback)
+UPSTASH_REDIS_REST_URL=...      # optional — shared rate-limit + cache store across instances
+UPSTASH_REDIS_REST_TOKEN=...    # optional — (both falls back to per-instance memory if unset)
 ```
+
+> **Deploying?** Env vars live in your host's dashboard, not in git (`.env*` is ignored).
+> On Vercel, add them under **Project → Settings → Environment Variables**; changes apply on
+> the next deployment. The optional keys above are inactive (with graceful fallback) until set.
 
 ---
 
@@ -67,14 +82,18 @@ FOURSQUARE_API_KEY=...          # optional — enables real venue data (else AI-
 
 ## Tech stack
 
-- **Framework**: Next.js 14 (App Router + Pages Router for API)
+- **Framework**: Next.js 16 (App Router + Pages Router for API)
 - **Database**: MongoDB via Mongoose
 - **Auth**: NextAuth v4 — Google OAuth
-- **AI**: Google Gemini API (`gemini-2.0-flash`)
+- **AI**: Google Gemini API (shared client with timeout + retry + response cache)
+- **Venues**: Foursquare Places API (optional, with rule-based/AI fallback)
 - **Planner**: ReactFlow v11 with custom editable node types
-- **Styling**: Tailwind CSS + CSS custom properties (dark/light themes)
+- **Styling**: Tailwind CSS + CSS custom properties (light/dark themes)
 - **Validation**: Zod
+- **Tests**: Vitest (unit + route-handler integration), enforced in CI
+- **Rate limiting / cache**: in-process by default, optional shared Upstash Redis store
 - **Export**: html-to-image + jsPDF + Canvas API
+- **Hosting**: Vercel ([eventgo.vercel.app](https://eventgo.vercel.app))
 
 ---
 
