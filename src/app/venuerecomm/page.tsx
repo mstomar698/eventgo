@@ -8,7 +8,7 @@ const VenueRecommPage = () => {
   return (
     <AppShell title="Venue Recommendations">
       <QueryWorkspace
-        endpoint="/venues"
+        endpoint="/api/venues"
         placeholder="Describe your event (e.g., 'birthday party for 20 people in downtown area')"
         actionLabel="Find Venues"
         responseKey="recommendation"
