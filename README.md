@@ -51,12 +51,12 @@ FOURSQUARE_API_KEY=...          # optional — enables real venue data (else AI-
 | `/home`        | Public | Landing page, starter themes preview  |
 | `/`            | Auth   | Workspace dashboard                   |
 | `/themes`      | Auth   | Theme library (starter + your themes) |
-| `/templates`   | Auth   | Planning themes                       |
 | `/planner`     | Auth   | ReactFlow planning board              |
 | `/posts`       | Auth   | Notes + calendar                      |
 | `/bookings`    | Auth   | Vendor pipeline                       |
 | `/themerecomm` | Auth   | AI Studio — Theme Ideation (default)  |
 | `/eventrecomm` | Auth   | AI Studio — Event Ideas               |
+| `/venuerecomm` | Auth   | AI Studio — Venue Recommendations     |
 | `/info`        | Auth   | AI Studio — Research Assistant        |
 | `/profile`     | Auth   | UI settings, delete data / account    |
 | `/privacy`     | Public | Privacy policy                        |

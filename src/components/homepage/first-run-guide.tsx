@@ -16,10 +16,10 @@ const steps = [
   },
   {
     icon: BiCategory,
-    title: 'Start from a template',
-    body: 'Pick a planning template with checklist, timeline, and budget ready.',
-    href: '/templates',
-    cta: 'Browse templates',
+    title: 'Start from a theme',
+    body: 'Pick a ready-made theme with colors, checklist, and timeline.',
+    href: '/themes',
+    cta: 'Browse themes',
   },
   {
     icon: BiBulb,
