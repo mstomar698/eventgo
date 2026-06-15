@@ -42,6 +42,11 @@ const aiSections = [
     href: '/themerecomm',
   },
   {
+    title: 'Venue recommendations',
+    description: 'Find real venues near your location, ranked by fit.',
+    href: '/venuerecomm',
+  },
+  {
     title: 'Research assistant',
     description:
       'Ask event-specific questions and receive planning-focused explanations.',
