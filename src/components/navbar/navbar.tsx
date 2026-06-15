@@ -15,7 +15,6 @@ interface NavbarProps {
 const appLinks = [
   { href: '/', label: 'Workspace' },
   { href: '/planner', label: 'Planner' },
-  { href: '/templates', label: 'Templates' },
   { href: '/posts', label: 'Notes' },
   { href: '/themes', label: 'Themes' },
   { href: '/bookings', label: 'Bookings' },

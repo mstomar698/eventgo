@@ -7,6 +7,18 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      // Templates were consolidated into Themes (the single library). The /api/templates
+      // data + the planner's ?template= flow remain; only the browse UI is retired.
+      {
+        source: '/templates',
+        destination: '/themes',
+        permanent: false,
+      },
+      {
+        source: '/templates/:path*',
+        destination: '/themes',
+        permanent: false,
+      },
     ];
   },
   images: {
