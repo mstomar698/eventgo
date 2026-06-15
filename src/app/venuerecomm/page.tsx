@@ -2,6 +2,7 @@
 
 import AppShell from '@/components/layout/app-shell';
 import QueryWorkspace from '@/components/ai/query-workspace';
+import AiStudioNav from '@/components/ai/ai-studio-nav';
 
 const VenueRecommPage = () => {
   return (
@@ -31,6 +32,8 @@ const VenueRecommPage = () => {
           'Milestone birthday bash for 50 guests',
         ]}
       />
+
+      <AiStudioNav current="/venuerecomm" />
     </AppShell>
   );
 };

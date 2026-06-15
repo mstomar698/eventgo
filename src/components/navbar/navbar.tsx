@@ -15,8 +15,10 @@ interface NavbarProps {
 const appLinks = [
   { href: '/', label: 'Workspace' },
   { href: '/planner', label: 'Planner' },
+  { href: '/templates', label: 'Templates' },
   { href: '/posts', label: 'Notes' },
   { href: '/themes', label: 'Themes' },
+  { href: '/bookings', label: 'Bookings' },
   { href: '/themerecomm', label: 'AI Studio' },
 ];
 
@@ -27,9 +29,16 @@ const linkClasses = (active: boolean) =>
       : 'text-[var(--app-muted)] hover:bg-[var(--app-elevated)] hover:text-[var(--app-text)]'
   }`;
 
+// The AI Studio nav item covers all four AI surfaces, so it stays highlighted on any of them.
+const AI_STUDIO_PATHS = ['/themerecomm', '/eventrecomm', '/venuerecomm', '/info'];
+
 const Navbar = ({ title }: NavbarProps) => {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const isLinkActive = (href: string) =>
+    href === '/themerecomm'
+      ? AI_STUDIO_PATHS.includes(pathname ?? '')
+      : pathname === href;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isLoggedIn = status === 'authenticated';
@@ -81,7 +90,7 @@ const Navbar = ({ title }: NavbarProps) => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={linkClasses(pathname === link.href)}
+                  className={linkClasses(isLinkActive(link.href))}
                 >
                   {link.label}
                 </Link>
@@ -133,7 +142,7 @@ const Navbar = ({ title }: NavbarProps) => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={linkClasses(pathname === link.href)}
+                    className={linkClasses(isLinkActive(link.href))}
                   >
                     {link.label}
                   </Link>

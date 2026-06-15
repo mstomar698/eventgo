@@ -4,7 +4,7 @@ import QueryWorkspace from '@/components/ai/query-workspace';
 import AppShell from '@/components/layout/app-shell';
 import SignInRequired from '@/features/auth/sign-in-required';
 import { useSession } from 'next-auth/react';
-import Link from 'next/link';
+import AiStudioNav from '@/components/ai/ai-studio-nav';
 
 const EventInfoPage = () => {
   const { data: session } = useSession();
@@ -34,31 +34,7 @@ const EventInfoPage = () => {
         ]}
       />
 
-      <div className="mt-6 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--app-muted)]">
-          Also in AI Studio
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/themerecomm"
-            className="inline-flex flex-col rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3 text-sm transition hover:border-[var(--app-accent)] hover:bg-[var(--app-surface)]"
-          >
-            <span className="font-semibold text-[var(--app-text)]">Theme Ideation</span>
-            <span className="mt-0.5 text-xs text-[var(--app-muted)]">
-              Generate a full theme with AI
-            </span>
-          </Link>
-          <Link
-            href="/eventrecomm"
-            className="inline-flex flex-col rounded-xl border border-[var(--app-border)] bg-[var(--app-elevated)] px-4 py-3 text-sm transition hover:border-[var(--app-accent)] hover:bg-[var(--app-surface)]"
-          >
-            <span className="font-semibold text-[var(--app-text)]">Event Ideas</span>
-            <span className="mt-0.5 text-xs text-[var(--app-muted)]">
-              Get 3 concrete event suggestions
-            </span>
-          </Link>
-        </div>
-      </div>
+      <AiStudioNav current="/info" />
     </AppShell>
   );
 };
