@@ -1,6 +1,6 @@
 # EventGo — Project Encyclopedia
 
-EventGo is a full-stack event planning workspace built with **Next.js 14 (App Router)**, **MongoDB/Mongoose**, **NextAuth (Google OAuth)**, **Tailwind CSS**, and **Google Gemini AI**. It helps individuals and small teams plan events from concept to execution — creating themes, timelines, budgets, and visual flowcharts.
+EventGo is a full-stack event planning workspace built with **Next.js 16 (App Router)**, **MongoDB/Mongoose**, **NextAuth (Google OAuth)**, **Tailwind CSS**, and **Google Gemini AI**. It helps individuals and small teams plan events from concept to execution — creating themes, timelines, budgets, and visual flowcharts.
 
 ---
 
